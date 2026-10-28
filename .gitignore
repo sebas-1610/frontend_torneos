@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capturas y fichas de la skill de diseño (taste-skill)
+.taste-skill/

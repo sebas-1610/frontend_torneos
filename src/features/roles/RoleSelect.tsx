@@ -1,6 +1,7 @@
-import { Check, ChevronDown, UserRound } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import type { Role } from '../../api/security'
+import { roleHue } from './labels'
 
 interface RoleSelectProps {
   roles: Role[]
@@ -9,7 +10,20 @@ interface RoleSelectProps {
   onChange: (roleId: number) => void
 }
 
-// Selector con el aspecto del diseño, pero con el comportamiento de teclado de un listbox nativo.
+export function RoleMonogram({ name, hue, size = 'md' }: { name: string; hue: number; size?: 'sm' | 'md' }) {
+  const letters = name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('')
+  return (
+    <span className={`monogram monogram--${size}`} style={{ '--hue': hue } as CSSProperties} aria-hidden="true">
+      {letters}
+    </span>
+  )
+}
+
+// Selector con el aspecto del encabezado del rol, pero con el comportamiento de teclado de un listbox nativo.
 export function RoleSelect({ roles, value, disabled, onChange }: RoleSelectProps) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -98,7 +112,7 @@ export function RoleSelect({ roles, value, disabled, onChange }: RoleSelectProps
 
   return (
     <div className="role-select" ref={rootRef}>
-      <span id={labelId} className="field-label">
+      <span id={labelId} className="role-select__label">
         Rol seleccionado
       </span>
       <button
@@ -113,11 +127,11 @@ export function RoleSelect({ roles, value, disabled, onChange }: RoleSelectProps
         onClick={() => (open ? close() : openList())}
         onKeyDown={handleButtonKeyDown}
       >
-        <UserRound size={22} aria-hidden="true" />
+        {selected && <RoleMonogram name={selected.name} hue={roleHue(roles, selected.id)} />}
         <span id={`${id}-value`} className="role-select__value">
           {selected?.name ?? (roles.length === 0 ? 'Sin roles registrados' : 'Selecciona un rol')}
         </span>
-        <ChevronDown size={20} aria-hidden="true" className={`role-select__chevron${open ? ' is-open' : ''}`} />
+        <ChevronDown size={18} aria-hidden="true" className={`role-select__chevron${open ? ' is-open' : ''}`} />
       </button>
 
       {open && (
@@ -144,9 +158,9 @@ export function RoleSelect({ roles, value, disabled, onChange }: RoleSelectProps
                 onPointerEnter={() => setActiveIndex(index)}
                 onClick={() => choose(index)}
               >
-                <UserRound size={20} aria-hidden="true" />
+                <RoleMonogram name={role.name} hue={roleHue(roles, role.id)} size="sm" />
                 <span className="role-select__option-name">{role.name}</span>
-                {isSelected && <Check size={18} aria-hidden="true" className="role-select__check" />}
+                {isSelected && <Check size={16} aria-hidden="true" className="role-select__check" />}
               </li>
             )
           })}

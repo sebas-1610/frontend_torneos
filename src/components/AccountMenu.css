@@ -1,0 +1,109 @@
+/* El menú se posiciona respecto al bloque de la cuenta en el encabezado. */
+.topbar__account {
+  position: relative;
+}
+
+.account-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  padding: 16px;
+  background: var(--raised);
+  border-radius: 12px;
+  box-shadow: var(--overlay-shadow); /* taste-skill-ignore: es un menú flotante */
+  transform-origin: top right;
+  animation: pop-in 0.18s var(--ease-out);
+}
+
+.account-menu__name {
+  font-weight: 600;
+}
+
+.account-menu__email {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.account-menu__provider {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.account-menu__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.account-menu__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.account-menu__title {
+  font-weight: 600;
+}
+
+.account-menu .pill--neutral {
+  background: var(--active);
+}
+
+.account-menu__text {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.account-menu__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.account-menu__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.account-menu__field input {
+  height: 38px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.account-menu__field input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.account-menu__error {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--negative);
+}
+
+.account-menu__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

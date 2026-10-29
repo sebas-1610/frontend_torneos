@@ -1,12 +1,9 @@
-import { Bell, ChevronDown, ChevronRight, Menu } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Bell, ChevronDown, ChevronRight, LogOut, Menu } from 'lucide-react'
+import type { User } from '../api/auth'
+import { AccountMenu } from './AccountMenu'
 import { SportManagerLogo } from './BrandIcons'
 import { ThemeToggle } from './ThemeToggle'
-
-// El microservicio aún no expone autenticación: este usuario es fijo hasta que exista un endpoint de sesión.
-const CURRENT_USER = {
-  name: 'Carlos Admin',
-  role: 'Administrador del sistema',
-}
 
 function initials(name: string): string {
   return name
@@ -21,9 +18,33 @@ interface TopBarProps {
   page: string
   menuOpen: boolean
   onOpenMenu: () => void
+  user: User | null // null mientras llega la respuesta de /api/auth/me
+  onUserChange: (user: User) => void
+  onLogout: () => void
 }
 
-export function TopBar({ section, page, menuOpen, onOpenMenu }: TopBarProps) {
+export function TopBar({ section, page, menuOpen, onOpenMenu, user, onUserChange, onLogout }: TopBarProps) {
+  const [accountOpen, setAccountOpen] = useState(false)
+  const accountRef = useRef<HTMLDivElement>(null)
+  const name = user?.name ?? 'Mi cuenta'
+
+  // Cierra el menú de la cuenta al hacer clic fuera o al presionar Escape.
+  useEffect(() => {
+    if (!accountOpen) return
+    function handlePointer(event: PointerEvent) {
+      if (!accountRef.current?.contains(event.target as Node)) setAccountOpen(false)
+    }
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') setAccountOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointer)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointer)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [accountOpen])
+
   return (
     <header className="topbar">
       <button
@@ -51,19 +72,31 @@ export function TopBar({ section, page, menuOpen, onOpenMenu }: TopBarProps) {
         <button type="button" className="icon-button" aria-label="Notificaciones">
           <Bell size={19} strokeWidth={1.6} aria-hidden="true" />
         </button>
-        <div className="topbar__account">
-          <button type="button" className="user-chip" aria-label={`Cuenta de ${CURRENT_USER.name}`}>
+        <div className="topbar__account" ref={accountRef}>
+          <button
+            type="button"
+            className="user-chip"
+            aria-label={`Cuenta de ${name}`}
+            aria-expanded={accountOpen}
+            onClick={() => setAccountOpen((open) => !open)}
+            disabled={!user}
+          >
             <span className="avatar" aria-hidden="true">
-              {initials(CURRENT_USER.name)}
+              {initials(name)}
               <span className="avatar__presence" />
             </span>
             <span className="user-chip__text">
-              <span className="user-chip__name">{CURRENT_USER.name}</span>
-              <span className="user-chip__role">{CURRENT_USER.role}</span>
+              <span className="user-chip__name">{name}</span>
+              <span className="user-chip__role">{user?.email ?? 'Cargando…'}</span>
             </span>
             <ChevronDown size={16} aria-hidden="true" className="user-chip__chevron" />
           </button>
+          {accountOpen && user && <AccountMenu user={user} onUserChange={onUserChange} />}
         </div>
+        {/* Cerrar sesión (HU-SE-08): el backend invalida el token y volvemos al login. */}
+        <button type="button" className="icon-button" aria-label="Cerrar sesión" title="Cerrar sesión" onClick={onLogout}>
+          <LogOut size={19} strokeWidth={1.6} aria-hidden="true" />
+        </button>
       </div>
     </header>
   )

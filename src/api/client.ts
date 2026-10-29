@@ -1,3 +1,5 @@
+import { expireSession, getSession } from '../auth/session'
+
 // En desarrollo Vite redirige /api al backend (ver vite.config.ts). VITE_API_URL permite apuntar a otro host.
 const API_URL = import.meta.env.VITE_API_URL ?? '/api'
 
@@ -13,12 +15,15 @@ export class ApiError extends Error {
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
+  const session = getSession()
   try {
     response = await fetch(`${API_URL}${path}`, {
       ...init,
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        // Si hay sesión, mandamos el token: "Authorization: Bearer xxxxx"
+        ...(session ? { Authorization: `${session.tokenType} ${session.accessToken}` } : {}),
         ...init?.headers,
       },
     })
@@ -26,6 +31,10 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(0, 'No se pudo conectar con el servidor. Verifica que el backend esté en ejecución.')
   }
 
+  // 401 con token: la sesión venció o se cerró en el backend. Volvemos al login.
+  if (response.status === 401 && session) {
+    expireSession()
+  }
   if (!response.ok) {
     throw new ApiError(response.status, await readErrorMessage(response))
   }

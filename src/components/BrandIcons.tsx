@@ -1,4 +1,6 @@
 import type { SVGProps } from 'react'
+import logoDark from '../assets/arcanos-logo-dark.png'
+import logoLight from '../assets/arcanos-logo-light.png'
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number }
 
@@ -24,28 +26,14 @@ export function SoccerBallIcon({ size = 24, strokeWidth = 2, ...props }: IconPro
   )
 }
 
-// Los colores salen de los tokens (ver .logo en App.css) para que el escudo siga al tema claro u oscuro.
-export function SportManagerLogo({ size = 44 }: { size?: number }) {
+// Escudo del club con fondo transparente. Hay una versión por tema (ver .logo en App.css):
+// blanca sobre el fondo oscuro y negra sobre el claro. `size` es la altura; el ancho sigue la proporción.
+export function ArcanosLogo({ size = 44 }: { size?: number }) {
   return (
-    <svg className="logo" width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path
-        className="logo__shield"
-        d="M24 3.5 40.5 9v13.2c0 10.4-6.9 18.6-16.5 22.3C14.4 40.8 7.5 32.6 7.5 22.2V9z"
-        strokeWidth="2.4"
-        strokeLinejoin="round"
-      />
-      <path className="logo__star" d="m16.5 10.5.7 1.4 1.5.2-1.1 1 .3 1.5-1.4-.7-1.4.7.3-1.5-1.1-1 1.5-.2z" />
-      <path className="logo__star" d="m24 8 .7 1.4 1.5.2-1.1 1 .3 1.5L24 11.4l-1.4.7.3-1.5-1.1-1 1.5-.2z" />
-      <path className="logo__star" d="m31.5 10.5.7 1.4 1.5.2-1.1 1 .3 1.5-1.4-.7-1.4.7.3-1.5-1.1-1 1.5-.2z" />
-      <circle className="logo__ball" cx="24" cy="26" r="9" strokeWidth="2" />
-      <path className="logo__patch" d="m24 22 3.6 2.6-1.4 4.2h-4.4l-1.4-4.2z" />
-      <path
-        className="logo__seams"
-        d="M24 22v-5M27.6 24.6l4.6-1.4M26.2 28.8l2.8 3.8M21.8 28.8 19 32.6M20.4 24.6l-4.6-1.4"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
+    <span className="logo" aria-hidden="true">
+      <img className="logo__img logo__img--dark" src={logoDark} alt="" height={size} />
+      <img className="logo__img logo__img--light" src={logoLight} alt="" height={size} />
+    </span>
   )
 }
 

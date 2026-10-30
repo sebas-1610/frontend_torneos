@@ -69,26 +69,24 @@
   padding: 4px 8px 22px;
 }
 
-.logo__shield {
-  fill: var(--surface);
-  stroke: var(--gold);
+.logo {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
-.logo__star {
-  fill: var(--gold);
+.logo__img {
+  display: block;
+  width: auto;
 }
 
-.logo__ball {
-  fill: var(--surface);
-  stroke: var(--muted);
+/* El tema oscuro es el predeterminado: se muestra el escudo blanco salvo en el tema claro. */
+.logo__img--light,
+:root[data-theme='light'] .logo__img--dark {
+  display: none;
 }
 
-.logo__patch {
-  fill: var(--muted);
-}
-
-.logo__seams {
-  stroke: var(--muted);
+:root[data-theme='light'] .logo__img--light {
+  display: block;
 }
 
 .brand__text {
@@ -101,10 +99,6 @@
   font-size: var(--fs-section);
   font-weight: 600;
   line-height: 1.2;
-}
-
-.brand__sport {
-  color: var(--gold-text);
 }
 
 .brand__tagline {

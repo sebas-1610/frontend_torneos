@@ -3,7 +3,7 @@ import { login, type AuthResponse } from '../../api/auth'
 import { errorMessage } from '../../api/client'
 import { startOAuthLogin, type OAuthProvider } from '../../auth/oauth'
 import { saveSession } from '../../auth/session'
-import { GitHubIcon, GoogleIcon, MicrosoftIcon, SportManagerLogo } from '../../components/BrandIcons'
+import { GitHubIcon, GoogleIcon, MicrosoftIcon, ArcanosLogo } from '../../components/BrandIcons'
 import { TwoFactorForm } from './TwoFactorForm'
 import './LoginPage.css'
 
@@ -90,7 +90,7 @@ export function LoginPage({
     <div className="login">
       <form className="login__card panel" onSubmit={handleSubmit} noValidate>
         <div className="login__brand">
-          <SportManagerLogo size={48} />
+          <ArcanosLogo size={80} />
           <h1 className="login__title">Iniciar sesión</h1>
           <p className="login__subtitle">Ingresa con tu correo y contraseña</p>
         </div>

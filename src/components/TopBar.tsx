@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Bell, ChevronDown, ChevronRight, LogOut, Menu } from 'lucide-react'
 import type { User } from '../api/auth'
 import { AccountMenu } from './AccountMenu'
-import { SportManagerLogo } from './BrandIcons'
+import { ArcanosLogo } from './BrandIcons'
 import { ThemeToggle } from './ThemeToggle'
 
 function initials(name: string): string {
@@ -58,7 +58,7 @@ export function TopBar({ section, page, menuOpen, onOpenMenu, user, onUserChange
         <Menu size={20} aria-hidden="true" />
       </button>
       <span className="topbar__mark" aria-hidden="true">
-        <SportManagerLogo size={28} />
+        <ArcanosLogo size={28} />
       </span>
 
       <nav className="breadcrumb" aria-label="Ubicación">

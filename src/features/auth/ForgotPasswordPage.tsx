@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { forgotPassword, resetPassword } from '../../api/auth'
 import { errorMessage } from '../../api/client'
-import { SportManagerLogo } from '../../components/BrandIcons'
+import { ArcanosLogo } from '../../components/BrandIcons'
 import { PasswordRuleList } from './PasswordRuleList'
 import { isStrongPassword } from './passwordRules'
 import './LoginPage.css'
@@ -60,7 +60,7 @@ export function ForgotPasswordPage({ initialEmail = '', onDone, onBack }: Forgot
 
   const header = (
     <div className="login__brand">
-      <SportManagerLogo size={48} />
+      <ArcanosLogo size={80} />
       <h1 className="login__title">Recuperar contraseña</h1>
       <p className="login__subtitle">
         {step === 'email'

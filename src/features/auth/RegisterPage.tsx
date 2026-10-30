@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { register } from '../../api/auth'
 import { errorMessage } from '../../api/client'
-import { SportManagerLogo } from '../../components/BrandIcons'
+import { ArcanosLogo } from '../../components/BrandIcons'
 import { PasswordRuleList } from './PasswordRuleList'
 import { isStrongPassword } from './passwordRules'
 import './LoginPage.css'
@@ -42,7 +42,7 @@ export function RegisterPage({ onRegistered, onBack }: RegisterPageProps) {
     <div className="login">
       <form className="login__card panel" onSubmit={handleSubmit} noValidate>
         <div className="login__brand">
-          <SportManagerLogo size={48} />
+          <ArcanosLogo size={80} />
           <h1 className="login__title">Crear cuenta</h1>
           <p className="login__subtitle">Regístrate con tu correo y una contraseña</p>
         </div>

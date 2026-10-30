@@ -1,6 +1,6 @@
 import { ClipboardList, House, KeyRound, Shield, ShieldCheck, ShieldUser, Users, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { SportManagerLogo } from './BrandIcons'
+import { ArcanosLogo } from './BrandIcons'
 
 interface NavItem {
   id: string
@@ -52,11 +52,9 @@ export function Sidebar({ activeId, open, onClose }: SidebarProps) {
       <div className={`sidebar-backdrop${open ? ' is-open' : ''}`} aria-hidden="true" onClick={onClose} />
       <aside id="sidebar" className={`sidebar${open ? ' is-open' : ''}`} aria-label="Navegación principal">
         <div className="brand">
-          <SportManagerLogo size={36} />
+          <ArcanosLogo size={36} />
           <div className="brand__text">
-            <span className="brand__name">
-              <span className="brand__sport">Sport</span>Manager
-            </span>
+            <span className="brand__name">Arcanos</span>
             <span className="brand__tagline">Plataforma administrativa</span>
           </div>
           <button ref={closeRef} type="button" className="sidebar__close" aria-label="Cerrar menú" onClick={onClose}>

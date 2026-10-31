@@ -1,0 +1,298 @@
+/* Estilos compartidos por las pantallas de listas (Usuarios, Permisos...): tabla, buscador y ventana de formulario. */
+
+.list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.list-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+  height: 40px;
+  margin-bottom: 16px;
+  padding: 0 14px;
+  color: var(--muted);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.list-search:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.list-search input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.list-error {
+  margin-bottom: 16px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  padding: 0 12px 10px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table td {
+  height: var(--row-height);
+  padding: 0 12px;
+  white-space: nowrap;
+  border-top: 1px solid var(--rule);
+}
+
+.data-table tbody tr:hover td {
+  background: var(--active);
+}
+
+.data-table__strong {
+  font-weight: 600;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.row-actions .icon-button:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--raised);
+}
+
+.row-actions .row-actions__delete:hover:not(:disabled) {
+  color: var(--negative);
+}
+
+.row-actions .icon-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.form-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius-card);
+  box-shadow: var(--overlay-shadow);
+}
+
+.form-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.form-dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: var(--pad);
+}
+
+.form-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.form-dialog select {
+  height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.form-dialog select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.list-filters .list-search {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.list-filters select {
+  height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+/* Celda con varias rutas (Permisos): una debajo de otra. */
+.endpoint-list {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.endpoint-list code {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.endpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.endpoints__legend {
+  margin-bottom: 6px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.endpoints__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.endpoints__row select,
+.endpoints__row input {
+  height: 40px;
+  font: inherit;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.endpoints__row select {
+  padding: 0 8px;
+}
+
+.endpoints__row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+}
+
+.endpoints__add {
+  align-self: flex-start;
+}
+
+.list-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.list-head__actions a {
+  text-decoration: none;
+}
+
+/* Celda de texto largo (ej: descripción): puede ocupar varias líneas. */
+.data-table td.data-table__wrap {
+  min-width: 220px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  white-space: normal;
+  color: var(--muted);
+}
+
+.role-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-dialog textarea {
+  padding: 10px 14px;
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+  resize: vertical;
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.form-dialog textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Ventana "Usuarios del rol". */
+.members__add {
+  display: flex;
+  gap: 8px;
+}
+
+.members__add select {
+  flex: 1;
+  min-width: 0;
+}
+
+.members__list {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.members__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.members__list p {
+  margin: 0;
+}
+
+.members__email {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}

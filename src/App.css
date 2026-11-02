@@ -336,6 +336,14 @@
   border-radius: 50%;
 }
 
+/* Foto del perfil: recortada en círculo; el punto de presencia queda por encima. */
+.avatar__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .avatar__presence {
   position: absolute;
   right: -1px;

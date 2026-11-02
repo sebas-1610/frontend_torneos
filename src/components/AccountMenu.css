@@ -37,6 +37,10 @@
   color: var(--faint);
 }
 
+.account-menu__profile {
+  width: 100%;
+}
+
 .account-menu__section {
   display: flex;
   flex-direction: column;

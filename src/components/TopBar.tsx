@@ -19,12 +19,15 @@ interface TopBarProps {
   menuOpen: boolean
   onOpenMenu: () => void
   user: User | null // null mientras llega la respuesta de /api/auth/me
+  photo: string | null // foto del perfil (HU-SE-02); sin foto se muestran las iniciales
   onUserChange: (user: User) => void
   onLogout: () => void
 }
 
-export function TopBar({ section, page, menuOpen, onOpenMenu, user, onUserChange, onLogout }: TopBarProps) {
+export function TopBar({ section, page, menuOpen, onOpenMenu, user, photo, onUserChange, onLogout }: TopBarProps) {
   const [accountOpen, setAccountOpen] = useState(false)
+  // URL que no se pudo cargar (borrada, privada...): el avatar vuelve a las iniciales.
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
   const accountRef = useRef<HTMLDivElement>(null)
   const name = user?.name ?? 'Mi cuenta'
 
@@ -82,7 +85,11 @@ export function TopBar({ section, page, menuOpen, onOpenMenu, user, onUserChange
             disabled={!user}
           >
             <span className="avatar" aria-hidden="true">
-              {initials(name)}
+              {photo && photo !== failedPhoto ? (
+                <img className="avatar__photo" src={photo} alt="" onError={() => setFailedPhoto(photo)} />
+              ) : (
+                initials(name)
+              )}
               <span className="avatar__presence" />
             </span>
             <span className="user-chip__text">
@@ -91,7 +98,9 @@ export function TopBar({ section, page, menuOpen, onOpenMenu, user, onUserChange
             </span>
             <ChevronDown size={16} aria-hidden="true" className="user-chip__chevron" />
           </button>
-          {accountOpen && user && <AccountMenu user={user} onUserChange={onUserChange} />}
+          {accountOpen && user && (
+            <AccountMenu user={user} onUserChange={onUserChange} onClose={() => setAccountOpen(false)} />
+          )}
         </div>
         {/* Cerrar sesión (HU-SE-08): el backend invalida el token y volvemos al login. */}
         <button type="button" className="icon-button" aria-label="Cerrar sesión" title="Cerrar sesión" onClick={onLogout}>

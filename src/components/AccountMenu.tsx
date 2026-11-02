@@ -1,3 +1,4 @@
+import { UserRound } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { disableTwoFactor, enableTwoFactor, type User } from '../api/auth'
 import { errorMessage } from '../api/client'
@@ -13,10 +14,11 @@ const PROVIDER_LABELS: Record<User['authProvider'], string> = {
 interface AccountMenuProps {
   user: User
   onUserChange: (user: User) => void // el backend devuelve el usuario actualizado
+  onClose: () => void // al ir a "Mi perfil" el menú se cierra
 }
 
-// Menú "Mi cuenta": datos del usuario y verificación en dos pasos (HU-SE-10).
-export function AccountMenu({ user, onUserChange }: AccountMenuProps) {
+// Menú "Mi cuenta": datos del usuario, acceso a su perfil (HU-SE-02) y verificación en dos pasos (HU-SE-10).
+export function AccountMenu({ user, onUserChange, onClose }: AccountMenuProps) {
   const [askingPassword, setAskingPassword] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +49,11 @@ export function AccountMenu({ user, onUserChange }: AccountMenuProps) {
         <div className="account-menu__email">{user.email}</div>
         <div className="account-menu__provider">Inicias sesión con {PROVIDER_LABELS[user.authProvider]}</div>
       </div>
+
+      <a href="#perfil" className="button button--outline account-menu__profile" onClick={onClose}>
+        <UserRound size={16} aria-hidden="true" />
+        Mi perfil
+      </a>
 
       <div className="account-menu__section">
         <div className="account-menu__row">

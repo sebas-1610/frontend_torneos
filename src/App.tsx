@@ -9,8 +9,10 @@ import { RolesPage } from './features/roles/RolesPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
+import { ProfilePage } from './features/profile/ProfilePage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession } from './auth/session'
 import { logout, me, type User } from './api/auth'
+import { findMyProfile } from './api/profile'
 import { handleOAuthRedirect } from './auth/oauth'
 import './App.css'
 
@@ -25,6 +27,8 @@ const PAGES: Record<string, { section: string; page: string }> = {
   permisos: { section: 'Control de acceso', page: 'Permisos' },
   seguridad: { section: 'Control de acceso', page: 'Seguridad' },
   auditoria: { section: 'Control de acceso', page: 'Auditoría' },
+  // No está en el menú lateral: se abre desde "Mi cuenta" en la barra de arriba (HU-SE-02).
+  perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
 // Lee la pantalla de la URL (lo que va después del #). Si no hay o no existe, abre Roles.
@@ -56,8 +60,10 @@ function App() {
 
   // Usuario de la sesión (para el encabezado y el menú "Mi cuenta").
   const [user, setUser] = useState<User | null>(null)
+  // Foto del perfil para el avatar del encabezado; null si no tiene perfil o no puso foto.
+  const [photo, setPhoto] = useState<string | null>(null)
 
-  // Al entrar, pedimos al backend quién es el usuario de este token.
+  // Al entrar, pedimos al backend quién es el usuario de este token y la foto de su perfil.
   useEffect(() => {
     if (!loggedIn) return
     let active = true
@@ -68,6 +74,14 @@ function App() {
       .catch(() => {
         // Si falla, el encabezado muestra "Mi cuenta". Si fue un 401, la sesión ya se cerró sola.
       })
+    findMyProfile()
+      .then((profile) => {
+        if (active) setPhoto(profile.photo)
+      })
+      .catch(() => {
+        // 404: todavía no tiene perfil. El avatar muestra las iniciales.
+        if (active) setPhoto(null)
+      })
     return () => {
       active = false
     }
@@ -77,6 +91,7 @@ function App() {
   useEffect(() => {
     function handleExpired() {
       setUser(null)
+      setPhoto(null)
       setLoggedIn(false)
       setAuthView('login')
       setNotice('Tu sesión expiró. Inicia sesión de nuevo.')
@@ -99,6 +114,7 @@ function App() {
     } finally {
       clearSession()
       setUser(null)
+      setPhoto(null)
       setNotice(null)
       setLoggedIn(false)
     }
@@ -155,6 +171,7 @@ function App() {
           menuOpen={menuOpen}
           onOpenMenu={() => setMenuOpen(true)}
           user={user}
+          photo={photo}
           onUserChange={setUser}
           onLogout={handleLogout}
         />
@@ -167,6 +184,8 @@ function App() {
             <UsersPage />
           ) : activeId === 'permisos' ? (
             <PermissionsPage />
+          ) : activeId === 'perfil' ? (
+            <ProfilePage user={user} onPhotoChange={setPhoto} />
           ) : (
             <ComingSoon title={PAGES[activeId].page} />
           )}

@@ -9,7 +9,7 @@ import {
   type PermissionMatrix,
   type Role,
 } from '../../api/security'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { RESOURCES, isAdminRole, useAccess } from '../../auth/access'
 import { useConfirm } from '../../hooks/useConfirm'
 import { MatrixSkeleton, PermissionMatrixTable } from './PermissionMatrixTable'
 import { RoleSelect } from './RoleSelect'
@@ -92,6 +92,23 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
   const latestRequest = useRef(0)
 
   const saved = useMemo(() => assignedIds(matrix), [matrix])
+  // El backend no deja quitarle al rol Administrador los permisos de Administración (AdminGuard):
+  // esas casillas, si ya están marcadas, quedan fijas.
+  const locked = useMemo(() => {
+    const ids = new Set<number>()
+    if (matrix && isAdminRole(matrix.roleName)) {
+      matrix.modules
+        .filter((module) => module.module === 'ADMINISTRACION')
+        .forEach((module) =>
+          module.resources.forEach((resource) =>
+            resource.operations.forEach((cell) => {
+              if (cell.permissionId !== null && cell.assigned) ids.add(cell.permissionId)
+            }),
+          ),
+        )
+    }
+    return ids
+  }, [matrix])
   const stats = useMemo(() => computeStats(matrix, checked, saved), [matrix, checked, saved])
   const hasChanges = stats.pendingChanges > 0
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? null
@@ -227,6 +244,7 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
       finding += usersCount === 1 ? ' 1 usuario recibe estos permisos.' : ` ${usersCount} usuarios reciben estos permisos.`
     }
     if (!canSave) finding += ' Solo lectura: tus roles no permiten cambiar la matriz.'
+    else if (locked.size > 0) finding += ' Sus permisos de Administración no se pueden quitar.'
   } else if (!loading && error) finding = 'No se pudo cargar la matriz de este rol.'
 
   return (
@@ -322,6 +340,7 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
               checked={checked}
               saved={saved}
               disabled={saving || !canSave}
+              locked={locked}
               onToggle={handleToggle}
             />
           ) : (

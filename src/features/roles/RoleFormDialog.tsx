@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/client'
 import { createRole, updateRole } from '../../api/roles'
 import type { Role } from '../../api/security'
+import { isAdminRole } from '../../auth/access'
 import '../auth/LoginPage.css'
 import '../../components/ListPage.css'
 
@@ -14,6 +15,8 @@ interface RoleFormDialogProps {
 export function RoleFormDialog({ role, onClose, onSaved }: RoleFormDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const isNew = role === null
+  // El backend no deja renombrar el rol Administrador (AdminGuard).
+  const lockedName = role !== null && isAdminRole(role.name)
   const [name, setName] = useState(role?.name ?? '')
   const [description, setDescription] = useState(role?.description ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -50,12 +53,18 @@ export function RoleFormDialog({ role, onClose, onSaved }: RoleFormDialogProps) 
 
         <label className="login__field">
           <span>Nombre</span>
-          <input autoComplete="off" maxLength={50} value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            autoComplete="off"
+            maxLength={50}
+            value={name}
+            disabled={lockedName}
+            onChange={(e) => setName(e.target.value)}
+          />
         </label>
-        {/* El backend busca "Administrador" por nombre al arrancar: si se renombra, crea otro. */}
-        {role?.name === 'Administrador' && name.trim() !== 'Administrador' && (
-          <p className="login__hint">
-            Si cambias el nombre de este rol, al reiniciar el backend se creará otro «Administrador».
+        {lockedName && (
+          <p className="dialog-note">
+            El nombre del rol Administrador no se puede cambiar: la plataforma lo usa para que siempre haya quien la
+            administre. La descripción sí.
           </p>
         )}
 

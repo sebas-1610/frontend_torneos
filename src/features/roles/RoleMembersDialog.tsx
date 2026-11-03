@@ -4,7 +4,7 @@ import type { User } from '../../api/auth'
 import { errorMessage } from '../../api/client'
 import { assignRole, findAvailableUsers, findRoleMembers, removeRole, type RoleMember } from '../../api/roles'
 import type { Role } from '../../api/security'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { RESOURCES, isAdminRole, useAccess } from '../../auth/access'
 import { SubjectBreak, SubjectRole, SubjectUser } from '../../components/ConfirmDialog'
 import { useConfirm } from '../../hooks/useConfirm'
 import '../auth/LoginPage.css'
@@ -145,26 +145,30 @@ export function RoleMembersDialog({ role, hue, onClose }: RoleMembersDialogProps
             <p className="empty-state">Este rol todavía no tiene usuarios.</p>
           ) : (
             <ul className="members__list">
-              {members.map(({ user }) => (
-                <li key={user.id}>
-                  <div>
-                    <p className="data-table__strong">{user.name}</p>
-                    <p className="members__email">{user.email}</p>
-                  </div>
-                  {canRemove && (
-                    <button
-                      type="button"
-                      className="icon-button icon-button--small"
-                      aria-label={`Quitar a ${user.name} del rol`}
-                      title="Quitar del rol"
-                      disabled={busy}
-                      onClick={() => handleRemove(user)}
-                    >
-                      <X size={16} aria-hidden="true" />
-                    </button>
-                  )}
-                </li>
-              ))}
+              {members.map(({ user }) => {
+                // El backend no deja que alguien se quite a sí mismo el rol Administrador (AdminGuard).
+                const locked = user.id === userId && isAdminRole(role.name)
+                return (
+                  <li key={user.id}>
+                    <div>
+                      <p className="data-table__strong">{user.name}</p>
+                      <p className="members__email">{user.email}</p>
+                    </div>
+                    {canRemove && (
+                      <button
+                        type="button"
+                        className="icon-button icon-button--small"
+                        aria-label={`Quitar a ${user.name} del rol`}
+                        title={locked ? 'No puedes quitarte a ti mismo el rol Administrador' : 'Quitar del rol'}
+                        disabled={busy || locked}
+                        onClick={() => handleRemove(user)}
+                      >
+                        <X size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
 

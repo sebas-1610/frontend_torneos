@@ -11,6 +11,8 @@ interface PermissionMatrixTableProps {
   checked: Set<number>
   saved: Set<number>
   disabled: boolean
+  // Casillas que no se pueden desmarcar (los permisos de Administración del rol Administrador).
+  locked: Set<number>
   onToggle: (permissionId: number) => void
 }
 
@@ -22,7 +24,15 @@ function CheckMark() {
   )
 }
 
-export function PermissionMatrixTable({ roleId, modules, checked, saved, disabled, onToggle }: PermissionMatrixTableProps) {
+export function PermissionMatrixTable({
+  roleId,
+  modules,
+  checked,
+  saved,
+  disabled,
+  locked,
+  onToggle,
+}: PermissionMatrixTableProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   // La última casilla tocada se "estampa"; el contador reinicia la animación aunque se toque la misma dos veces.
   const [pulse, setPulse] = useState<{ id: number; count: number } | null>(null)
@@ -120,14 +130,18 @@ export function PermissionMatrixTable({ roleId, modules, checked, saved, disable
                         const isChecked = checked.has(permissionId)
                         const isDirty = isChecked !== saved.has(permissionId)
                         const isPulsing = pulse?.id === permissionId
+                        const isLocked = locked.has(permissionId)
                         return (
                           <td key={operation.key} className="matrix__cell" data-label={operation.label}>
-                            <label className="check">
+                            <label
+                              className="check"
+                              title={isLocked ? 'El rol Administrador conserva los permisos de Administración' : undefined}
+                            >
                               <input
                                 type="checkbox"
                                 className="check__input"
                                 checked={isChecked}
-                                disabled={disabled}
+                                disabled={disabled || isLocked}
                                 onChange={() => handleToggle(permissionId)}
                                 aria-label={`${operation.label} ${label}${isDirty ? ' (cambio sin guardar)' : ''}`}
                               />

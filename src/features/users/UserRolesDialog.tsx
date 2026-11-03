@@ -4,7 +4,7 @@ import type { User } from '../../api/auth'
 import { errorMessage } from '../../api/client'
 import { assignRole, findUserRoles, removeRole, type UserRoleAssignment } from '../../api/roles'
 import { findRoles, type Role } from '../../api/security'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { RESOURCES, isAdminRole, useAccess } from '../../auth/access'
 import { SubjectBreak, SubjectRole, SubjectUser } from '../../components/ConfirmDialog'
 import { useConfirm } from '../../hooks/useConfirm'
 import { roleHue } from '../roles/labels'
@@ -165,29 +165,33 @@ export function UserRolesDialog({ user, onClose }: UserRolesDialogProps) {
             <p className="empty-state">Todavía no tiene roles: no puede usar ninguna opción protegida.</p>
           ) : (
             <ul className="members__list">
-              {assigned.map(({ role }) => (
-                <li key={role.id}>
-                  <div className="role-cell">
-                    <RoleMonogram name={role.name} hue={roleHue(roles, role.id)} size="sm" />
-                    <div>
-                      <p className="data-table__strong">{role.name}</p>
-                      <p className="members__email">{role.description}</p>
+              {assigned.map(({ role }) => {
+                // El backend no deja que alguien se quite a sí mismo el rol Administrador (AdminGuard).
+                const locked = isOwn && isAdminRole(role.name)
+                return (
+                  <li key={role.id}>
+                    <div className="role-cell">
+                      <RoleMonogram name={role.name} hue={roleHue(roles, role.id)} size="sm" />
+                      <div>
+                        <p className="data-table__strong">{role.name}</p>
+                        <p className="members__email">{role.description}</p>
+                      </div>
                     </div>
-                  </div>
-                  {canRemove && (
-                    <button
-                      type="button"
-                      className="icon-button icon-button--small"
-                      aria-label={`Quitar el rol ${role.name}`}
-                      title="Quitar rol"
-                      disabled={busy}
-                      onClick={() => handleRemove(role)}
-                    >
-                      <X size={16} aria-hidden="true" />
-                    </button>
-                  )}
-                </li>
-              ))}
+                    {canRemove && (
+                      <button
+                        type="button"
+                        className="icon-button icon-button--small"
+                        aria-label={`Quitar el rol ${role.name}`}
+                        title={locked ? 'No puedes quitarte a ti mismo el rol Administrador' : 'Quitar rol'}
+                        disabled={busy || locked}
+                        onClick={() => handleRemove(role)}
+                      >
+                        <X size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
 

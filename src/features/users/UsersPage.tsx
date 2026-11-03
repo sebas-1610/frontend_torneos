@@ -95,16 +95,7 @@ export function UsersPage({ onOwnPhotoChange }: UsersPageProps) {
     if (user.enabled) {
       const confirmed = await confirm({
         title: `¿Desactivar a ${user.name}?`,
-        message: (
-          <>
-            <p>Se cierran todas sus sesiones y no podrá volver a entrar hasta que lo actives. Sus roles se conservan.</p>
-            {user.id === userId && (
-              <p>
-                <strong>Es tu propia cuenta:</strong> saldrás de la plataforma.
-              </p>
-            )}
-          </>
-        ),
+        message: 'Se cierran todas sus sesiones y no podrá volver a entrar hasta que lo actives. Sus roles se conservan.',
         confirmLabel: 'Desactivar usuario',
         tone: 'neutral',
         subject: <SubjectUser name={user.name} email={user.email} />,
@@ -117,16 +108,7 @@ export function UsersPage({ onOwnPhotoChange }: UsersPageProps) {
   async function remove(user: User) {
     const confirmed = await confirm({
       title: `¿Eliminar a ${user.name}?`,
-      message: (
-        <>
-          <p>Se borran su perfil, sus asignaciones de roles y sus sesiones. Los roles y permisos del sistema no cambian.</p>
-          {user.id === userId && (
-            <p>
-              <strong>Es tu propia cuenta:</strong> perderás el acceso de inmediato.
-            </p>
-          )}
-        </>
-      ),
+      message: 'Se borran su perfil, sus asignaciones de roles y sus sesiones. Los roles y permisos del sistema no cambian.',
       confirmLabel: 'Eliminar usuario',
       subject: <SubjectUser name={user.name} email={user.email} />,
     })
@@ -193,6 +175,8 @@ export function UsersPage({ onOwnPhotoChange }: UsersPageProps) {
               <tbody>
                 {visible.map((user) => {
                   const busy = busyId === user.id
+                  // El backend no deja que alguien se desactive o se elimine a sí mismo (AdminGuard).
+                  const isOwn = user.id === userId
                   return (
                     <tr key={user.id}>
                       <td className="data-table__strong">{user.name}</td>
@@ -244,9 +228,11 @@ export function UsersPage({ onOwnPhotoChange }: UsersPageProps) {
                             <button
                               type="button"
                               className="icon-button icon-button--small"
-                              title={user.enabled ? 'Desactivar' : 'Activar'}
+                              title={
+                                isOwn ? 'No puedes desactivar tu propia cuenta' : user.enabled ? 'Desactivar' : 'Activar'
+                              }
                               aria-label={`${user.enabled ? 'Desactivar' : 'Activar'} a ${user.name}`}
-                              disabled={busy}
+                              disabled={busy || isOwn}
                               onClick={() => toggleEnabled(user)}
                             >
                               {user.enabled ? (
@@ -261,9 +247,9 @@ export function UsersPage({ onOwnPhotoChange }: UsersPageProps) {
                           <button
                             type="button"
                             className="icon-button icon-button--small row-actions__delete"
-                            title="Eliminar"
+                            title={isOwn ? 'No puedes eliminar tu propia cuenta' : 'Eliminar'}
                             aria-label={`Eliminar a ${user.name}`}
-                            disabled={busy}
+                            disabled={busy || isOwn}
                             onClick={() => remove(user)}
                           >
                             <Trash2 size={16} aria-hidden="true" />

@@ -14,6 +14,14 @@ export const RESOURCES = {
   rolePermissions: 'asignacion-permisos',
 } as const
 
+// Rol que el backend protege (AdminGuard): no se renombra, nadie se lo quita a sí mismo
+// y conserva los permisos del módulo Administración.
+export const ADMIN_ROLE = 'Administrador'
+
+export function isAdminRole(name: string): boolean {
+  return name.toLowerCase() === ADMIN_ROLE.toLowerCase()
+}
+
 export type Can = (model: string, operation: Operation) => boolean
 
 export function makeCan(permissions: PermissionSummary[]): Can {

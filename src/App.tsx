@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { CircleAlert } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { TopBar } from './components/TopBar'
 import { RolePermissionsPage } from './features/roles/RolePermissionsPage'
 import { ComingSoon } from './components/ComingSoon'
+import { NoAccess } from './components/NoAccess'
 import { UsersPage } from './features/users/UsersPage'
 import { PermissionsPage } from './features/permissions/PermissionsPage'
 import { RolesPage } from './features/roles/RolesPage'
@@ -11,30 +13,41 @@ import { RegisterPage } from './features/auth/RegisterPage'
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
 import { ProfilePage } from './features/profile/ProfilePage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession } from './auth/session'
-import { logout, me, type User } from './api/auth'
+import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
+import { logout, me, type Me, type User } from './api/auth'
+import { ApiError, errorMessage } from './api/client'
 import { findMyProfile } from './api/profile'
 import { handleOAuthRedirect } from './auth/oauth'
 import './App.css'
 
-// Pantallas del menú lateral: el id coincide con el enlace (#usuarios, #roles...).
+// Pantallas: el id coincide con el enlace (#usuarios, #roles...).
 // section y page son lo que se muestra en la barra de arriba.
 const PAGES: Record<string, { section: string; page: string }> = {
   dashboard: { section: 'Inicio', page: 'Dashboard' },
   usuarios: { section: 'Control de acceso', page: 'Usuarios' },
   roles: { section: 'Control de acceso', page: 'Roles' },
-  // No está en el menú: se abre con el botón "Asignar permisos" de Roles.
+  // No está en el menú: se abre desde Roles ("Asignar permisos" o el botón Permisos de cada rol).
   'roles-permisos': { section: 'Roles', page: 'Asignar permisos' },
   permisos: { section: 'Control de acceso', page: 'Permisos' },
   seguridad: { section: 'Control de acceso', page: 'Seguridad' },
   auditoria: { section: 'Control de acceso', page: 'Auditoría' },
-  // No está en el menú lateral: se abre desde "Mi cuenta" en la barra de arriba (HU-SE-02).
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
-// Lee la pantalla de la URL (lo que va después del #). Si no hay o no existe, abre Roles.
-function pageFromHash(): string {
-  const id = window.location.hash.slice(1)
-  return id in PAGES ? id : 'roles'
+interface Route {
+  page: string | null // null: la URL no trae una pantalla válida
+  param: string | null // lo que va después de la barra, ej: el id del rol en #roles-permisos/5
+}
+
+// Lee la pantalla de la URL (lo que va después del #): "#usuarios" o "#roles-permisos/5".
+function routeFromHash(): Route {
+  const [page, param] = window.location.hash.slice(1).split('/')
+  return Object.hasOwn(PAGES, page) ? { page, param: param || null } : { page: null, param: null }
+}
+
+function roleIdFrom(param: string | null): number | null {
+  const id = Number(param)
+  return param !== null && Number.isInteger(id) ? id : null
 }
 
 function App() {
@@ -50,16 +63,18 @@ function App() {
   const [authEmail, setAuthEmail] = useState('')
   const [notice, setNotice] = useState<string | null>(null)
 
-  // Pantalla abierta. Cambia cuando se hace clic en un enlace del menú (cambia el # de la URL).
-  const [activeId, setActiveId] = useState(pageFromHash)
+  // Pantalla de la URL. Cambia cuando se hace clic en un enlace (cambia el # de la URL).
+  const [route, setRoute] = useState(routeFromHash)
   useEffect(() => {
-    const handleHashChange = () => setActiveId(pageFromHash())
+    const handleHashChange = () => setRoute(routeFromHash())
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
   }, [])
 
-  // Usuario de la sesión (para el encabezado y el menú "Mi cuenta").
-  const [user, setUser] = useState<User | null>(null)
+  // Usuario de la sesión con sus roles y permisos (/api/auth/me).
+  const [user, setUser] = useState<Me | null>(null)
+  const [meError, setMeError] = useState<string | null>(null)
+  const [meKey, setMeKey] = useState(0)
   // Foto del perfil para el avatar del encabezado; null si no tiene perfil o no puso foto.
   const [photo, setPhoto] = useState<string | null>(null)
 
@@ -71,8 +86,9 @@ function App() {
       .then((current) => {
         if (active) setUser(current)
       })
-      .catch(() => {
-        // Si falla, el encabezado muestra "Mi cuenta". Si fue un 401, la sesión ya se cerró sola.
+      .catch((err) => {
+        // Un 401 ya cerró la sesión (client.ts); cualquier otro error se muestra con "Reintentar".
+        if (active && !(err instanceof ApiError && err.status === 401)) setMeError(errorMessage(err))
       })
     findMyProfile()
       .then((profile) => {
@@ -85,13 +101,21 @@ function App() {
     return () => {
       active = false
     }
-  }, [loggedIn])
+  }, [loggedIn, meKey])
+
+  // Lo que la sesión puede hacer, para el menú y los botones de cada pantalla (HU-SE-08).
+  const can = useMemo(() => makeCan(user?.permissions ?? []), [user])
+  const access = useMemo(() => ({ can, userId: user?.id ?? null }), [can, user])
+
+  // Sin pantalla en la URL se abre la primera que el usuario puede usar.
+  const activeId = route.page ?? (user ? defaultPage(can) : 'dashboard')
 
   // Sesión vencida o rechazada por el backend: volvemos al login con un aviso (HU-SE-08).
   useEffect(() => {
     function handleExpired() {
       setUser(null)
       setPhoto(null)
+      setMeError(null)
       setLoggedIn(false)
       setAuthView('login')
       setNotice('Tu sesión expiró. Inicia sesión de nuevo.')
@@ -115,9 +139,15 @@ function App() {
       clearSession()
       setUser(null)
       setPhoto(null)
+      setMeError(null)
       setNotice(null)
       setLoggedIn(false)
     }
+  }
+
+  // El menú "Mi cuenta" devuelve el usuario sin roles ni permisos (2FA): se conservan los que había.
+  function handleUserChange(updated: User) {
+    setUser((current) => (current ? { ...current, ...updated } : current))
   }
 
   if (!loggedIn) {
@@ -142,6 +172,7 @@ function App() {
       <LoginPage
         onLoggedIn={() => {
           setNotice(null)
+          setMeError(null)
           setLoggedIn(true)
         }}
         initialError={oauthError}
@@ -160,38 +191,76 @@ function App() {
     )
   }
 
+  function renderPage() {
+    if (user === null) {
+      return meError ? (
+        <div className="page">
+          <div className="inline-error" role="alert">
+            <CircleAlert size={16} aria-hidden="true" />
+            <span>{meError}</span>
+            <button
+              type="button"
+              className="text-action"
+              onClick={() => {
+                setMeError(null)
+                setMeKey((key) => key + 1)
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="empty-state">Cargando tu sesión…</p>
+      )
+    }
+    // Ninguno de sus roles da el permiso que pide esta pantalla: se explica en vez de mostrar un 403.
+    if (!canOpenPage(activeId, can)) {
+      return <NoAccess page={PAGES[activeId].page} roles={user.roles} />
+    }
+    switch (activeId) {
+      case 'roles':
+        return <RolesPage />
+      case 'roles-permisos':
+        // La key vuelve a montar la pantalla si la URL pide otro rol (por ejemplo, con "Atrás").
+        return <RolePermissionsPage key={route.param ?? 'inicial'} initialRoleId={roleIdFrom(route.param)} />
+      case 'usuarios':
+        return <UsersPage onOwnPhotoChange={setPhoto} />
+      case 'permisos':
+        return <PermissionsPage />
+      case 'perfil':
+        return <ProfilePage user={user} onPhotoChange={setPhoto} />
+      default:
+        return <ComingSoon title={PAGES[activeId].page} />
+    }
+  }
+
   return (
-    <div className="app-shell">
-      {/* "Asignar permisos" es parte de Roles: en el menú se marca Roles. */}
-      <Sidebar activeId={activeId === 'roles-permisos' ? 'roles' : activeId} open={menuOpen} onClose={closeMenu} />
-      <div className="workspace">
-        <TopBar
-          section={PAGES[activeId].section}
-          page={PAGES[activeId].page}
-          menuOpen={menuOpen}
-          onOpenMenu={() => setMenuOpen(true)}
-          user={user}
-          photo={photo}
-          onUserChange={setUser}
-          onLogout={handleLogout}
+    <AccessContext value={access}>
+      <div className="app-shell">
+        {/* "Asignar permisos" es parte de Roles: en el menú se marca Roles. */}
+        <Sidebar
+          activeId={activeId === 'roles-permisos' ? 'roles' : activeId}
+          open={menuOpen}
+          onClose={closeMenu}
+          canOpen={(pageId) => canOpenPage(pageId, can)}
+          roles={user?.roles ?? null}
         />
-        <main className="canvas">
-          {activeId === 'roles' ? (
-            <RolesPage />
-          ) : activeId === 'roles-permisos' ? (
-            <RolePermissionsPage />
-          ) : activeId === 'usuarios' ? (
-            <UsersPage />
-          ) : activeId === 'permisos' ? (
-            <PermissionsPage />
-          ) : activeId === 'perfil' ? (
-            <ProfilePage user={user} onPhotoChange={setPhoto} />
-          ) : (
-            <ComingSoon title={PAGES[activeId].page} />
-          )}
-        </main>
+        <div className="workspace">
+          <TopBar
+            section={PAGES[activeId].section}
+            page={PAGES[activeId].page}
+            menuOpen={menuOpen}
+            onOpenMenu={() => setMenuOpen(true)}
+            user={user}
+            photo={photo}
+            onUserChange={handleUserChange}
+            onLogout={handleLogout}
+          />
+          <main className="canvas">{renderPage()}</main>
+        </div>
       </div>
-    </div>
+    </AccessContext>
   )
 }
 

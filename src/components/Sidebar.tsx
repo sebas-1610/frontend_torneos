@@ -1,4 +1,15 @@
-import { ClipboardList, House, KeyRound, Shield, ShieldCheck, ShieldUser, Users, X, type LucideIcon } from 'lucide-react'
+import {
+  ClipboardList,
+  House,
+  KeyRound,
+  Shield,
+  ShieldCheck,
+  ShieldUser,
+  UserRound,
+  Users,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { ArcanosLogo } from './BrandIcons'
 
@@ -25,6 +36,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'auditoria', label: 'Auditoría', icon: ClipboardList },
     ],
   },
+  { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },
 ]
 
 interface SidebarProps {
@@ -32,9 +44,12 @@ interface SidebarProps {
   // Solo en pantallas angostas: la barra lateral se abre como un panel sobre el contenido.
   open: boolean
   onClose: () => void
+  // Qué pantallas puede abrir la sesión, según los permisos de sus roles (HU-SE-08).
+  canOpen: (pageId: string) => boolean
+  roles: string[] | null // null mientras llega /api/auth/me
 }
 
-export function Sidebar({ activeId, open, onClose }: SidebarProps) {
+export function Sidebar({ activeId, open, onClose, canOpen, roles }: SidebarProps) {
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -46,6 +61,13 @@ export function Sidebar({ activeId, open, onClose }: SidebarProps) {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [open, onClose])
+
+  // Solo las opciones permitidas; un grupo sin opciones no se muestra.
+  const groups = NAV_GROUPS.map((group) => ({ ...group, items: group.items.filter((item) => canOpen(item.id)) })).filter(
+    (group) => group.items.length > 0,
+  )
+
+  const roleLabel = roles === null ? 'Cargando…' : roles.length > 0 ? roles.join(' · ') : 'Sin roles asignados'
 
   return (
     <>
@@ -63,7 +85,7 @@ export function Sidebar({ activeId, open, onClose }: SidebarProps) {
         </div>
 
         <nav className="nav">
-          {NAV_GROUPS.map((group) => (
+          {groups.map((group) => (
             <div key={group.label ?? 'inicio'} className="nav__group">
               {group.label && <p className="nav__label">{group.label}</p>}
               <ul>
@@ -85,11 +107,12 @@ export function Sidebar({ activeId, open, onClose }: SidebarProps) {
           ))}
         </nav>
 
+        {/* Los roles reales de la sesión, no un texto fijo. */}
         <div className="session">
           <span className="status-dot" aria-hidden="true" />
           <div className="session__text">
             <p className="session__status">Sesión activa</p>
-            <p className="session__role">Administrador del sistema</p>
+            <p className="session__role">{roleLabel}</p>
           </div>
           <ShieldCheck size={18} strokeWidth={1.6} className="session__icon" aria-hidden="true" />
         </div>

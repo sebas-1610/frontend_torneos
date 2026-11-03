@@ -296,3 +296,43 @@
   font-size: var(--fs-small);
   color: var(--muted);
 }
+
+/* Ventanas "Perfil" y "Roles" de un usuario: encabezado con su identidad. */
+.dialog-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dialog-identity__text {
+  min-width: 0;
+}
+
+.dialog-identity__detail {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.dialog-note {
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  background: var(--raised);
+  border-radius: var(--radius-chip);
+}
+
+/* La acción que borra va a la izquierda, lejos de Guardar. */
+.dialog-actions--split > :first-child.row-actions__danger {
+  margin-right: auto;
+}
+
+.button--text.row-actions__danger:hover:not(:disabled) {
+  color: var(--negative);
+}
+
+.form-dialog input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

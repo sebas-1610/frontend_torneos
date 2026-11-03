@@ -3,6 +3,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { errorMessage } from '../../api/client'
 import { deletePermission, findPermissions, type Permission } from '../../api/permissions'
 import type { ModuleType } from '../../api/security'
+import { RESOURCES, useAccess } from '../../auth/access'
+import { SubjectItem } from '../../components/ConfirmDialog'
+import { useConfirm } from '../../hooks/useConfirm'
 import { MODULE_LABELS, OPERATIONS, resourceLabel } from '../roles/labels'
 import { PermissionFormDialog } from './PermissionFormDialog'
 import '../../components/ListPage.css'
@@ -12,6 +15,11 @@ const MODULES = Object.keys(MODULE_LABELS) as ModuleType[]
 
 // Pantalla "Permisos": cada permiso es recurso + operación (ej: usuarios · Listar) y las rutas que habilita.
 export function PermissionsPage() {
+  const { can } = useAccess()
+  const { confirm, confirmDialog } = useConfirm()
+  const canCreate = can(RESOURCES.permissions, 'CREATE')
+  const canUpdate = can(RESOURCES.permissions, 'UPDATE')
+  const canDelete = can(RESOURCES.permissions, 'DELETE')
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -61,8 +69,22 @@ export function PermissionsPage() {
   }
 
   async function remove(permission: Permission) {
-    const name = `${permission.model} · ${OPERATION_LABELS[permission.operation]}`
-    if (!window.confirm(`¿Eliminar el permiso ${name}? No se puede si está asignado a algún rol.`)) return
+    const name = `${resourceLabel(permission.model)} · ${OPERATION_LABELS[permission.operation]}`
+    const confirmed = await confirm({
+      title: `¿Eliminar el permiso ${name}?`,
+      message:
+        'Sus endpoints dejan de estar habilitados para cualquier rol. ' +
+        'Si el permiso está asignado a algún rol, no se puede eliminar: primero retíralo de la matriz.',
+      confirmLabel: 'Eliminar permiso',
+      subject: (
+        <SubjectItem
+          icon={KeyRound}
+          name={name}
+          detail={permission.endpoints.map((endpoint) => `${endpoint.method} ${endpoint.url}`).join(' · ')}
+        />
+      ),
+    })
+    if (!confirmed) return
     setBusyId(permission.id)
     setError(null)
     try {
@@ -84,10 +106,12 @@ export function PermissionsPage() {
             {loading ? 'Cargando permisos…' : `${permissions.length} permisos registrados.`}
           </p>
         </div>
-        <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
-          <KeyRound size={18} aria-hidden="true" />
-          Nuevo permiso
-        </button>
+        {canCreate && (
+          <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
+            <KeyRound size={18} aria-hidden="true" />
+            Nuevo permiso
+          </button>
+        )}
       </div>
 
       <section className="panel" aria-label="Lista de permisos">
@@ -156,26 +180,30 @@ export function PermissionsPage() {
                       </td>
                       <td>
                         <div className="row-actions">
-                          <button
-                            type="button"
-                            className="icon-button icon-button--small"
-                            title="Editar"
-                            aria-label={`Editar el permiso ${permission.model}`}
-                            disabled={busy}
-                            onClick={() => setEditing(permission)}
-                          >
-                            <Pencil size={16} aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            className="icon-button icon-button--small row-actions__delete"
-                            title="Eliminar"
-                            aria-label={`Eliminar el permiso ${permission.model}`}
-                            disabled={busy}
-                            onClick={() => remove(permission)}
-                          >
-                            <Trash2 size={16} aria-hidden="true" />
-                          </button>
+                          {canUpdate && (
+                            <button
+                              type="button"
+                              className="icon-button icon-button--small"
+                              title="Editar"
+                              aria-label={`Editar el permiso ${permission.model}`}
+                              disabled={busy}
+                              onClick={() => setEditing(permission)}
+                            >
+                              <Pencil size={16} aria-hidden="true" />
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              type="button"
+                              className="icon-button icon-button--small row-actions__delete"
+                              title="Eliminar"
+                              aria-label={`Eliminar el permiso ${permission.model}`}
+                              disabled={busy}
+                              onClick={() => remove(permission)}
+                            >
+                              <Trash2 size={16} aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -197,6 +225,7 @@ export function PermissionsPage() {
           }}
         />
       )}
+      {confirmDialog}
     </div>
   )
 }

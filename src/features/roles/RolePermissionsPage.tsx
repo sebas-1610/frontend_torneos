@@ -9,6 +9,8 @@ import {
   type PermissionMatrix,
   type Role,
 } from '../../api/security'
+import { RESOURCES, useAccess } from '../../auth/access'
+import { useConfirm } from '../../hooks/useConfirm'
 import { MatrixSkeleton, PermissionMatrixTable } from './PermissionMatrixTable'
 import { RoleSelect } from './RoleSelect'
 import { RoleSummary, type RoleStats } from './RoleSummary'
@@ -61,7 +63,22 @@ function changesLabel(count: number): string {
   return count === 1 ? '1 cambio sin guardar' : `${count} cambios sin guardar`
 }
 
-export function RolePermissionsPage() {
+// La URL dice qué rol está abierto (#roles-permisos/{id}): al recargar se abre el mismo.
+// replaceState no agrega pasos al botón "Atrás" del navegador.
+function showRoleInUrl(roleId: number) {
+  window.history.replaceState(null, '', `#roles-permisos/${roleId}`)
+}
+
+interface RolePermissionsPageProps {
+  // Rol pedido en la URL, por ejemplo desde el botón "Permisos" de una fila en Roles (HU-SE-03).
+  initialRoleId: number | null
+}
+
+export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps) {
+  const { can } = useAccess()
+  const { confirm, confirmDialog } = useConfirm()
+  // Ver la matriz pide asignacion-permisos · VIEW; guardarla, · UPDATE. Sin UPDATE queda de solo lectura.
+  const canSave = can(RESOURCES.rolePermissions, 'UPDATE')
   const [roles, setRoles] = useState<Role[]>([])
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
   const [matrix, setMatrix] = useState<PermissionMatrix | null>(null)
@@ -109,9 +126,14 @@ export function RolePermissionsPage() {
       .then((list) => {
         if (cancelled) return
         setRoles(list)
-        const initial = list.find((role) => role.name.toLowerCase() === 'administrador') ?? list[0]
+        // El rol de la URL; si no viene o ya no existe, Administrador o el primero.
+        const initial =
+          list.find((role) => role.id === initialRoleId) ??
+          list.find((role) => role.name.toLowerCase() === 'administrador') ??
+          list[0]
         if (initial) {
           setSelectedRoleId(initial.id)
+          showRoleInUrl(initial.id)
           void loadRole(initial.id)
         } else {
           setLoading(false)
@@ -125,7 +147,7 @@ export function RolePermissionsPage() {
     return () => {
       cancelled = true
     }
-  }, [loadRole])
+  }, [loadRole, initialRoleId])
 
   useEffect(() => {
     if (!hasChanges) return
@@ -134,22 +156,25 @@ export function RolePermissionsPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [hasChanges])
 
-  function confirmDiscard(): boolean {
+  async function confirmDiscard(): Promise<boolean> {
     if (!hasChanges) return true
-    return window.confirm(
-      `Tienes ${changesLabel(stats.pendingChanges)} en el rol ${selectedRole?.name ?? ''}. ¿Quieres descartarlos?`,
-    )
+    return confirm({
+      title: '¿Descartar los cambios sin guardar?',
+      message: `Tienes ${changesLabel(stats.pendingChanges)} en el rol ${selectedRole?.name ?? ''}. Si continúas, se pierden.`,
+      confirmLabel: 'Descartar cambios',
+    })
   }
 
-  function handleSelectRole(roleId: number) {
-    if (roleId === selectedRoleId || !confirmDiscard()) return
+  async function handleSelectRole(roleId: number) {
+    if (roleId === selectedRoleId || !(await confirmDiscard())) return
     setSelectedRoleId(roleId)
+    showRoleInUrl(roleId)
     setNotice(null)
     void loadRole(roleId)
   }
 
-  function handleReload() {
-    if (selectedRoleId === null || !confirmDiscard()) return
+  async function handleReload() {
+    if (selectedRoleId === null || !(await confirmDiscard())) return
     setNotice(null)
     void loadRole(selectedRoleId)
   }
@@ -201,6 +226,7 @@ export function RolePermissionsPage() {
     if (usersCount !== null) {
       finding += usersCount === 1 ? ' 1 usuario recibe estos permisos.' : ` ${usersCount} usuarios reciben estos permisos.`
     }
+    if (!canSave) finding += ' Solo lectura: tus roles no permiten cambiar la matriz.'
   } else if (!loading && error) finding = 'No se pudo cargar la matriz de este rol.'
 
   return (
@@ -220,15 +246,17 @@ export function RolePermissionsPage() {
         </div>
 
         <div className="role-header__actions">
-          <button
-            type="button"
-            className="button button--text"
-            onClick={handleReset}
-            disabled={busy || !hasChanges}
-          >
-            <RotateCcw size={16} aria-hidden="true" />
-            Restablecer
-          </button>
+          {canSave && (
+            <button
+              type="button"
+              className="button button--text"
+              onClick={handleReset}
+              disabled={busy || !hasChanges}
+            >
+              <RotateCcw size={16} aria-hidden="true" />
+              Restablecer
+            </button>
+          )}
           <button
             type="button"
             className="button button--outline"
@@ -238,24 +266,26 @@ export function RolePermissionsPage() {
             <SquarePlus size={16} aria-hidden="true" />
             Cargar permisos
           </button>
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={handleSave}
-            disabled={busy || !hasChanges}
-          >
-            {saving ? (
-              <LoaderCircle size={16} aria-hidden="true" className="spin" />
-            ) : (
-              <Save size={16} aria-hidden="true" />
-            )}
-            {saving ? 'Guardando…' : 'Guardar cambios'}
-            {hasChanges && !saving && (
-              <span key={stats.pendingChanges} className="button__count num">
-                {stats.pendingChanges}
-              </span>
-            )}
-          </button>
+          {canSave && (
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={handleSave}
+              disabled={busy || !hasChanges}
+            >
+              {saving ? (
+                <LoaderCircle size={16} aria-hidden="true" className="spin" />
+              ) : (
+                <Save size={16} aria-hidden="true" />
+              )}
+              {saving ? 'Guardando…' : 'Guardar cambios'}
+              {hasChanges && !saving && (
+                <span key={stats.pendingChanges} className="button__count num">
+                  {stats.pendingChanges}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </section>
 
@@ -291,7 +321,7 @@ export function RolePermissionsPage() {
               modules={matrix.modules}
               checked={checked}
               saved={saved}
-              disabled={saving}
+              disabled={saving || !canSave}
               onToggle={handleToggle}
             />
           ) : (
@@ -324,6 +354,7 @@ export function RolePermissionsPage() {
           </div>
         )}
       </div>
+      {confirmDialog}
     </div>
   )
 }

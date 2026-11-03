@@ -723,6 +723,17 @@
   background: var(--muted);
 }
 
+/* Solo para confirmar acciones que borran o quitan algo (ventana de confirmación). */
+.button--danger {
+  font-weight: 600;
+  color: var(--on-primary);
+  background: var(--negative);
+}
+
+.button--danger:hover:not(:disabled) {
+  opacity: 0.86;
+}
+
 .button__count {
   display: inline-grid;
   place-items: center;
@@ -1187,6 +1198,40 @@
   color: var(--muted);
   border: 1px dashed var(--control);
   border-radius: 10px;
+}
+
+/* ---------- Sin acceso (HU-SE-08) ---------- */
+
+.no-access {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.no-access__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  color: var(--muted);
+  background: var(--raised);
+  border-radius: 50%;
+}
+
+.no-access__title {
+  font-size: var(--fs-name);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.no-access__text {
+  max-width: 56ch;
+  margin-bottom: 8px;
+  color: var(--muted);
 }
 
 .footnote {

@@ -4,14 +4,7 @@ import type { User } from '../api/auth'
 import { AccountMenu } from './AccountMenu'
 import { ArcanosLogo } from './BrandIcons'
 import { ThemeToggle } from './ThemeToggle'
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('')
-}
+import { initials } from '../utils/initials'
 
 interface TopBarProps {
   section: string

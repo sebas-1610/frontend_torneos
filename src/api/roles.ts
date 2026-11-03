@@ -17,6 +17,13 @@ export interface RoleMember {
   user: User
 }
 
+// GET /api/user-roles/users/{userId}: la vista desde el usuario, con el rol completo.
+export interface UserRoleAssignment {
+  id: number
+  userId: number
+  role: Role
+}
+
 export function createRole(input: RoleInput): Promise<Role> {
   return request<Role>('/roles', { method: 'POST', body: JSON.stringify(input) })
 }
@@ -40,8 +47,13 @@ export function findAvailableUsers(roleId: number): Promise<User[]> {
   return request<User[]>(`/user-roles/roles/${roleId}/available-users`)
 }
 
-export function assignRole(userId: number, roleId: number): Promise<void> {
-  return request<void>('/user-roles', { method: 'POST', body: JSON.stringify({ userId, roleId }) })
+// Roles que tiene asignados un usuario.
+export function findUserRoles(userId: number): Promise<UserRoleAssignment[]> {
+  return request<UserRoleAssignment[]>(`/user-roles/users/${userId}`)
+}
+
+export function assignRole(userId: number, roleId: number): Promise<UserRoleAssignment> {
+  return request<UserRoleAssignment>('/user-roles', { method: 'POST', body: JSON.stringify({ userId, roleId }) })
 }
 
 export function removeRole(userId: number, roleId: number): Promise<void> {

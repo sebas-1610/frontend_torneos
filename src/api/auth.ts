@@ -1,4 +1,5 @@
 import { request } from './client'
+import type { ModuleType, Operation } from './security'
 
 // Lo que responde el backend al iniciar sesión (AuthResponseDTO).
 export interface AuthResponse {
@@ -68,9 +69,22 @@ export function resetPassword(email: string, code: string, newPassword: string):
   })
 }
 
+// Permiso sin sus endpoints (PermissionSummaryDTO): lo justo para saber qué opciones mostrar.
+export interface PermissionSummary {
+  module: ModuleType
+  model: string
+  operation: Operation
+}
+
+// Respuesta de /api/auth/me (MeResponseDTO): el usuario más sus roles y permisos efectivos.
+export interface Me extends User {
+  roles: string[] // nombres; vacía si todavía no tiene ninguno
+  permissions: PermissionSummary[] // unión de los permisos de todos sus roles
+}
+
 // Usuario dueño de la sesión actual (requiere token).
-export function me(): Promise<User> {
-  return request<User>('/auth/me')
+export function me(): Promise<Me> {
+  return request<Me>('/auth/me')
 }
 
 // Activar o desactivar el 2FA de la propia cuenta. Pide la contraseña actual (HU-SE-10).

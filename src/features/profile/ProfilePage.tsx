@@ -2,36 +2,18 @@ import { CircleAlert, CircleCheck, Info, LoaderCircle, RotateCcw, Save, UserRoun
 import { useEffect, useState, type FormEvent } from 'react'
 import type { User } from '../../api/auth'
 import { ApiError, errorMessage } from '../../api/client'
-import { createMyProfile, findMyProfile, updateMyProfile, type Profile, type ProfileInput } from '../../api/profile'
+import { createMyProfile, findMyProfile, updateMyProfile, type Profile } from '../../api/profile'
+import { initials } from '../../utils/initials'
+import { ProfileFields } from './ProfileFields'
+import { useProfileDraft } from './useProfileDraft'
 import '../auth/LoginPage.css'
 import './ProfilePage.css'
-
-// Mismas reglas que valida el backend (BaseProfileDTO).
-const PHONE_PATTERN = /^\+?[0-9]{7,15}$/
-const PHOTO_PATTERN = /^https?:\/\/\S+$/
 
 const PROVIDER_LABELS: Record<User['authProvider'], string> = {
   LOCAL: 'Correo y contraseña',
   GOOGLE: 'Google',
   GITHUB: 'GitHub',
   MICROSOFT: 'Microsoft',
-}
-
-// @Past del backend: la fecha de nacimiento debe ser anterior a hoy. Formato AAAA-MM-DD del <input type="date">.
-function yesterday(): string {
-  const date = new Date()
-  date.setDate(date.getDate() - 1)
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('')
 }
 
 interface ProfilePageProps {
@@ -42,12 +24,10 @@ interface ProfilePageProps {
 // Pantalla "Mi perfil" (HU-SE-02): teléfono, fotografía y fecha de nacimiento de quien inició sesión.
 // No toca el nombre, el correo ni la contraseña: eso es información de autenticación.
 export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
+  const draft = useProfileDraft()
+  const { fill } = draft
   // null: todavía no tiene perfil (el backend respondió 404).
   const [saved, setSaved] = useState<Profile | null>(null)
-  const [phone, setPhone] = useState('')
-  const [photo, setPhoto] = useState('')
-  const [birthDate, setBirthDate] = useState('')
-  const [maxBirthDate] = useState(yesterday)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -63,9 +43,7 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
       .then((found) => {
         if (!active) return
         setSaved(found)
-        setPhone(found.phone)
-        setPhoto(found.photo ?? '')
-        setBirthDate(found.birthDate ?? '')
+        fill(found)
       })
       .catch((err) => {
         if (!active) return
@@ -79,20 +57,13 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
     return () => {
       active = false
     }
-  }, [reloadKey])
+  }, [reloadKey, fill])
 
-  const phoneOk = PHONE_PATTERN.test(phone.trim())
-  const photoOk = photo.trim() === '' || (photo.trim().length <= 500 && PHOTO_PATTERN.test(photo.trim()))
-  const birthDateOk = birthDate === '' || birthDate <= maxBirthDate
-  const input: ProfileInput = { phone: phone.trim(), photo: photo.trim() || null, birthDate: birthDate || null }
-  const dirty =
-    saved === null ||
-    input.phone !== saved.phone ||
-    input.photo !== saved.photo ||
-    input.birthDate !== saved.birthDate
-  const canSubmit = phoneOk && photoOk && birthDateOk && dirty && !saving
-
-  const previewPhoto = input.photo && photoOk && input.photo !== failedPhoto ? input.photo : null
+  const { input } = draft
+  const dirty = draft.differsFrom(saved)
+  const canSubmit = draft.valid && dirty && !saving
+  const previewPhoto = input.photo && draft.photoOk && input.photo !== failedPhoto ? input.photo : null
+  const photoFailed = draft.photoOk && input.photo !== null && input.photo === failedPhoto
 
   function handleReload() {
     setLoading(true)
@@ -101,9 +72,7 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
   }
 
   function handleDiscard() {
-    setPhone(saved?.phone ?? '')
-    setPhoto(saved?.photo ?? '')
-    setBirthDate(saved?.birthDate ?? '')
+    fill(saved)
     setError(null)
   }
 
@@ -115,9 +84,7 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
     try {
       const result = saved ? await updateMyProfile(input) : await createMyProfile(input)
       setSaved(result)
-      setPhone(result.phone)
-      setPhoto(result.photo ?? '')
-      setBirthDate(result.birthDate ?? '')
+      fill(result)
       onPhotoChange(result.photo)
       setNotice(saved ? 'Perfil actualizado correctamente.' : 'Perfil creado correctamente.')
     } catch (err) {
@@ -169,45 +136,7 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
             <p className="empty-state">Cargando tu perfil…</p>
           ) : (
             <form className="profile-form" onSubmit={handleSubmit} noValidate>
-              <label className="login__field">
-                <span>Teléfono</span>
-                <input
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="+573001234567"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </label>
-              {phone !== '' && !phoneOk && (
-                <p className="login__hint">Entre 7 y 15 dígitos, sin espacios; puede empezar por +.</p>
-              )}
-
-              <label className="login__field">
-                <span>
-                  Fotografía <span className="profile-form__optional">(URL, opcional)</span>
-                </span>
-                <input
-                  type="url"
-                  inputMode="url"
-                  placeholder="https://…"
-                  value={photo}
-                  onChange={(e) => setPhoto(e.target.value)}
-                />
-              </label>
-              {!photoOk && <p className="login__hint">Debe ser una URL que empiece por http:// o https://.</p>}
-              {photoOk && input.photo !== null && input.photo === failedPhoto && (
-                <p className="profile-form__note">No se pudo cargar la imagen de esa URL; revisa que sea pública.</p>
-              )}
-
-              <label className="login__field">
-                <span>
-                  Fecha de nacimiento <span className="profile-form__optional">(opcional)</span>
-                </span>
-                <input type="date" max={maxBirthDate} value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
-              </label>
-              {!birthDateOk && <p className="login__hint">La fecha de nacimiento debe ser anterior a hoy.</p>}
+              <ProfileFields draft={draft} photoFailed={photoFailed} />
 
               {error && (
                 <p className="login__error" role="alert">

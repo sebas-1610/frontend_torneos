@@ -1620,7 +1620,7 @@
     padding-left: 8px;
   }
 
-  .breadcrumb > a,
+  .breadcrumb__section,
   .breadcrumb > svg {
     display: none;
   }

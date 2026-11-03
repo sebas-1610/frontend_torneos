@@ -40,12 +40,6 @@ export interface PermissionMatrix {
   modules: PermissionMatrixModule[]
 }
 
-export interface RoleUser {
-  id: number
-  roleId: number
-  user: { id: number }
-}
-
 export function findRoles(): Promise<Role[]> {
   return request<Role[]>('/roles')
 }
@@ -59,8 +53,4 @@ export function updatePermissionMatrix(roleId: number, permissionIds: number[]):
     method: 'PUT',
     body: JSON.stringify({ permissionIds }),
   })
-}
-
-export function findUsersByRole(roleId: number): Promise<RoleUser[]> {
-  return request<RoleUser[]>(`/user-roles/roles/${roleId}`)
 }

@@ -1,6 +1,6 @@
 import { CircleAlert, CircleCheck, Info, LoaderCircle, RotateCcw, Save, UserRoundPlus, X } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
-import type { User } from '../../api/auth'
+import { PROVIDER_LABELS, type User } from '../../api/auth'
 import { ApiError, errorMessage } from '../../api/client'
 import { createMyProfile, findMyProfile, updateMyProfile, type Profile } from '../../api/profile'
 import { initials } from '../../utils/initials'
@@ -8,13 +8,6 @@ import { ProfileFields } from './ProfileFields'
 import { useProfileDraft } from './useProfileDraft'
 import '../auth/LoginPage.css'
 import './ProfilePage.css'
-
-const PROVIDER_LABELS: Record<User['authProvider'], string> = {
-  LOCAL: 'Correo y contraseña',
-  GOOGLE: 'Google',
-  GITHUB: 'GitHub',
-  MICROSOFT: 'Microsoft',
-}
 
 interface ProfilePageProps {
   user: User | null // null mientras llega /api/auth/me

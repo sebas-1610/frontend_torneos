@@ -14,8 +14,8 @@ export const RESOURCES = {
   rolePermissions: 'asignacion-permisos',
 } as const
 
-// Rol que el backend protege (AdminGuard): no se renombra, nadie se lo quita a sí mismo
-// y conserva los permisos del módulo Administración.
+// Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.
+// Quitarle permisos sí se puede, pero la matriz advierte antes de guardar.
 export const ADMIN_ROLE = 'Administrador'
 
 export function isAdminRole(name: string): boolean {
@@ -51,16 +51,14 @@ export function canOpenPage(page: string, can: Can): boolean {
       return can(RESOURCES.roles, 'LIST') && can(RESOURCES.rolePermissions, 'VIEW')
     case 'permisos':
       return can(RESOURCES.permissions, 'LIST')
-    // Todavía sin backend: se muestran a quien administra alguna parte del control de acceso.
-    case 'seguridad':
-    case 'auditoria':
-      return can(RESOURCES.users, 'LIST') || can(RESOURCES.roles, 'LIST') || can(RESOURCES.permissions, 'LIST')
     default:
-      return true // dashboard y perfil: cualquier usuario con sesión
+      return true // perfil: cualquier usuario con sesión
   }
 }
 
+const START_PAGES = ['roles', 'usuarios', 'permisos'] as const
+
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
-export function defaultPage(can: Can): string {
-  return ['roles', 'usuarios', 'permisos'].find((page) => canOpenPage(page, can)) ?? 'perfil'
+export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {
+  return START_PAGES.find((page) => canOpenPage(page, can)) ?? 'perfil'
 }

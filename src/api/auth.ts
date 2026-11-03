@@ -40,6 +40,14 @@ export interface User {
   twoFactorEnabled: boolean
 }
 
+// Con qué inicia sesión el usuario, como se muestra en pantalla.
+export const PROVIDER_LABELS: Record<User['authProvider'], string> = {
+  LOCAL: 'Correo y contraseña',
+  GOOGLE: 'Google',
+  GITHUB: 'GitHub',
+  MICROSOFT: 'Microsoft',
+}
+
 // Crear cuenta con correo y contraseña (HU-SE-07).
 export function register(name: string, email: string, password: string): Promise<User> {
   return request<User>('/auth/register', {

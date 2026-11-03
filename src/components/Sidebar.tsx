@@ -1,15 +1,4 @@
-import {
-  ClipboardList,
-  House,
-  KeyRound,
-  Shield,
-  ShieldCheck,
-  ShieldUser,
-  UserRound,
-  Users,
-  X,
-  type LucideIcon,
-} from 'lucide-react'
+import { KeyRound, ShieldCheck, ShieldUser, UserRound, Users, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { ArcanosLogo } from './BrandIcons'
 
@@ -20,27 +9,26 @@ interface NavItem {
 }
 
 interface NavGroup {
-  label: string | null
+  label: string
   items: NavItem[]
 }
 
+// Solo pantallas que ya existen: cuando otro microservicio traiga las suyas (torneos, reportes...),
+// se agregan aquí y en PAGES de App.tsx.
 const NAV_GROUPS: NavGroup[] = [
-  { label: null, items: [{ id: 'dashboard', label: 'Dashboard', icon: House }] },
   {
     label: 'Control de acceso',
     items: [
       { id: 'usuarios', label: 'Usuarios', icon: Users },
       { id: 'roles', label: 'Roles', icon: ShieldUser },
       { id: 'permisos', label: 'Permisos', icon: KeyRound },
-      { id: 'seguridad', label: 'Seguridad', icon: Shield },
-      { id: 'auditoria', label: 'Auditoría', icon: ClipboardList },
     ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },
 ]
 
 interface SidebarProps {
-  activeId: string
+  activeId: string | null // null mientras se sabe qué pantalla abrir
   // Solo en pantallas angostas: la barra lateral se abre como un panel sobre el contenido.
   open: boolean
   onClose: () => void
@@ -86,8 +74,8 @@ export function Sidebar({ activeId, open, onClose, canOpen, roles }: SidebarProp
 
         <nav className="nav">
           {groups.map((group) => (
-            <div key={group.label ?? 'inicio'} className="nav__group">
-              {group.label && <p className="nav__label">{group.label}</p>}
+            <div key={group.label} className="nav__group">
+              <p className="nav__label">{group.label}</p>
               <ul>
                 {group.items.map(({ id, label, icon: Icon }) => (
                   <li key={id}>

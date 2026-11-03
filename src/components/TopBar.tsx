@@ -6,9 +6,16 @@ import { ArcanosLogo } from './BrandIcons'
 import { ThemeToggle } from './ThemeToggle'
 import { initials } from '../utils/initials'
 
-interface TopBarProps {
+// Miga de pan: "Control de acceso › Usuarios". La sección es enlace solo si es una pantalla
+// a la que se puede volver (ej: "Roles › Asignar permisos").
+export interface Crumb {
   section: string
+  sectionHref?: string
   page: string
+}
+
+interface TopBarProps {
+  crumb: Crumb | null // null mientras se sabe qué pantalla abrir
   menuOpen: boolean
   onOpenMenu: () => void
   user: User | null // null mientras llega la respuesta de /api/auth/me
@@ -17,7 +24,7 @@ interface TopBarProps {
   onLogout: () => void
 }
 
-export function TopBar({ section, page, menuOpen, onOpenMenu, user, photo, onUserChange, onLogout }: TopBarProps) {
+export function TopBar({ crumb, menuOpen, onOpenMenu, user, photo, onUserChange, onLogout }: TopBarProps) {
   const [accountOpen, setAccountOpen] = useState(false)
   // URL que no se pudo cargar (borrada, privada...): el avatar vuelve a las iniciales.
   const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
@@ -58,9 +65,19 @@ export function TopBar({ section, page, menuOpen, onOpenMenu, user, photo, onUse
       </span>
 
       <nav className="breadcrumb" aria-label="Ubicación">
-        <a href="#roles">{section}</a>
-        <ChevronRight size={14} aria-hidden="true" />
-        <span aria-current="page">{page}</span>
+        {crumb && (
+          <>
+            {crumb.sectionHref ? (
+              <a className="breadcrumb__section" href={crumb.sectionHref}>
+                {crumb.section}
+              </a>
+            ) : (
+              <span className="breadcrumb__section">{crumb.section}</span>
+            )}
+            <ChevronRight size={14} aria-hidden="true" />
+            <span aria-current="page">{crumb.page}</span>
+          </>
+        )}
       </nav>
 
       <div className="topbar__actions">

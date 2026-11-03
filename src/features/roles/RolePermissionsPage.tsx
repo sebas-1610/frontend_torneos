@@ -1,16 +1,18 @@
 import { CircleAlert, CircleCheck, Info, LoaderCircle, RotateCcw, Save, SquarePlus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { errorMessage } from '../../api/client'
+import { findRoleMembers } from '../../api/roles'
 import {
   findPermissionMatrix,
   findRoles,
-  findUsersByRole,
   updatePermissionMatrix,
   type PermissionMatrix,
   type Role,
 } from '../../api/security'
 import { RESOURCES, isAdminRole, useAccess } from '../../auth/access'
+import { SubjectRole } from '../../components/ConfirmDialog'
 import { useConfirm } from '../../hooks/useConfirm'
+import { OPERATIONS, resourceLabel, roleHue } from './labels'
 import { MatrixSkeleton, PermissionMatrixTable } from './PermissionMatrixTable'
 import { RoleSelect } from './RoleSelect'
 import { RoleSummary, type RoleStats } from './RoleSummary'
@@ -92,23 +94,6 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
   const latestRequest = useRef(0)
 
   const saved = useMemo(() => assignedIds(matrix), [matrix])
-  // El backend no deja quitarle al rol Administrador los permisos de Administración (AdminGuard):
-  // esas casillas, si ya están marcadas, quedan fijas.
-  const locked = useMemo(() => {
-    const ids = new Set<number>()
-    if (matrix && isAdminRole(matrix.roleName)) {
-      matrix.modules
-        .filter((module) => module.module === 'ADMINISTRACION')
-        .forEach((module) =>
-          module.resources.forEach((resource) =>
-            resource.operations.forEach((cell) => {
-              if (cell.permissionId !== null && cell.assigned) ids.add(cell.permissionId)
-            }),
-          ),
-        )
-    }
-    return ids
-  }, [matrix])
   const stats = useMemo(() => computeStats(matrix, checked, saved), [matrix, checked, saved])
   const hasChanges = stats.pendingChanges > 0
   const selectedRole = roles.find((role) => role.id === selectedRoleId) ?? null
@@ -121,7 +106,7 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
       const [nextMatrix, users] = await Promise.all([
         findPermissionMatrix(roleId),
         // El conteo de usuarios es informativo: si falla, la matriz se muestra igual.
-        findUsersByRole(roleId).catch(() => null),
+        findRoleMembers(roleId).catch(() => null),
       ])
       if (requestId !== latestRequest.current) return
       setMatrix(nextMatrix)
@@ -146,7 +131,7 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
         // El rol de la URL; si no viene o ya no existe, Administrador o el primero.
         const initial =
           list.find((role) => role.id === initialRoleId) ??
-          list.find((role) => role.name.toLowerCase() === 'administrador') ??
+          list.find((role) => isAdminRole(role.name)) ??
           list[0]
         if (initial) {
           setSelectedRoleId(initial.id)
@@ -211,8 +196,51 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
     })
   }
 
+  // Permisos de Administración que este guardado le quitaría al rol Administrador.
+  function removedAdministration(): string[] {
+    if (!matrix || !isAdminRole(matrix.roleName)) return []
+    const labels: string[] = []
+    matrix.modules
+      .filter((module) => module.module === 'ADMINISTRACION')
+      .forEach((module) =>
+        module.resources.forEach((resource) =>
+          resource.operations.forEach((cell) => {
+            if (cell.permissionId !== null && saved.has(cell.permissionId) && !checked.has(cell.permissionId)) {
+              const operation = OPERATIONS.find((item) => item.key === cell.operation)?.label ?? cell.operation
+              labels.push(`${resourceLabel(resource.model)} · ${operation}`)
+            }
+          }),
+        ),
+      )
+    return labels
+  }
+
   async function handleSave() {
     if (selectedRoleId === null) return
+    // Se permite quitarle permisos al Administrador, pero antes se explica el riesgo.
+    const removed = removedAdministration()
+    if (removed.length > 0) {
+      const listed = removed.length > 4 ? `${removed.slice(0, 4).join(', ')} y ${removed.length - 4} más` : removed.join(', ')
+      const confirmed = await confirm({
+        title: '¿Quitarle permisos de Administración al rol Administrador?',
+        message: (
+          <>
+            <p>
+              Vas a quitar: <strong>{listed}</strong>.
+            </p>
+            <p>
+              No es recomendable: es el rol que administra la plataforma. Quienes lo tienen (incluido tú, si es tu rol)
+              pierden esas opciones de inmediato, y si quitas los de «Asignación de permisos» nadie podrá
+              devolvérselos desde esta matriz.
+            </p>
+            <p>Si pasa, al reiniciar el backend el rol recupera los permisos del módulo de seguridad.</p>
+          </>
+        ),
+        confirmLabel: 'Quitar de todos modos',
+        subject: <SubjectRole name={matrix?.roleName ?? ''} hue={roleHue(roles, selectedRoleId)} />,
+      })
+      if (!confirmed) return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -244,7 +272,6 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
       finding += usersCount === 1 ? ' 1 usuario recibe estos permisos.' : ` ${usersCount} usuarios reciben estos permisos.`
     }
     if (!canSave) finding += ' Solo lectura: tus roles no permiten cambiar la matriz.'
-    else if (locked.size > 0) finding += ' Sus permisos de Administración no se pueden quitar.'
   } else if (!loading && error) finding = 'No se pudo cargar la matriz de este rol.'
 
   return (
@@ -340,7 +367,6 @@ export function RolePermissionsPage({ initialRoleId }: RolePermissionsPageProps)
               checked={checked}
               saved={saved}
               disabled={saving || !canSave}
-              locked={locked}
               onToggle={handleToggle}
             />
           ) : (

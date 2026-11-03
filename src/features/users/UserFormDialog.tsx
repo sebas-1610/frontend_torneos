@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import type { User } from '../../api/auth'
+import { PROVIDER_LABELS, type User } from '../../api/auth'
 import { errorMessage } from '../../api/client'
 import { createUser, updateUser } from '../../api/users'
 import { PasswordRuleList } from '../auth/PasswordRuleList'
@@ -26,6 +26,8 @@ export function UserFormDialog({ user, onClose, onSaved }: UserFormDialogProps) 
     dialogRef.current?.showModal()
   }, [])
 
+  // Los usuarios de Google, GitHub o Microsoft no tienen contraseña en la plataforma: el backend la rechaza.
+  const hasPassword = isNew || user.authProvider === 'LOCAL'
   // Al crear, la contraseña es obligatoria. Al editar, vacía significa "no cambiarla".
   const passwordOk = password === '' ? !isNew : isStrongPassword(password)
   const canSubmit = name.trim().length >= 2 && email.trim() !== '' && passwordOk
@@ -61,19 +63,28 @@ export function UserFormDialog({ user, onClose, onSaved }: UserFormDialogProps) 
           <input type="email" autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
 
-        <label className="login__field">
-          <span>{isNew ? 'Contraseña' : 'Nueva contraseña (opcional)'}</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        {isNew || password !== '' ? (
-          <PasswordRuleList password={password} />
+        {hasPassword ? (
+          <>
+            <label className="login__field">
+              <span>{isNew ? 'Contraseña' : 'Nueva contraseña (opcional)'}</span>
+              <input
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+            {isNew || password !== '' ? (
+              <PasswordRuleList password={password} />
+            ) : (
+              <p className="login__hint">Déjala vacía para conservar la contraseña actual.</p>
+            )}
+          </>
         ) : (
-          <p className="login__hint">Déjala vacía para conservar la contraseña actual.</p>
+          <p className="dialog-note">
+            Este usuario inicia sesión con {PROVIDER_LABELS[user.authProvider]}, así que no tiene una contraseña en la
+            plataforma que se pueda cambiar.
+          </p>
         )}
 
         {error && (

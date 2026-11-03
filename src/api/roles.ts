@@ -3,7 +3,8 @@ import { request } from './client'
 import type { Role } from './security'
 
 // Crear, editar y eliminar roles (/api/roles) y manejar qué usuarios tiene cada uno (/api/user-roles).
-// Listar roles y la matriz de permisos siguen en security.ts.
+// Listar roles y la matriz de permisos siguen en security.ts. Los usuarios de un rol se piden solo
+// aquí (findRoleMembers): tanto la ventana de miembros como el conteo de la matriz usan esta función.
 
 export interface RoleInput {
   name: string // 3 a 50 caracteres

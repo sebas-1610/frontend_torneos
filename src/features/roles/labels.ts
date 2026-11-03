@@ -2,11 +2,14 @@ import {
   Box,
   Building2,
   ChartColumn,
+  IdCard,
   KeyRound,
+  ListChecks,
   Ticket,
   Trophy,
   UserCog,
   UserRound,
+  UserRoundCheck,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -43,8 +46,13 @@ type IconComponent = LucideIcon | typeof SoccerBallIcon
 const RESOURCE_ICONS: [string, IconComponent][] = [
   ['usuario', UserRound],
   ['user', UserRound],
+  ['perfil', IdCard],
+  ['profile', IdCard],
   ['rol', UserCog],
   ['permis', KeyRound],
+  // Las asignaciones unen usuario con rol y rol con permisos (la matriz de casillas).
+  ['asignacion-rol', UserRoundCheck],
+  ['asignacion-permis', ListChecks],
   ['torneo', Trophy],
   ['tournament', Trophy],
   ['equipo', Users],
@@ -61,7 +69,14 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['report', ChartColumn],
 ]
 
-function normalize(value: string): string {
+// Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
+const RESOURCE_LABELS = new Map([
+  ['asignacion-roles', 'Asignación de roles'],
+  ['asignacion-permisos', 'Asignación de permisos'],
+])
+
+// Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).
+export function normalize(value: string): string {
   return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 }
 
@@ -71,6 +86,8 @@ export function resourceIcon(model: string): IconComponent {
 }
 
 export function resourceLabel(model: string): string {
+  const known = RESOURCE_LABELS.get(normalize(model))
+  if (known) return known
   const text = model.replace(/[_-]+/g, ' ').trim()
   return text.charAt(0).toUpperCase() + text.slice(1)
 }

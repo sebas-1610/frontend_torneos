@@ -6,12 +6,23 @@ import type { ModuleType } from '../../api/security'
 import { RESOURCES, useAccess } from '../../auth/access'
 import { SubjectItem } from '../../components/ConfirmDialog'
 import { useConfirm } from '../../hooks/useConfirm'
-import { MODULE_LABELS, OPERATIONS, resourceLabel } from '../roles/labels'
+import { MODULE_LABELS, OPERATIONS, normalize, resourceLabel } from '../roles/labels'
 import { PermissionFormDialog } from './PermissionFormDialog'
 import '../../components/ListPage.css'
 
 const OPERATION_LABELS = Object.fromEntries(OPERATIONS.map(({ key, label }) => [key, label]))
+// En el orden de ModuleType en el backend, el mismo de la matriz.
 const MODULES = Object.keys(MODULE_LABELS) as ModuleType[]
+const OPERATION_ORDER = OPERATIONS.map(({ key }) => key)
+
+// Igual que la matriz: módulo, recurso y operación en el orden de sus columnas (Ver, Listar, Crear...).
+function compareByMatrixOrder(a: Permission, b: Permission): number {
+  return (
+    MODULES.indexOf(a.module) - MODULES.indexOf(b.module) ||
+    a.model.localeCompare(b.model) ||
+    OPERATION_ORDER.indexOf(a.operation) - OPERATION_ORDER.indexOf(b.operation)
+  )
+}
 
 // Pantalla "Permisos": cada permiso es recurso + operación (ej: usuarios · Listar) y las rutas que habilita.
 export function PermissionsPage() {
@@ -46,18 +57,20 @@ export function PermissionsPage() {
     }
   }, [])
 
-  // Sin filtros en el backend: se filtra aquí y se ordena por módulo y recurso.
+  // Sin filtros en el backend: se filtra aquí. El recurso se busca por su nombre en pantalla
+  // ("asignación de roles") o como está guardado ("asignacion-roles"), con o sin tildes.
   const visible = useMemo(() => {
-    const text = query.trim().toLowerCase()
+    const text = normalize(query.trim())
     return permissions
       .filter((permission) => !moduleFilter || permission.module === moduleFilter)
       .filter(
         (permission) =>
           !text ||
-          permission.model.includes(text) ||
+          normalize(permission.model).includes(text) ||
+          normalize(resourceLabel(permission.model)).includes(text) ||
           permission.endpoints.some((endpoint) => endpoint.url.toLowerCase().includes(text)),
       )
-      .sort((a, b) => a.module.localeCompare(b.module) || a.model.localeCompare(b.model))
+      .sort(compareByMatrixOrder)
   }, [permissions, query, moduleFilter])
 
   function upsert(saved: Permission) {

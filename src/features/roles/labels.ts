@@ -8,6 +8,8 @@ import {
   KeyRound,
   Link2,
   ListChecks,
+  Shield,
+  Shirt,
   Sparkles,
   Star,
   Ticket,
@@ -15,7 +17,6 @@ import {
   UserCog,
   UserRound,
   UserRoundCheck,
-  Users,
   type LucideIcon,
 } from 'lucide-react'
 import type { ModuleType, Operation, Role } from '../../api/security'
@@ -62,10 +63,11 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['asignacion-permis', ListChecks],
   ['torneo', Trophy],
   ['tournament', Trophy],
-  ['equipo', Users],
-  ['team', Users],
-  ['jugador', UserRound],
-  ['player', UserRound],
+  // Los mismos iconos del menú.
+  ['equipo', Shield],
+  ['team', Shield],
+  ['jugador', Shirt],
+  ['player', Shirt],
   ['partido', SoccerBallIcon],
   ['match', SoccerBallIcon],
   ['entrada', Ticket],

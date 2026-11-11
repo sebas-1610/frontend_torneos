@@ -14,6 +14,7 @@
   --raised: #202119;
   --active: #24251c;
   --rule: #24251c;
+  --edge: #33352b; /* borde fino de paneles y filas en las pantallas con más color (Vivid.css) */
   --control: #44463b;
 
   --text: #f2f2ef;
@@ -96,6 +97,7 @@
   --raised: #eeeee9;
   --active: #e8e8e2;
   --rule: #e7e7e1;
+  --edge: #dcddd5;
   --control: #c9cac2;
 
   --text: #0d0e09;
@@ -142,6 +144,7 @@
     --muted: var(--text);
     --faint: var(--muted);
     --rule: var(--control);
+    --edge: var(--control);
     --box: var(--muted);
   }
 }

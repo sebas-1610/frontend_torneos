@@ -1,0 +1,754 @@
+/*
+ * Capa visual de Equipos y Jugadores (pedido del usuario, 2026-11-11): más color y más luz, como los
+ * mockups, sin salirse de la base de Arcanos (negro, dorado y Barlow). Todo cuelga de .page--vivid:
+ * sin esa clase, la pantalla vuelve al estilo plano de las demás.
+ *   - los paneles llevan un borde fino y una luz dorada arriba;
+ *   - cada fila de la tabla es una tira con borde, y la elegida se enciende en dorado;
+ *   - los botones de fila son cuadros de color (azul: ver y editar; rojo: eliminar o desactivar);
+ *   - la acción principal va en dorado (en el mockup, en verde).
+ * La cuadrícula es la de App.css: a 1440px, lista 789 + separación 16 + detalle 344 = 1149 = 1208 − 58 ✓
+ *
+ * Los selectores llevan .page--vivid delante también por especificidad: App.css se carga después.
+ */
+
+/* ---------- Paneles ---------- */
+
+.page--vivid .panel {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 5%, var(--surface)), var(--surface) 88px);
+  border: 1px solid var(--edge);
+}
+
+/* Las tarjetas de "Asociar deportes", con el mismo borde fino. */
+.page--vivid .entity-card {
+  border: 1px solid var(--edge);
+}
+
+/* Título de un panel con su icono en un cuadro de color y, si aplica, cuántos elementos tiene. */
+.page--vivid .panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.page--vivid .panel-head__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--tone-blue);
+  background: color-mix(in srgb, var(--tone-blue) 14%, transparent);
+  border-radius: 8px;
+}
+
+.page--vivid .count-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-text);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  border-radius: 999px;
+}
+
+/* ---------- Encabezado de la página: icono de la sección + título ---------- */
+
+.page--vivid .page__heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.page--vivid .page__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  color: var(--gold-text);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  border-radius: 13px;
+}
+
+/* ---------- Barra de búsqueda y filtros, con la acción principal a la derecha ---------- */
+
+.page--vivid .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--gap);
+  padding: 12px;
+}
+
+.page--vivid .toolbar .list-search {
+  flex: 1 1 220px;
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.page--vivid .toolbar select {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 210px;
+  height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.page--vivid .toolbar__action {
+  height: 40px;
+  margin-left: auto;
+  padding: 0 18px;
+}
+
+/* La acción principal, en el dorado del club. */
+.page--vivid .button--primary {
+  color: var(--tone-ink);
+  background: var(--gold);
+}
+
+.page--vivid .button--primary:hover:not(:disabled) {
+  background: var(--gold);
+  filter: brightness(1.12);
+}
+
+/* ---------- Tabla en tiras ---------- */
+
+.page--vivid .data-table--rows {
+  margin-top: -6px;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+
+.page--vivid .data-table--rows th {
+  padding: 0 8px;
+}
+
+.page--vivid .data-table--rows td {
+  height: 58px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.page--vivid .data-table--rows td:first-child {
+  border-left: 1px solid var(--edge);
+  border-radius: 12px 0 0 12px;
+}
+
+.page--vivid .data-table--rows td:last-child {
+  border-right: 1px solid var(--edge);
+  border-radius: 0 12px 12px 0;
+}
+
+.page--vivid .data-table--rows tbody tr:hover td {
+  background: var(--raised);
+}
+
+/* La fila elegida se enciende en dorado. */
+.page--vivid .data-table--rows tbody tr.is-selected td {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+
+/*
+ * Las demás columnas miden lo que su contenido; la del nombre se queda con el resto. Si no le
+ * alcanza (a 1366px), el nombre baja a otra línea en vez de ensanchar la tabla.
+ */
+.page--vivid .data-table--rows td.data-table__name {
+  min-width: 120px;
+  white-space: normal;
+}
+
+.page--vivid .data-table--rows .role-cell {
+  display: flex;
+  min-width: 0;
+}
+
+.page--vivid .data-table--rows .cell-lines {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .list-foot {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/* Encabezado que ordena la tabla. */
+.page--vivid .sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.page--vivid .sort-button svg {
+  color: var(--faint);
+}
+
+.page--vivid .sort-button:hover,
+.page--vivid th[aria-sort='ascending'] .sort-button,
+.page--vivid th[aria-sort='descending'] .sort-button {
+  color: var(--text);
+}
+
+.page--vivid th[aria-sort='ascending'] .sort-button svg,
+.page--vivid th[aria-sort='descending'] .sort-button svg {
+  color: var(--gold-text);
+}
+
+/* Dato con su icono de color delante (ciudad, cantidad de jugadores). Una ciudad larga baja de línea. */
+.page--vivid .icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 128px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .icon-text svg {
+  flex-shrink: 0;
+  color: var(--tone-blue);
+}
+
+.page--vivid .icon-text--figure {
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tone-blue);
+}
+
+/* Botones de fila: cuadros de color. --act es el color de cada uno. */
+.page--vivid .row-actions {
+  gap: 5px;
+}
+
+.page--vivid .act {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--act);
+  background: color-mix(in srgb, var(--act) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--act) 45%, transparent);
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.page--vivid .act:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--act) 24%, transparent);
+  border-color: var(--act);
+}
+
+.page--vivid .act:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.page--vivid .act:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.page--vivid .act--blue {
+  --act: var(--tone-blue);
+}
+
+.page--vivid .act--red {
+  --act: var(--tone-red);
+}
+
+.page--vivid .act--green {
+  --act: var(--tone-green);
+}
+
+/* Etiqueta de color (la posición del jugador). --tag es su color. */
+.page--vivid .tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--tag);
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--tag) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tag) 50%, transparent);
+  border-radius: var(--radius-chip);
+}
+
+/* En el tema claro el texto de color se oscurece un poco para que se lea sobre el fondo teñido. */
+:root[data-theme='light'] .page--vivid .tag,
+:root[data-theme='light'] .page--vivid .hero__role {
+  color: color-mix(in srgb, var(--tag) 70%, var(--tone-ink));
+}
+
+.page--vivid .pill--positive {
+  border: 1px solid color-mix(in srgb, var(--positive) 40%, transparent);
+}
+
+.page--vivid .pill--neutral {
+  border: 1px solid var(--edge);
+}
+
+/* ---------- Detalle ---------- */
+
+/* Aviso rojo de una acción rechazada (ej: no se puede eliminar porque tiene contratos). */
+.page--vivid .alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--pill-negative-bg);
+  border: 1px solid color-mix(in srgb, var(--negative) 55%, transparent);
+  border-radius: 12px;
+  animation: pop-in 0.2s var(--ease-out);
+}
+
+.page--vivid .alert > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--negative);
+}
+
+.page--vivid .alert__text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .alert__title {
+  margin-bottom: 2px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.page--vivid .alert .icon-button {
+  margin: -4px -4px 0 0;
+}
+
+/* El elegido bajo un foco de luz del tono del equipo (--hue). */
+.page--vivid .hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 14px;
+  background:
+    radial-gradient(110% 130% at 14% 0%, hsl(var(--hue) 65% 48% / 0.2), transparent 62%), var(--raised);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+}
+
+.page--vivid .hero__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.page--vivid .hero__name {
+  margin-bottom: 6px;
+  font-size: var(--fs-name);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* La posición del jugador, en su color. */
+.page--vivid .hero__role {
+  margin: -2px 0 8px;
+  font-weight: 600;
+  color: var(--tag);
+}
+
+.page--vivid .hero__facts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.page--vivid .hero__facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .hero__facts svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--tone-blue);
+}
+
+.page--vivid .hero__facts strong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* La foto del jugador con el círculo de su equipo en la esquina. */
+.page--vivid .hero__portrait {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.page--vivid .hero__badge {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--raised); /* taste-skill-ignore: separa el círculo de la foto */
+}
+
+/* Nota bajo la identidad (ej: por qué un inactivo no recibe jugadores). */
+.page--vivid .detail__note {
+  margin-top: 10px;
+}
+
+/* Cifras del equipo: icono de color, número y rótulo. --tile es el color de cada una. */
+.page--vivid .stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page--vivid .stat-tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: center;
+  padding: 12px;
+  background: color-mix(in srgb, var(--raised) 60%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+
+.page--vivid .stat-tile__icon {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--tile);
+  background: color-mix(in srgb, var(--tile) 14%, transparent);
+  border-radius: 10px;
+}
+
+.page--vivid .stat-tile__value {
+  font-family: var(--figure);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.page--vivid .stat-tile__label {
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--muted);
+}
+
+/* Sección del detalle: título, una línea y, si aplica, su acción al final. */
+.page--vivid .detail-section {
+  margin-top: 16px;
+}
+
+.page--vivid .detail-section__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  margin-bottom: 6px;
+}
+
+.page--vivid .detail-section__head::after {
+  flex: 1;
+  height: 1px;
+  content: '';
+  background: var(--edge);
+}
+
+.page--vivid .detail-section__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.page--vivid .detail-section__head .detail__add {
+  order: 1;
+  margin-right: -8px;
+}
+
+.page--vivid .detail-section__text {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .chip {
+  border: 1px solid var(--edge);
+}
+
+/* Datos del jugador, cada uno con su icono. */
+.page--vivid .facts--icons {
+  margin-top: 10px;
+}
+
+.page--vivid .facts--icons > div {
+  min-height: 38px;
+}
+
+.page--vivid .facts--icons dt {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.page--vivid .facts--icons dt svg {
+  color: var(--faint);
+}
+
+.page--vivid .facts--icons dd {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .facts__teams {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.page--vivid .facts__teams .role-cell {
+  gap: 8px;
+}
+
+/* Acciones del detalle: botones teñidos. --tint es el color de cada uno. */
+.page--vivid .detail__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.page--vivid .button--tint {
+  color: var(--tint);
+  background: color-mix(in srgb, var(--tint) 12%, transparent);
+  border-color: color-mix(in srgb, var(--tint) 45%, transparent);
+}
+
+.page--vivid .button--tint:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tint) 22%, transparent);
+  border-color: var(--tint);
+}
+
+.page--vivid .button--tint-blue {
+  --tint: var(--tone-blue);
+}
+
+.page--vivid .button--tint-red {
+  --tint: var(--tone-red);
+}
+
+.page--vivid .button--tint-green {
+  --tint: var(--tone-green);
+}
+
+/* ---------- Formularios ---------- */
+
+.page--vivid .form-dialog {
+  border: 1px solid var(--edge);
+}
+
+.page--vivid .form-dialog--wide {
+  width: min(560px, calc(100vw - 32px));
+}
+
+.page--vivid .form-dialog__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page--vivid .form-dialog__head .panel__title {
+  flex: 1;
+}
+
+.page--vivid .form-dialog__head .icon-button {
+  margin: -4px -6px -4px 0;
+}
+
+/* Elegir la foto del jugador: vista previa y botones. */
+.page--vivid .photo-field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--raised);
+  border: 1px dashed var(--control);
+  border-radius: 12px;
+}
+
+.page--vivid .photo-field__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.page--vivid .photo-field__label {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.page--vivid .photo-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.page--vivid .photo-field__actions .button {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.page--vivid .photo-field__hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.page--vivid .photo-field__error {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  color: var(--negative);
+}
+
+.page--vivid .field-hint {
+  font-size: 12px;
+  color: var(--negative);
+}
+
+/* ---------- Tamaños ---------- */
+
+/* Con el detalle al lado (≥ 1366px) se queda a la vista al bajar por una lista larga. */
+@media (min-width: 1366px) {
+  .page--vivid .rail--single > .panel {
+    position: sticky;
+    top: 80px; /* barra superior de 64 + 16 de aire */
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/*
+ * Estas tablas son más anchas que las de las otras pantallas: por debajo de 1366px ya no caben al
+ * lado del detalle, así que el detalle pasa debajo antes que en el resto del panel (1279px).
+ * Ahí el panel único ocupa todo el ancho y, mientras haya espacio, reparte su contenido en dos
+ * columnas: la identidad a la izquierda y lo demás a la derecha.
+ * utils/reveal.ts usa el mismo 1365 para saber si "Ver" debe bajar hasta el detalle.
+ */
+@media (max-width: 1365px) {
+  .page--vivid .page__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page--vivid .rail--single {
+    display: block;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1365px) {
+  .page--vivid .detail-cols {
+    display: grid;
+    grid-template-areas:
+      'main side'
+      'actions side';
+    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 20px;
+  }
+
+  .page--vivid .detail-cols__main {
+    grid-area: main;
+  }
+
+  .page--vivid .detail-cols__side {
+    grid-area: side;
+  }
+
+  .page--vivid .detail-cols__actions {
+    grid-area: actions;
+  }
+
+  .page--vivid .detail-cols__side > :first-child {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 759px) {
+  .page--vivid .toolbar select {
+    flex: 1 1 140px;
+    max-width: none;
+  }
+
+  .page--vivid .toolbar__action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .page--vivid .page__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .page--vivid .data-table--rows td.data-table__name {
+    min-width: 0;
+  }
+
+  .page--vivid .data-table--rows th,
+  .page--vivid .data-table--rows td {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 419px) {
+  .page--vivid .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -13,6 +13,9 @@ import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
 import { ProfilePage } from './features/profile/ProfilePage'
 import { SportsPage } from './features/sports/SportsPage'
 import { SkillsPage } from './features/skills/SkillsPage'
+import { TeamsPage } from './features/teams/TeamsPage'
+import { TeamSportsPage } from './features/teams/TeamSportsPage'
+import { PlayersPage } from './features/players/PlayersPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -21,7 +24,17 @@ import { findMyProfile } from './api/profile'
 import { handleOAuthRedirect } from './auth/oauth'
 import './App.css'
 
-type PageId = 'usuarios' | 'roles' | 'roles-permisos' | 'permisos' | 'deportes' | 'habilidades' | 'perfil'
+type PageId =
+  | 'usuarios'
+  | 'roles'
+  | 'roles-permisos'
+  | 'permisos'
+  | 'deportes'
+  | 'equipos'
+  | 'equipos-deportes'
+  | 'jugadores'
+  | 'habilidades'
+  | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
 // Cada una da su miga de pan para la barra de arriba; page también va en el título de la pestaña.
@@ -33,9 +46,16 @@ const PAGES: Record<PageId, Crumb> = {
   permisos: { section: 'Control de acceso', page: 'Permisos' },
   // Gestión deportiva (Anexo 2): ms_torneos_deportiva.
   deportes: { section: 'Gestión deportiva', page: 'Deportes' },
+  equipos: { section: 'Gestión deportiva', page: 'Equipos' },
+  // No está en el menú: se abre desde Equipos ("Asociar" en el detalle de un equipo).
+  'equipos-deportes': { section: 'Equipos', sectionHref: '#equipos', page: 'Asociar deportes' },
+  jugadores: { section: 'Gestión deportiva', page: 'Jugadores' },
   habilidades: { section: 'Gestión deportiva', page: 'Habilidades' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
+
+// Pantallas que no están en el menú: qué opción queda marcada mientras están abiertas.
+const MENU_OWNER: Record<string, PageId> = { 'roles-permisos': 'roles', 'equipos-deportes': 'equipos' }
 
 // Título de la pestaña sin sesión.
 const AUTH_TITLES = { login: 'Iniciar sesión', register: 'Crear cuenta', forgot: 'Recuperar contraseña' }
@@ -55,7 +75,8 @@ function routeFromHash(): Route {
   return isPageId(page) ? { page, param: param || null } : { page: null, param: null }
 }
 
-function roleIdFrom(param: string | null): number | null {
+// El id que viaja en la URL (#roles-permisos/5, #equipos-deportes/3); null si no es un número.
+function idFrom(param: string | null): number | null {
   const id = Number(param)
   return param !== null && Number.isInteger(id) ? id : null
 }
@@ -246,13 +267,19 @@ function App() {
         return <RolesPage />
       case 'roles-permisos':
         // La key vuelve a montar la pantalla si la URL pide otro rol (por ejemplo, con "Atrás").
-        return <RolePermissionsPage key={route.param ?? 'inicial'} initialRoleId={roleIdFrom(route.param)} />
+        return <RolePermissionsPage key={route.param ?? 'inicial'} initialRoleId={idFrom(route.param)} />
       case 'usuarios':
         return <UsersPage onOwnPhotoChange={setPhoto} />
       case 'permisos':
         return <PermissionsPage />
       case 'deportes':
         return <SportsPage />
+      case 'equipos':
+        return <TeamsPage />
+      case 'equipos-deportes':
+        return <TeamSportsPage key={route.param ?? 'inicial'} initialTeamId={idFrom(route.param)} />
+      case 'jugadores':
+        return <PlayersPage />
       case 'habilidades':
         return <SkillsPage />
       case 'perfil':
@@ -263,9 +290,9 @@ function App() {
   return (
     <AccessContext value={access}>
       <div className="app-shell">
-        {/* "Asignar permisos" es parte de Roles: en el menú se marca Roles. */}
+        {/* "Asignar permisos" es parte de Roles y "Asociar deportes", de Equipos: el menú marca al dueño. */}
         <Sidebar
-          activeId={activeId === 'roles-permisos' ? 'roles' : activeId}
+          activeId={MENU_OWNER[activeId ?? ''] ?? activeId}
           open={menuOpen}
           onClose={closeMenu}
           canOpen={(pageId) => canOpenPage(pageId, can)}

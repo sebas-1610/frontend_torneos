@@ -174,3 +174,142 @@
     grid-template-rows: auto 1fr;
   }
 }
+
+/* ---------- Tabla con detalle (Equipos y Jugadores) ---------- */
+
+/* Clic en cualquier parte de la fila = elegirla. La elegida se marca como el ítem activo del menú. */
+.data-table--select tbody tr {
+  cursor: pointer;
+}
+
+.data-table--select tbody tr.is-selected td {
+  background: var(--active);
+}
+
+.data-table--select tbody tr.is-inactive .data-table__strong {
+  color: var(--muted);
+}
+
+.data-table__figure {
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Celda de dos líneas: el nombre y, debajo, un dato corto (ej: el documento del jugador). */
+.cell-lines {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.cell-lines__detail {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/* Balones de los deportes de un equipo, uno al lado del otro; "+2" si no caben todos. */
+.sport-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sport-stack__more {
+  margin-left: 2px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/*
+ * Equipos (TeamMonogram): sus iniciales en un círculo con el tono del equipo, como una insignia.
+ * Los roles usan el cuadro redondeado y pálido de App.css. Van varias clases juntas porque App.css
+ * se carga después y define el tamaño y el color base de .monogram.
+ */
+.monogram.monogram--round {
+  color: hsl(var(--hue) 70% 88%);
+  background: radial-gradient(circle at 30% 22%, hsl(var(--hue) 42% 36%), hsl(var(--hue) 36% 15%) 78%);
+  border: 1px solid hsl(var(--hue) 45% 46% / 0.75);
+  border-radius: 50%;
+}
+
+:root[data-theme='light'] .monogram.monogram--round {
+  color: hsl(var(--hue) 50% 22%);
+  background: radial-gradient(circle at 30% 22%, hsl(var(--hue) 55% 95%), hsl(var(--hue) 45% 82%) 78%);
+  border-color: hsl(var(--hue) 40% 55% / 0.7);
+}
+
+.monogram.monogram--round.monogram--md {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+}
+
+.monogram.monogram--round.monogram--lg {
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+}
+
+.monogram.monogram--round.monogram--xl {
+  width: 72px;
+  height: 72px;
+  font-size: 30px;
+}
+
+/* Deportes del equipo como etiquetas: balón + nombre. */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px 0 8px;
+  font-size: var(--fs-small);
+  background: var(--raised);
+  border-radius: 999px;
+}
+
+.chip.is-inactive {
+  color: var(--muted);
+}
+
+.detail__section-head a {
+  text-decoration: none;
+}
+
+/* En el celular la tabla deja solo lo esencial; lo demás se ve en el detalle. */
+@media (max-width: 639px) {
+  .data-table__optional {
+    display: none;
+  }
+
+  .data-table--select th,
+  .data-table--select td {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  /* Un nombre largo baja a otra línea en vez de empujar los botones fuera de la pantalla. */
+  .data-table--select .data-table__strong {
+    white-space: normal;
+  }
+}
+
+/* Texto solo para lectores de pantalla (ej: los nombres de los deportes que se ven como balones). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

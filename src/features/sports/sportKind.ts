@@ -94,3 +94,10 @@ export function resolveSportKind(sport: Sport, sports: Sport[]): SportKind {
   }
   return 'generic'
 }
+
+// Balón de un deporte que llega resumido (solo id y nombre, ej: los deportes de un equipo). Con la
+// lista completa se resuelve igual que en Deportes (subiendo al padre); sin ella, solo por su nombre.
+export function kindOfSummary(summary: { id: number; name: string }, sports: Sport[]): SportKind {
+  const full = sports.find((sport) => sport.id === summary.id)
+  return full ? resolveSportKind(full, sports) : sportKindOf(summary.name)
+}

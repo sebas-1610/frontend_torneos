@@ -1,0 +1,105 @@
+/* ---------- Asociar deportes (HU-GD-03) ---------- */
+
+/* Selector de equipo: sus iniciales, el desplegable y la ciudad. */
+.team-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: var(--gap);
+}
+
+.team-picker__field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 420px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.team-picker__field select {
+  height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: var(--fs-section);
+  font-weight: 600;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.team-picker__field select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.team-picker__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+/* Dos columnas como en el mockup: disponibles (más ancha, en tarjetas) y asociados (lista). */
+.assoc {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+.assoc__search {
+  max-width: none;
+}
+
+/* Estas tarjetas no se eligen: la acción es su botón. */
+.entity-card--static,
+.entity-card--static:hover {
+  cursor: default;
+  background: var(--raised);
+}
+
+.assoc__button {
+  width: 100%;
+  height: 36px;
+  margin-top: auto;
+}
+
+.entity-card--static .entity-card__meta {
+  margin-bottom: 12px;
+}
+
+.assoc__list .detail-list__item {
+  min-height: 56px;
+}
+
+.assoc__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.assoc__note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@media (max-width: 1023px) {
+  .assoc {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* En el celular el botón de retirar deja solo el icono. */
+@media (max-width: 479px) {
+  .assoc__label {
+    display: none;
+  }
+}

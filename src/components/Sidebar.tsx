@@ -1,4 +1,15 @@
-import { KeyRound, ShieldCheck, ShieldUser, Star, UserRound, Users, X, type LucideIcon } from 'lucide-react'
+import {
+  KeyRound,
+  Shield,
+  ShieldCheck,
+  ShieldUser,
+  Shirt,
+  Star,
+  UserRound,
+  Users,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { ArcanosLogo, SoccerBallIcon } from './BrandIcons'
 
@@ -14,8 +25,8 @@ interface NavGroup {
 }
 
 // Solo pantallas que ya existen: cuando otro microservicio traiga las suyas (torneos, reportes...),
-// se agregan aquí y en PAGES de App.tsx. Equipos, Jugadores y Perfil deportivo se suman a Gestión
-// deportiva cuando tengan pantalla.
+// se agregan aquí y en PAGES de App.tsx. Perfil deportivo se suma a Gestión deportiva cuando tenga
+// pantalla.
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Control de acceso',
@@ -29,6 +40,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Gestión deportiva',
     items: [
       { id: 'deportes', label: 'Deportes', icon: SoccerBallIcon },
+      { id: 'equipos', label: 'Equipos', icon: Shield },
+      { id: 'jugadores', label: 'Jugadores', icon: Shirt },
       { id: 'habilidades', label: 'Habilidades', icon: Star },
     ],
   },

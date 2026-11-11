@@ -6,8 +6,7 @@ import type { TeamSummary } from '../../api/teams'
 import { findTeamsBySport } from '../../api/teamSports'
 import { AnimatedNumber } from '../../components/AnimatedNumber'
 import { SportIcon } from '../../components/SportIcon'
-import { hueFor } from '../../utils/hue'
-import { RoleMonogram } from '../roles/RoleSelect'
+import { TeamMonogram } from '../../components/TeamMonogram'
 import { resolveSportKind, sportKindOf } from './sportKind'
 
 interface SportDetailProps {
@@ -249,7 +248,7 @@ function SportTeams({ sport }: { sport: Sport }) {
     <ul className="detail-list">
       {teams.map((team) => (
         <li key={team.id} className="detail-list__item">
-          <RoleMonogram name={team.name} hue={hueFor(team.id)} size="sm" />
+          <TeamMonogram team={team} size="sm" />
           <span className="detail-list__name">{team.name}</span>
           {!team.active && <span className="pill pill--neutral">Inactivo</span>}
         </li>

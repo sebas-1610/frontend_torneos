@@ -1,0 +1,51 @@
+/* ---------- Jugador: foto o iniciales ---------- */
+
+/* Sin foto: las iniciales sobre un tono fijo por jugador (--hue), como identidad. */
+.player-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: hsl(var(--hue) 60% 86%);
+  background: linear-gradient(160deg, hsl(var(--hue) 32% 30%), hsl(var(--hue) 28% 16%));
+  border-radius: 50%;
+}
+
+:root[data-theme='light'] .player-avatar {
+  color: hsl(var(--hue) 45% 26%);
+  background: linear-gradient(160deg, hsl(var(--hue) 45% 92%), hsl(var(--hue) 40% 82%));
+}
+
+.player-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-avatar--sm {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.player-avatar--lg {
+  width: 72px;
+  height: 72px;
+  font-size: 28px;
+}
+
+/* El retrato del detalle: cuadrado, con las esquinas redondeadas. */
+.player-avatar--card {
+  width: 104px;
+  height: 104px;
+  font-size: 40px;
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+}

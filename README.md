@@ -64,6 +64,9 @@ $env:API_PROXY_TARGET = "http://localhost:8182"; npm run dev
 | Asignar permisos: matriz de casillas de un rol | `#roles-permisos/{id}` | SE-06 | `roles · Listar` y `asignación de permisos · Ver`; para guardar, `· Actualizar` |
 | Permisos: lista, crear, editar y eliminar | `#permisos` | SE-05 | Permiso `permisos · Listar` |
 | Deportes: tarjetas con el balón de cada deporte (los subdeportes después de su padre), crear, agregar subdeporte, editar, activar, desactivar y eliminar; a la derecha, el detalle con sus subdeportes y equipos asociados | `#deportes` | GD-01, GD-03 | Permiso `deportes · Listar`; los equipos, `asignación de deportes · Listar` |
+| Equipos: tabla con búsqueda, filtros de deporte y estado y orden por columna; crear, editar, activar, desactivar y eliminar; a la derecha, el detalle con sus datos (ciudad, fundación, nombre corto), sus cifras, su descripción y sus deportes | `#equipos` | GD-02, GD-03 | Permiso `equipos · Listar` |
+| Asociar deportes: se elige un equipo y se le asocian o retiran deportes (disponibles a la izquierda, asociados a la derecha). Se abre desde el detalle de un equipo | `#equipos-deportes/{id}` | GD-03 | Permisos `equipos · Listar`, `deportes · Listar` y `asignación de deportes · Listar` |
+| Jugadores: tabla con búsqueda, filtros de estado, equipo y deporte y orden por columna; crear, editar (con foto opcional, que se sube desde el formulario), activar, desactivar y eliminar; a la derecha, el detalle con su foto, edad, nacionalidad, posición, altura, pie dominante y equipo actual | `#jugadores` | GD-04 | Permiso `jugadores · Listar` |
 | Habilidades: tarjetas por categoría con el icono de cada habilidad, crear, editar, activar, desactivar y eliminar; a la derecha, el detalle con los jugadores que la tienen | `#habilidades` | GD-06, GD-07 | Permiso `habilidades · Listar`; los jugadores, `asignación de habilidades · Listar` |
 | Mi perfil: teléfono, foto y fecha de nacimiento | `#perfil` | SE-02 | Cualquier usuario con sesión |
 | Menú de la cuenta (arriba a la derecha): verificación en dos pasos | — | SE-10 | Usuarios de correo y contraseña |
@@ -84,10 +87,10 @@ src/
   api/          peticiones al backend, un archivo por recurso
   auth/         sesión, login con proveedores y permisos de la sesión
   components/   partes comunes: barra lateral, encabezado, ventana de confirmación
-  features/     una carpeta por pantalla: auth, users, roles, permissions, profile, sports, skills
-  hooks/        useConfirm (confirmaciones), useToast (avisos de éxito) y animación de números
+  features/     una carpeta por pantalla: auth, users, roles, permissions, profile, sports, teams, players, skills
+  hooks/        useConfirm (confirmaciones), useToast (avisos de éxito), useLoadList (cargar una lista), useSort (ordenar una tabla) y animación de números
   theme/        tema claro y oscuro
-  utils/        utilidades pequeñas (iniciales del avatar, tono del monograma)
+  utils/        utilidades pequeñas (iniciales del avatar, tono del monograma, fechas y edad, reducir la foto de un jugador)
 ```
 
 ## Diseño
@@ -96,4 +99,6 @@ src/
 - La guía completa del estilo y de cómo se arma una pantalla está en la skill `sportmanager-frontend` (`proyecto/.claude/skills/`).
 - El dorado se usa solo para datos y el rojo solo para acciones que borran o quitan algo.
 - Excepción: en Gestión deportiva, los iconos de deportes y habilidades llevan color propio (variables `--tone-*` de `src/index.css`), solo en el icono.
+- Equipos, Asociar deportes y Jugadores llevan además una capa con más color, parecida a los mockups (`src/components/Vivid.css`, clase `page--vivid`): paneles con borde, fila elegida en dorado, botones de fila de color y acción principal dorada.
+- La foto de un jugador se elige en su formulario; el navegador la recorta en cuadrado y la reduce a 256 px antes de enviarla (`src/utils/image.ts`).
 - Para pedir confirmación se usa `useConfirm` (ventana con el estilo del proyecto), no `window.confirm`.

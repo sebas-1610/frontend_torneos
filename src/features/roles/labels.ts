@@ -2,9 +2,14 @@ import {
   Box,
   Building2,
   ChartColumn,
+  ChartNoAxesColumnIncreasing,
+  Handshake,
   IdCard,
   KeyRound,
+  Link2,
   ListChecks,
+  Sparkles,
+  Star,
   Ticket,
   Trophy,
   UserCog,
@@ -43,9 +48,12 @@ export const MODULE_LABELS: Record<ModuleType, string> = {
 type IconComponent = LucideIcon | typeof SoccerBallIcon
 
 // El backend guarda el recurso como texto libre (model); se reconoce por su raíz, sin tildes ni mayúsculas.
+// Gana la primera raíz que coincide, así que una raíz larga va antes que la corta que la contiene
+// ("perfil-deportivo" antes que "perfil").
 const RESOURCE_ICONS: [string, IconComponent][] = [
   ['usuario', UserRound],
   ['user', UserRound],
+  ['perfil-deportivo', ChartNoAxesColumnIncreasing],
   ['perfil', IdCard],
   ['profile', IdCard],
   ['rol', UserCog],
@@ -67,12 +75,20 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['venue', Building2],
   ['reporte', ChartColumn],
   ['report', ChartColumn],
+  // Gestión Deportiva (Anexo 2).
+  ['deporte', SoccerBallIcon],
+  ['asignacion-deporte', Link2],
+  ['contrato', Handshake],
+  ['habilidad', Star],
+  ['asignacion-habilidad', Sparkles],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
 const RESOURCE_LABELS = new Map([
   ['asignacion-roles', 'Asignación de roles'],
   ['asignacion-permisos', 'Asignación de permisos'],
+  ['asignacion-deportes', 'Asignación de deportes'],
+  ['asignacion-habilidades', 'Asignación de habilidades'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

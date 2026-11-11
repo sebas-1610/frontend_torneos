@@ -12,6 +12,15 @@ export const RESOURCES = {
   permissions: 'permisos',
   userRoles: 'asignacion-roles',
   rolePermissions: 'asignacion-permisos',
+  // Gestión Deportiva (Anexo 2): protegen las rutas /api/deportiva/... de ms_torneos_deportiva.
+  sports: 'deportes',
+  teams: 'equipos',
+  teamSports: 'asignacion-deportes',
+  players: 'jugadores',
+  contracts: 'contratos',
+  skills: 'habilidades',
+  playerSkills: 'asignacion-habilidades',
+  sportsProfile: 'perfil-deportivo',
 } as const
 
 // Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.

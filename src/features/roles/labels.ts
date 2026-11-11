@@ -20,13 +20,12 @@ import {
 } from 'lucide-react'
 import type { ModuleType, Operation, Role } from '../../api/security'
 import { SoccerBallIcon } from '../../components/BrandIcons'
+import { IDENTITY_HUES } from '../../utils/hue'
 
-// Cada rol tiene un tono pálido propio (identidad, no dato): separados al menos 60° y lejos del violeta.
-const ROLE_HUES = [40, 100, 160, 210, 340]
-
+// Cada rol tiene un tono pálido propio, según su posición en la lista de roles.
 export function roleHue(roles: Role[], roleId: number | null): number {
   const index = Math.max(0, roles.findIndex((role) => role.id === roleId))
-  return ROLE_HUES[index % ROLE_HUES.length]
+  return IDENTITY_HUES[index % IDENTITY_HUES.length]
 }
 
 export const OPERATIONS: { key: Operation; label: string }[] = [

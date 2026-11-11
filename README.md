@@ -63,6 +63,8 @@ $env:API_PROXY_TARGET = "http://localhost:8182"; npm run dev
 | Roles: lista, crear, editar, eliminar y sus usuarios | `#roles` | SE-03, SE-04 | Permiso `roles · Listar` |
 | Asignar permisos: matriz de casillas de un rol | `#roles-permisos/{id}` | SE-06 | `roles · Listar` y `asignación de permisos · Ver`; para guardar, `· Actualizar` |
 | Permisos: lista, crear, editar y eliminar | `#permisos` | SE-05 | Permiso `permisos · Listar` |
+| Deportes: tarjetas con el balón de cada deporte (los subdeportes después de su padre), crear, agregar subdeporte, editar, activar, desactivar y eliminar; a la derecha, el detalle con sus subdeportes y equipos asociados | `#deportes` | GD-01, GD-03 | Permiso `deportes · Listar`; los equipos, `asignación de deportes · Listar` |
+| Habilidades: tarjetas por categoría con el icono de cada habilidad, crear, editar, activar, desactivar y eliminar; a la derecha, el detalle con los jugadores que la tienen | `#habilidades` | GD-06, GD-07 | Permiso `habilidades · Listar`; los jugadores, `asignación de habilidades · Listar` |
 | Mi perfil: teléfono, foto y fecha de nacimiento | `#perfil` | SE-02 | Cualquier usuario con sesión |
 | Menú de la cuenta (arriba a la derecha): verificación en dos pasos | — | SE-10 | Usuarios de correo y contraseña |
 | Botón de cerrar sesión (arriba a la derecha) | — | SE-08 | Cualquier usuario con sesión |
@@ -71,6 +73,7 @@ $env:API_PROXY_TARGET = "http://localhost:8182"; npm run dev
 
 - Al entrar, el front pide `/api/auth/me`, que trae los roles y permisos del usuario. Con eso muestra solo las opciones del menú y los botones que puede usar (`src/auth/access.ts`). Ocultar es solo visual: el backend valida cada petición igual.
 - Un usuario sin roles solo ve Mi perfil.
+- Al entrar sin una pantalla en la dirección, se abre la primera que puede usar: el Administrador entra a Roles y el Administrador deportivo, a Deportes.
 - La sesión dura lo que indique el backend (30 minutos). Al vencer, o si el backend rechaza el token, el front vuelve al login con un aviso.
 - En el `localStorage` del navegador quedan la sesión (`sportmanager.session`) y el tema claro u oscuro (`sportmanager-theme`).
 
@@ -81,10 +84,10 @@ src/
   api/          peticiones al backend, un archivo por recurso
   auth/         sesión, login con proveedores y permisos de la sesión
   components/   partes comunes: barra lateral, encabezado, ventana de confirmación
-  features/     una carpeta por pantalla: auth, users, roles, permissions, profile
-  hooks/        useConfirm (confirmaciones) y animación de números
+  features/     una carpeta por pantalla: auth, users, roles, permissions, profile, sports, skills
+  hooks/        useConfirm (confirmaciones), useToast (avisos de éxito) y animación de números
   theme/        tema claro y oscuro
-  utils/        utilidades pequeñas (iniciales del avatar)
+  utils/        utilidades pequeñas (iniciales del avatar, tono del monograma)
 ```
 
 ## Diseño
@@ -92,4 +95,5 @@ src/
 - Estilo "true-black flat": colores, tipografías y medidas están como variables en `src/index.css` y `src/App.css`. Las pantallas nuevas deben usar esas variables.
 - La guía completa del estilo y de cómo se arma una pantalla está en la skill `sportmanager-frontend` (`proyecto/.claude/skills/`).
 - El dorado se usa solo para datos y el rojo solo para acciones que borran o quitan algo.
+- Excepción: en Gestión deportiva, los iconos de deportes y habilidades llevan color propio (variables `--tone-*` de `src/index.css`), solo en el icono.
 - Para pedir confirmación se usa `useConfirm` (ventana con el estilo del proyecto), no `window.confirm`.

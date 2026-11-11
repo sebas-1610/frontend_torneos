@@ -1,0 +1,176 @@
+/*
+ * Pantallas de catálogo + detalle (Gestión deportiva): las tarjetas (CardGrid.css) en la columna
+ * principal y el elemento elegido en el panel derecho (.rail), con la misma cuadrícula de App.css:
+ *   a 1440px, columna principal 789 + separación 16 + detalle 344 = 1149 = 1208 − 58 ✓
+ * Por debajo de 1279px el detalle pasa debajo de la lista (reglas de .page__grid y .rail en App.css).
+ */
+
+/* ---------- Detalle ---------- */
+
+.detail__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail__name {
+  font-size: var(--fs-name);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.detail__meta {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/* Enlace dentro del texto (ej: el deporte padre): lleva a su detalle. */
+.detail__link {
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Icono de color del deporte o de la habilidad, sin cuadro detrás. */
+.detail__glyph {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+
+.detail__description {
+  margin: 12px 0 4px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.detail__section-title {
+  margin-bottom: 8px;
+}
+
+/* Título de una sección del detalle con su acción a la derecha (ej: Subdeportes · Agregar). */
+.detail__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.detail__add {
+  height: 30px;
+  margin-right: -8px;
+  padding: 0 10px;
+}
+
+.detail__empty {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+/* ---------- Listas del detalle (subdeportes, equipos, jugadores) ---------- */
+
+.detail-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-list > li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.detail-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 0;
+}
+
+.detail-list__button {
+  padding: 6px 8px;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.detail-list__button:hover {
+  background: var(--raised);
+}
+
+.detail-list__name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-list__detail {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.detail-list .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+}
+
+.detail__error {
+  margin-top: 12px;
+}
+
+/* La acción que borra, aparte y lejos de Editar. */
+.detail__danger {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.detail__danger .button {
+  margin-left: -12px;
+}
+
+/* ---------- Tamaños ---------- */
+
+/*
+ * Con el detalle debajo de la lista (≤ 1279px), App.css pone el resumen a la izquierda ocupando dos filas.
+ * La segunda fila es flexible para que el alto sobrante del resumen no abra un hueco entre los paneles
+ * de la derecha.
+ */
+@media (max-width: 1279px) {
+  .rail--detail {
+    grid-template-rows: auto 1fr;
+  }
+}

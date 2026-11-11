@@ -11,6 +11,8 @@ import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { ForgotPasswordPage } from './features/auth/ForgotPasswordPage'
 import { ProfilePage } from './features/profile/ProfilePage'
+import { SportsPage } from './features/sports/SportsPage'
+import { SkillsPage } from './features/skills/SkillsPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -19,7 +21,7 @@ import { findMyProfile } from './api/profile'
 import { handleOAuthRedirect } from './auth/oauth'
 import './App.css'
 
-type PageId = 'usuarios' | 'roles' | 'roles-permisos' | 'permisos' | 'perfil'
+type PageId = 'usuarios' | 'roles' | 'roles-permisos' | 'permisos' | 'deportes' | 'habilidades' | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
 // Cada una da su miga de pan para la barra de arriba; page también va en el título de la pestaña.
@@ -29,6 +31,9 @@ const PAGES: Record<PageId, Crumb> = {
   // No está en el menú: se abre desde Roles ("Asignar permisos" o el botón Permisos de cada rol).
   'roles-permisos': { section: 'Roles', sectionHref: '#roles', page: 'Asignar permisos' },
   permisos: { section: 'Control de acceso', page: 'Permisos' },
+  // Gestión deportiva (Anexo 2): ms_torneos_deportiva.
+  deportes: { section: 'Gestión deportiva', page: 'Deportes' },
+  habilidades: { section: 'Gestión deportiva', page: 'Habilidades' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -246,6 +251,10 @@ function App() {
         return <UsersPage onOwnPhotoChange={setPhoto} />
       case 'permisos':
         return <PermissionsPage />
+      case 'deportes':
+        return <SportsPage />
+      case 'habilidades':
+        return <SkillsPage />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

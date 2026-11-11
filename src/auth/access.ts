@@ -60,12 +60,17 @@ export function canOpenPage(page: string, can: Can): boolean {
       return can(RESOURCES.roles, 'LIST') && can(RESOURCES.rolePermissions, 'VIEW')
     case 'permisos':
       return can(RESOURCES.permissions, 'LIST')
+    case 'deportes':
+      return can(RESOURCES.sports, 'LIST')
+    case 'habilidades':
+      return can(RESOURCES.skills, 'LIST')
     default:
       return true // perfil: cualquier usuario con sesión
   }
 }
 
-const START_PAGES = ['roles', 'usuarios', 'permisos'] as const
+// En orden: el Administrador entra a Roles; el Administrador deportivo, a Deportes.
+const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'habilidades'] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
 export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {

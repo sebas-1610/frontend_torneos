@@ -60,6 +60,24 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /*
+   * Colores de identidad de deportes y habilidades (pedido del usuario, 2026-11-11): van solo en sus
+   * iconos (el balón de cada deporte, el icono de cada habilidad), planos, sin brillo ni degradado.
+   * Nunca en botones, bordes, fondos ni texto. El dorado sigue siendo el único color de datos.
+   */
+  --tone-green: #4fbf5a;
+  --tone-orange: #f08c3a;
+  --tone-purple: #9d7bf2;
+  --tone-blue: #4ea8f2;
+  --tone-lime: #c3dc3c;
+  --tone-red: #ec6450;
+  --tone-teal: #34c3ad;
+  --tone-pink: #ea78b4;
+  --tone-amber: #f2b33d;
+  --tone-brown: #c07f4f;
+  --tone-white: #f2f2ef;
+  --tone-ink: #0d0e09; /* costuras de los balones, en los dos temas */
+
   font: 400 var(--fs-body) / 1.45 var(--font);
   color-scheme: dark;
   color: var(--text);
@@ -100,6 +118,19 @@
   --box: #7c7e76;
   --dirty: #45473f;
   --overlay-shadow: 0 18px 44px rgba(13, 14, 9, 0.16);
+
+  /* Más oscuros para que se lean sobre las tarjetas claras. */
+  --tone-green: #2f9a3c;
+  --tone-orange: #dd6f1c;
+  --tone-purple: #7350d6;
+  --tone-blue: #2378c8;
+  --tone-lime: #8fae12;
+  --tone-red: #d0402c;
+  --tone-teal: #14907d;
+  --tone-pink: #c64d8e;
+  --tone-amber: #d08f12;
+  --tone-brown: #8f5530;
+  --tone-white: #ffffff;
 
   color-scheme: light;
 }

@@ -112,6 +112,21 @@ export function SubjectRole({ name, hue }: { name: string; hue: number }) {
   )
 }
 
+// Algo con icono propio (el balón de un deporte, el icono de color de una habilidad).
+export function SubjectVisual({ visual, name, detail }: { visual: ReactNode; name: string; detail: string }) {
+  return (
+    <span className="subject">
+      <span className="subject__glyph" aria-hidden="true">
+        {visual}
+      </span>
+      <span className="subject__text">
+        <span className="subject__name">{name}</span>
+        <span className="subject__detail">{detail}</span>
+      </span>
+    </span>
+  )
+}
+
 export function SubjectItem({ icon: Icon, name, detail }: { icon: LucideIcon; name: string; detail: string }) {
   return (
     <span className="subject">

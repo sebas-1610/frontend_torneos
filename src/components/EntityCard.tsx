@@ -1,6 +1,7 @@
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import './CardGrid.css'
+import { RowAction } from './ListView'
 
 interface EntityCardProps {
   index: number // posición en la cuadrícula, para la entrada en cascada
@@ -24,6 +25,7 @@ interface EntityCardProps {
 
 // Tarjeta del catálogo de Deportes y Habilidades. Toda la tarjeta elige el elemento con el mouse; con
 // el teclado se usa el botón Ver, por eso la tarjeta no es un botón (no puede tener botones adentro).
+// Sus botones son los mismos de las filas de todas las tablas (RowAction, ListView.tsx).
 export function EntityCard({
   index,
   layout,
@@ -63,38 +65,19 @@ export function EntityCard({
             <span className="entity-card__figure num">{figure}</span> {unit}
           </span>
           <div className="row-actions">
-            <button
-              type="button"
-              className="icon-button icon-button--small"
-              title="Ver detalle"
-              aria-label={`Ver ${name}`}
-              onClick={onView}
-            >
-              <Eye size={16} aria-hidden="true" />
-            </button>
+            <RowAction icon={Eye} title="Ver detalle" label={`Ver ${name}`} onClick={onView} />
             {canEdit && (
-              <button
-                type="button"
-                className="icon-button icon-button--small"
-                title="Editar"
-                aria-label={`Editar ${name}`}
-                disabled={busy}
-                onClick={onEdit}
-              >
-                <Pencil size={16} aria-hidden="true" />
-              </button>
+              <RowAction icon={Pencil} title="Editar" label={`Editar ${name}`} disabled={busy} onClick={onEdit} />
             )}
             {canDelete && (
-              <button
-                type="button"
-                className="icon-button icon-button--small row-actions__delete"
+              <RowAction
+                icon={Trash2}
+                tone="red"
                 title="Eliminar"
-                aria-label={`Eliminar ${name}`}
+                label={`Eliminar ${name}`}
                 disabled={busy}
                 onClick={onDelete}
-              >
-                <Trash2 size={16} aria-hidden="true" />
-              </button>
+              />
             )}
           </div>
         </div>

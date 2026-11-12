@@ -1,8 +1,8 @@
 /* ---------- Catálogo en tarjetas (Deportes y Habilidades) ---------- */
 
 /*
- * Tarjetas sin bordes ni sombras: se separan del panel por luminosidad (--raised sobre --surface).
- * El color está solo en el icono de cada una (--tone-*); botones, bordes y fondos siguen neutros.
+ * Base de las tarjetas. En las pantallas de Gestión deportiva (page--vivid) Vivid.css les pone el borde
+ * fino, enciende la elegida en dorado y da color a sus botones.
  * A 1440px la columna principal deja 789 − 20 − 20 = 749px: tres tarjetas de ~243px con 10px entre ellas.
  */
 
@@ -112,11 +112,6 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--text);
-}
-
-/* Los botones de la tarjeta sobre --raised: el hover sube un paso más (ListPage.css usa --raised). */
-.entity-card .row-actions .icon-button:hover:not(:disabled) {
-  background: var(--surface);
 }
 
 .entity-card__status {

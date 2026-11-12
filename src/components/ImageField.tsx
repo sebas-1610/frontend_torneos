@@ -1,17 +1,31 @@
 import { Camera, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
-import { PlayerAvatar } from '../../components/PlayerAvatar'
-import { photoFromFile } from '../../utils/image'
+import { useRef, useState, type ReactNode } from 'react'
 
-interface PhotoFieldProps {
-  // Con qué dibujar la vista previa: la foto elegida o, si no hay, las iniciales.
-  player: { id: number; firstName: string; lastName: string; photo: string | null }
-  onChange: (photo: string | null) => void
+interface ImageFieldProps {
+  label: string // ej: "Escudo (opcional)"
+  hint: string // qué archivos sirven y qué se le hace
+  preview: ReactNode // cómo se ve ya guardada (o lo que se muestra mientras no hay)
+  value: string | null
+  read: (file: File) => Promise<string> // la reduce (utils/image.ts); lanza Error con el mensaje
+  uploadLabel: string // "Subir escudo"
+  changeLabel: string // "Cambiar escudo"
+  inputLabel: string // para el lector de pantalla: "Elegir escudo del equipo"
+  onChange: (value: string | null) => void
 }
 
-// Campo "Foto" del formulario de jugador: se elige una imagen del equipo, el navegador la recorta y
-// la reduce (utils/image.ts) y aquí queda lista para enviarse con los demás datos.
-export function PhotoField({ player, onChange }: PhotoFieldProps) {
+// Campo de imagen de los formularios (foto del jugador, escudo del equipo): se elige un archivo, el
+// navegador lo reduce y aquí queda listo para enviarse con los demás datos.
+export function ImageField({
+  label,
+  hint,
+  preview,
+  value,
+  read,
+  uploadLabel,
+  changeLabel,
+  inputLabel,
+  onChange,
+}: ImageFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [reading, setReading] = useState(false)
@@ -21,7 +35,7 @@ export function PhotoField({ player, onChange }: PhotoFieldProps) {
     setError(null)
     setReading(true)
     try {
-      onChange(await photoFromFile(file))
+      onChange(await read(file))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo leer la imagen.')
     } finally {
@@ -32,11 +46,11 @@ export function PhotoField({ player, onChange }: PhotoFieldProps) {
   }
 
   return (
-    <div className="photo-field">
-      <PlayerAvatar player={player} size="lg" />
-      <div className="photo-field__body">
-        <p className="photo-field__label">Foto (opcional)</p>
-        <div className="photo-field__actions">
+    <div className="image-field">
+      {preview}
+      <div className="image-field__body">
+        <p className="image-field__label">{label}</p>
+        <div className="image-field__actions">
           <button
             type="button"
             className="button button--outline"
@@ -44,9 +58,9 @@ export function PhotoField({ player, onChange }: PhotoFieldProps) {
             onClick={() => inputRef.current?.click()}
           >
             <Camera size={16} aria-hidden="true" />
-            {reading ? 'Leyendo…' : player.photo ? 'Cambiar foto' : 'Subir foto'}
+            {reading ? 'Leyendo…' : value ? changeLabel : uploadLabel}
           </button>
-          {player.photo && (
+          {value && (
             <button
               type="button"
               className="button button--text row-actions__danger"
@@ -61,11 +75,11 @@ export function PhotoField({ player, onChange }: PhotoFieldProps) {
           )}
         </div>
         {error ? (
-          <p className="photo-field__error" role="alert">
+          <p className="image-field__error" role="alert">
             {error}
           </p>
         ) : (
-          <p className="photo-field__hint">JPG, PNG o WEBP. Se recorta en cuadrado.</p>
+          <p className="image-field__hint">{hint}</p>
         )}
       </div>
       <input
@@ -73,7 +87,7 @@ export function PhotoField({ player, onChange }: PhotoFieldProps) {
         type="file"
         accept="image/jpeg,image/png,image/webp"
         hidden
-        aria-label="Elegir foto del jugador"
+        aria-label={inputLabel}
         onChange={(e) => void handleFile(e.target.files?.[0])}
       />
     </div>

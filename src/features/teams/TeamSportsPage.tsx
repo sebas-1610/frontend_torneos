@@ -7,6 +7,7 @@ import { findTeams } from '../../api/teams'
 import { RESOURCES, useAccess } from '../../auth/access'
 import { AnimatedNumber } from '../../components/AnimatedNumber'
 import { SubjectBreak, SubjectVisual } from '../../components/ConfirmDialog'
+import { PageHeading } from '../../components/PageHeading'
 import { SportIcon } from '../../components/SportIcon'
 import { TeamMonogram } from '../../components/TeamMonogram'
 import { useConfirm } from '../../hooks/useConfirm'
@@ -135,21 +136,12 @@ export function TeamSportsPage({ initialTeamId }: TeamSportsPageProps) {
 
   return (
     <div className="page page--vivid">
-      <div className="page__head list-head">
-        <div className="page__heading">
-          <span className="page__icon" aria-hidden="true">
-            <Link2 size={22} />
-          </span>
-          <div>
-            <h1 className="page__title">Asociar deportes</h1>
-            <p className="page__finding">{finding}</p>
-          </div>
-        </div>
+      <PageHeading icon={Link2} title="Asociar deportes" finding={finding}>
         <a className="button button--outline" href="#equipos">
           <ArrowLeft size={18} aria-hidden="true" />
           Volver a Equipos
         </a>
-      </div>
+      </PageHeading>
 
       {loadError ? (
         <section className="panel">

@@ -1,29 +1,12 @@
 /*
- * Pantallas de catálogo + detalle (Gestión deportiva): las tarjetas (CardGrid.css) en la columna
- * principal y el elemento elegido en el panel derecho (.rail), con la misma cuadrícula de App.css:
+ * Pantallas de lista + detalle (Gestión deportiva): las tarjetas (CardGrid.css) o la tabla en la
+ * columna principal y el elemento elegido en el panel derecho (.rail), con la misma cuadrícula de App.css:
  *   a 1440px, columna principal 789 + separación 16 + detalle 344 = 1149 = 1208 − 58 ✓
- * Por debajo de 1279px el detalle pasa debajo de la lista (reglas de .page__grid y .rail en App.css).
+ * El panel se arma con las piezas de DetailPanel.tsx; su aspecto (foco de luz, cifras, secciones,
+ * botones de color) está en Vivid.css. Aquí queda lo básico: listas, insignias y etiquetas.
  */
 
 /* ---------- Detalle ---------- */
-
-.detail__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.detail__identity {
-  flex: 1;
-  min-width: 0;
-}
-
-.detail__name {
-  font-size: var(--fs-name);
-  font-weight: 600;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
 
 .detail__meta {
   margin-top: 2px;
@@ -44,21 +27,6 @@
   cursor: pointer;
 }
 
-/* Icono de color del deporte o de la habilidad, sin cuadro detrás. */
-.detail__glyph {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-}
-
-.detail__description {
-  margin: 12px 0 4px;
-  color: var(--muted);
-  overflow-wrap: anywhere;
-}
-
 .detail__actions {
   display: flex;
   flex-wrap: wrap;
@@ -67,15 +35,6 @@
 }
 
 .detail__section-title {
-  margin-bottom: 8px;
-}
-
-/* Título de una sección del detalle con su acción a la derecha (ej: Subdeportes · Agregar). */
-.detail__section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   margin-bottom: 8px;
 }
 
@@ -145,10 +104,6 @@
   width: 28px;
   height: 28px;
   font-size: 13px;
-}
-
-.detail__error {
-  margin-top: 12px;
 }
 
 /* La acción que borra, aparte y lejos de Editar. */
@@ -222,7 +177,7 @@
 }
 
 /*
- * Equipos (TeamMonogram): sus iniciales en un círculo con el tono del equipo, como una insignia.
+ * Equipos sin escudo (TeamMonogram): sus iniciales en un círculo con el tono del equipo, como una insignia.
  * Los roles usan el cuadro redondeado y pálido de App.css. Van varias clases juntas porque App.css
  * se carga después y define el tamaño y el color base de .monogram.
  */
@@ -257,6 +212,39 @@
   font-size: 30px;
 }
 
+/* El escudo subido por el equipo, entero y con su forma (TeamMonogram). Mismos tamaños que el círculo. */
+.team-shield {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+}
+
+.team-shield img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Un borde de luz apenas visible, para que un escudo oscuro no se pierda sobre el fondo negro. */
+  filter: drop-shadow(0 0 1px color-mix(in srgb, var(--text) 35%, transparent));
+}
+
+.team-shield--sm {
+  width: 28px;
+  height: 28px;
+}
+
+.team-shield--lg {
+  width: 56px;
+  height: 56px;
+}
+
+.team-shield--xl {
+  width: 72px;
+  height: 72px;
+}
+
 /* Deportes del equipo como etiquetas: balón + nombre. */
 .chip-list {
   display: flex;
@@ -280,10 +268,6 @@
 
 .chip.is-inactive {
   color: var(--muted);
-}
-
-.detail__section-head a {
-  text-decoration: none;
 }
 
 /* En el celular la tabla deja solo lo esencial; lo demás se ve en el detalle. */

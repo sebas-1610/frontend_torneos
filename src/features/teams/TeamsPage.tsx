@@ -1,4 +1,4 @@
-import { CircleAlert, Eye, List, MapPin, Pencil, Plus, Search, Shield, Trash2, Users } from 'lucide-react'
+import { Eye, MapPin, Pencil, Plus, Shield, Trash2, Users } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { errorMessage } from '../../api/client'
 import { findSports } from '../../api/sports'
@@ -6,6 +6,8 @@ import { deleteTeam, disableTeam, enableTeam, findTeams, type Team } from '../..
 import { RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
+import { ListPanel, ListToolbar, RowAction, RowActions, StatusPill, ToolbarButton } from '../../components/ListView'
+import { PageHeading } from '../../components/PageHeading'
 import { SortHeader } from '../../components/SortHeader'
 import { SportIcon } from '../../components/SportIcon'
 import { TeamMonogram } from '../../components/TeamMonogram'
@@ -13,14 +15,12 @@ import { useConfirm } from '../../hooks/useConfirm'
 import { useLoadList } from '../../hooks/useLoadList'
 import { useSort } from '../../hooks/useSort'
 import { useToast } from '../../hooks/useToast'
+import { plural } from '../../utils/plural'
 import { revealIfStacked } from '../../utils/reveal'
 import { normalize } from '../roles/labels'
 import { kindOfSummary } from '../sports/sportKind'
 import { TeamDetail } from './TeamDetail'
 import { TeamFormDialog } from './TeamFormDialog'
-import '../../components/ListPage.css'
-import '../../components/DetailPanel.css'
-import '../../components/Vivid.css'
 
 type StatusFilter = '' | 'activos' | 'inactivos'
 type SortKey = 'name' | 'city' | 'sports' | 'players' | 'status'
@@ -36,10 +36,6 @@ const SORT_VALUES: Record<SortKey, (team: Team) => string | number | null> = {
 
 // Balones que caben en la celda "Deportes"; el resto se resume como "+2".
 const MAX_ICONS = 3
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`
-}
 
 // Pantalla "Equipos" (HU-GD-02): tabla con búsqueda, filtros de deporte y estado, y orden por
 // columna; crear, editar, activar/desactivar y eliminar. A la derecha, el detalle con sus datos, sus
@@ -179,28 +175,16 @@ export function TeamsPage() {
 
   return (
     <div className="page page--vivid">
-      <div className="page__head">
-        <div className="page__heading">
-          <span className="page__icon" aria-hidden="true">
-            <Shield size={22} />
-          </span>
-          <div>
-            <h1 className="page__title">Equipos</h1>
-            <p className="page__finding">{finding}</p>
-          </div>
-        </div>
-      </div>
+      <PageHeading icon={Shield} title="Equipos" finding={finding} />
 
-      <div className="panel toolbar">
-        <label className="list-search">
-          <Search size={16} aria-hidden="true" />
-          <input
-            type="search"
-            placeholder="Buscar por nombre o ciudad"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </label>
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Buscar por nombre o ciudad"
+        actions={
+          canCreate && <ToolbarButton primary icon={Plus} label="Nuevo equipo" onClick={() => setEditing('new')} />
+        }
+      >
         <select
           aria-label="Filtrar por deporte"
           value={sportId ?? ''}
@@ -213,190 +197,157 @@ export function TeamsPage() {
             </option>
           ))}
         </select>
-        <select aria-label="Filtrar por estado" value={status} onChange={(e) => setStatus(e.target.value as StatusFilter)}>
+        <select
+          aria-label="Filtrar por estado"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as StatusFilter)}
+        >
           <option value="">Todos los estados</option>
           <option value="activos">Activos</option>
           <option value="inactivos">Inactivos</option>
         </select>
-        {canCreate && (
-          <button type="button" className="button button--primary toolbar__action" onClick={() => setEditing('new')}>
-            <Plus size={18} aria-hidden="true" />
-            Nuevo equipo
-          </button>
-        )}
-      </div>
+      </ListToolbar>
 
       <div className="page__grid">
-        <section className="panel" aria-labelledby="teams-list-title" aria-busy={loading}>
-          <div className="panel-head">
-            <span className="panel-head__icon" aria-hidden="true">
-              <List size={16} />
-            </span>
-            <h2 id="teams-list-title" className="panel__title">
-              Lista de equipos
-            </h2>
-            {!loading && !loadError && <span className="count-chip">{plural(teams.length, 'equipo', 'equipos')}</span>}
-          </div>
-
-          {loadError ? (
-            <div className="inline-error" role="alert">
-              <CircleAlert size={16} aria-hidden="true" />
-              <span>{loadError}</span>
-              <button type="button" className="text-action" onClick={retry}>
-                Reintentar
-              </button>
-            </div>
-          ) : loading ? (
-            <p className="empty-state">Cargando equipos…</p>
-          ) : visible.length === 0 ? (
-            <p className="empty-state">
-              {teams.length === 0
+        <ListPanel
+          title="Lista de equipos"
+          titleId="teams-list-title"
+          noun={['equipo', 'equipos']}
+          total={teams.length}
+          shown={visible.length}
+          loading={loading}
+          loadError={loadError}
+          onRetry={retry}
+          emptyMessage={
+            visible.length > 0
+              ? null
+              : teams.length === 0
                 ? canCreate
                   ? 'No hay equipos registrados. Crea el primero con "Nuevo equipo".'
                   : 'No hay equipos registrados.'
-                : 'Ningún equipo coincide con los filtros.'}
-            </p>
-          ) : (
-            <>
-              <div className="table-scroll">
-                <table className="data-table data-table--select data-table--rows">
-                  <thead>
-                    <tr>
-                      <SortHeader label="Equipo" sortKey="name" sort={sort} onSort={toggleSort} />
-                      <SortHeader
-                        label="Ciudad"
-                        sortKey="city"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Deportes"
-                        sortKey="sports"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Jugadores"
-                        sortKey="players"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Estado"
-                        sortKey="status"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((team) => {
-                      const busy = busyId === team.id
-                      const isSelected = team.id === selected?.id
-                      return (
-                        <tr
-                          key={team.id}
-                          className={`${isSelected ? 'is-selected' : ''}${team.active ? '' : ' is-inactive'}`}
-                          aria-current={isSelected ? 'true' : undefined}
-                          onClick={() => select(team.id, false)}
-                        >
-                          <td className="data-table__name">
-                            <span className="role-cell">
-                              <TeamMonogram team={team} size="md" />
-                              <span className="cell-lines">
-                                <span className="data-table__strong">{team.name}</span>
-                                {team.shortName && <span className="cell-lines__detail">{team.shortName}</span>}
-                              </span>
-                            </span>
-                          </td>
-                          <td className="data-table__optional">
-                            <span className="icon-text">
-                              <MapPin size={14} aria-hidden="true" />
-                              {team.city}
-                            </span>
-                          </td>
-                          <td className="data-table__optional">
-                            {team.sports.length === 0 ? (
-                              <span className="dash">Ninguno</span>
-                            ) : (
-                              <span className="sport-stack" title={team.sports.map((sport) => sport.name).join(', ')}>
-                                {team.sports.slice(0, MAX_ICONS).map((sport) => (
-                                  <SportIcon key={sport.id} kind={kindOfSummary(sport, sports)} id={sport.id} size={20} />
-                                ))}
-                                {team.sports.length > MAX_ICONS && (
-                                  <span className="sport-stack__more">+{team.sports.length - MAX_ICONS}</span>
-                                )}
-                                <span className="sr-only">{team.sports.map((sport) => sport.name).join(', ')}</span>
-                              </span>
+                : 'Ningún equipo coincide con los filtros.'
+          }
+        >
+          <div className="table-scroll">
+            <table className="data-table data-table--select data-table--rows">
+              <thead>
+                <tr>
+                  <SortHeader label="Equipo" sortKey="name" sort={sort} onSort={toggleSort} />
+                  <SortHeader
+                    label="Ciudad"
+                    sortKey="city"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Deportes"
+                    sortKey="sports"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Jugadores"
+                    sortKey="players"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Estado"
+                    sortKey="status"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((team) => {
+                  const busy = busyId === team.id
+                  const isSelected = team.id === selected?.id
+                  return (
+                    <tr
+                      key={team.id}
+                      className={`${isSelected ? 'is-selected' : ''}${team.active ? '' : ' is-inactive'}`}
+                      aria-current={isSelected ? 'true' : undefined}
+                      onClick={() => select(team.id, false)}
+                    >
+                      <td className="data-table__name">
+                        <span className="role-cell">
+                          <TeamMonogram team={team} size="md" />
+                          <span className="cell-lines">
+                            <span className="data-table__strong">{team.name}</span>
+                            {team.shortName && <span className="cell-lines__detail">{team.shortName}</span>}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="data-table__optional">
+                        <span className="icon-text">
+                          <MapPin size={14} aria-hidden="true" />
+                          {team.city}
+                        </span>
+                      </td>
+                      <td className="data-table__optional">
+                        {team.sports.length === 0 ? (
+                          <span className="dash">Ninguno</span>
+                        ) : (
+                          <span className="sport-stack" title={team.sports.map((sport) => sport.name).join(', ')}>
+                            {team.sports.slice(0, MAX_ICONS).map((sport) => (
+                              <SportIcon key={sport.id} kind={kindOfSummary(sport, sports)} id={sport.id} size={20} />
+                            ))}
+                            {team.sports.length > MAX_ICONS && (
+                              <span className="sport-stack__more">+{team.sports.length - MAX_ICONS}</span>
                             )}
-                          </td>
-                          <td className="data-table__optional">
-                            <span className="icon-text icon-text--figure">
-                              <Users size={16} aria-hidden="true" />
-                              {team.playersCount}
-                            </span>
-                          </td>
-                          <td className="data-table__optional">
-                            <span className={`pill ${team.active ? 'pill--positive' : 'pill--neutral'}`}>
-                              <span className="status-dot" aria-hidden="true" />
-                              {team.active ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </td>
-                          {/* Los botones no eligen la fila por su cuenta: cada uno hace lo suyo. */}
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="row-actions">
-                              <button
-                                type="button"
-                                className="act act--blue"
-                                title="Ver"
-                                aria-label={`Ver ${team.name}`}
-                                onClick={() => select(team.id, true)}
-                              >
-                                <Eye size={16} aria-hidden="true" />
-                              </button>
-                              {canUpdate && (
-                                <button
-                                  type="button"
-                                  className="act act--blue"
-                                  title="Editar"
-                                  aria-label={`Editar ${team.name}`}
-                                  disabled={busy}
-                                  onClick={() => setEditing(team)}
-                                >
-                                  <Pencil size={16} aria-hidden="true" />
-                                </button>
-                              )}
-                              {canDelete && (
-                                <button
-                                  type="button"
-                                  className="act act--red"
-                                  title="Eliminar"
-                                  aria-label={`Eliminar ${team.name}`}
-                                  disabled={busy}
-                                  onClick={() => remove(team)}
-                                >
-                                  <Trash2 size={16} aria-hidden="true" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="list-foot">
-                Mostrando {visible.length} de {plural(teams.length, 'equipo', 'equipos')}
-              </p>
-            </>
-          )}
-        </section>
+                            <span className="sr-only">{team.sports.map((sport) => sport.name).join(', ')}</span>
+                          </span>
+                        )}
+                      </td>
+                      <td className="data-table__optional">
+                        <span className="icon-text icon-text--figure">
+                          <Users size={16} aria-hidden="true" />
+                          {team.playersCount}
+                        </span>
+                      </td>
+                      <td className="data-table__optional">
+                        <StatusPill active={team.active} />
+                      </td>
+                      <RowActions>
+                        <RowAction
+                          icon={Eye}
+                          title="Ver"
+                          label={`Ver ${team.name}`}
+                          onClick={() => select(team.id, true)}
+                        />
+                        {canUpdate && (
+                          <RowAction
+                            icon={Pencil}
+                            title="Editar"
+                            label={`Editar ${team.name}`}
+                            disabled={busy}
+                            onClick={() => setEditing(team)}
+                          />
+                        )}
+                        {canDelete && (
+                          <RowAction
+                            icon={Trash2}
+                            tone="red"
+                            title="Eliminar"
+                            label={`Eliminar ${team.name}`}
+                            disabled={busy}
+                            onClick={() => remove(team)}
+                          />
+                        )}
+                      </RowActions>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </ListPanel>
 
         <TeamDetail
           ref={detailRef}

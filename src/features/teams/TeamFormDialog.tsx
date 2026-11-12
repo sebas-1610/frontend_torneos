@@ -2,7 +2,10 @@ import { ShieldPlus, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { errorMessage } from '../../api/client'
 import { createTeam, updateTeam, type Team } from '../../api/teams'
+import { ImageField } from '../../components/ImageField'
+import { TeamMonogram } from '../../components/TeamMonogram'
 import { today } from '../../utils/dates'
+import { shieldFromFile } from '../../utils/image'
 import '../auth/LoginPage.css'
 import '../../components/ListPage.css'
 
@@ -21,6 +24,7 @@ export function TeamFormDialog({ team, onClose, onSaved }: TeamFormDialogProps) 
   const [city, setCity] = useState(team?.city ?? '')
   const [foundationDate, setFoundationDate] = useState(team?.foundationDate ?? '')
   const [description, setDescription] = useState(team?.description ?? '')
+  const [shield, setShield] = useState(team?.shield ?? null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -50,6 +54,7 @@ export function TeamFormDialog({ team, onClose, onSaved }: TeamFormDialogProps) 
       city: trimmedCity,
       foundationDate: foundationDate || null,
       description: description.trim() || null,
+      shield,
     }
     try {
       onSaved(isNew ? await createTeam(input) : await updateTeam(team.id, input), isNew)
@@ -84,6 +89,18 @@ export function TeamFormDialog({ team, onClose, onSaved }: TeamFormDialogProps) 
             <X size={16} aria-hidden="true" />
           </button>
         </div>
+
+        <ImageField
+          label="Escudo (opcional)"
+          hint="JPG, PNG o WEBP. Se ve entero, sin recortar; mejor con fondo transparente."
+          preview={<TeamMonogram team={{ id: team?.id ?? 0, name, shield }} size="lg" />}
+          value={shield}
+          read={shieldFromFile}
+          uploadLabel="Subir escudo"
+          changeLabel="Cambiar escudo"
+          inputLabel="Elegir escudo del equipo"
+          onChange={setShield}
+        />
 
         <div className="form-dialog__row">
           <label className="login__field">

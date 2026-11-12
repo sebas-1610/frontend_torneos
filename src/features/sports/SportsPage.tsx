@@ -1,33 +1,30 @@
-import { CircleAlert, Plus, Search } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { errorMessage } from '../../api/client'
 import { deleteSport, disableSport, enableSport, findSports, type Sport } from '../../api/sports'
 import { RESOURCES, useAccess } from '../../auth/access'
+import type { ActionError } from '../../components/ActionAlert'
+import { SoccerBallIcon } from '../../components/BrandIcons'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { EntityCard } from '../../components/EntityCard'
+import { ListPanel, ListToolbar, ToolbarButton } from '../../components/ListView'
+import { PageHeading } from '../../components/PageHeading'
 import { SportIcon } from '../../components/SportIcon'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useToast } from '../../hooks/useToast'
+import { plural } from '../../utils/plural'
+import { revealIfStacked } from '../../utils/reveal'
 import { normalize } from '../roles/labels'
 import { SportDetail } from './SportDetail'
 import { SportFormDialog } from './SportFormDialog'
 import { resolveSportKind } from './sportKind'
 import { treeOrder } from './sportTree'
-import '../../components/ListPage.css'
-import '../../components/DetailPanel.css'
 
 type StatusFilter = '' | 'activos' | 'inactivos'
 
 interface FormState {
   sport: Sport | null // null: crear
   parentId: number | null // padre ya elegido al crear un subdeporte
-}
-
-// En pantallas angostas el detalle queda debajo del catálogo: "Ver" baja hasta él.
-const STACKED = '(max-width: 1279px)'
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`
 }
 
 function sportKindLabel(sport: Sport): string {
@@ -53,7 +50,7 @@ export function SportsPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<ActionError | null>(null)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<StatusFilter>('')
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -83,6 +80,11 @@ export function SportsPage() {
   }, [reloadKey])
 
   const reload = () => setReloadKey((key) => key + 1)
+  const retry = () => {
+    setLoading(true)
+    setLoadError(null)
+    reload()
+  }
 
   // El backend no filtra: la búsqueda (nombre o descripción, sin tildes) y el estado se aplican aquí,
   // conservando el orden del árbol.
@@ -118,11 +120,7 @@ export function SportsPage() {
   function select(sportId: number, reveal: boolean) {
     if (sportId !== selected?.id) setActionError(null)
     setSelectedId(sportId)
-    if (reveal && window.matchMedia(STACKED).matches) {
-      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      // Después de pintar el detalle nuevo.
-      requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' }))
-    }
+    if (reveal) revealIfStacked(() => detailRef.current)
   }
 
   function upsert(saved: Sport) {
@@ -133,13 +131,16 @@ export function SportsPage() {
     )
   }
 
-  async function runAction(sport: Sport, action: () => Promise<void>) {
+  // Si el backend rechaza la acción, el aviso sale en el detalle: por eso la tarjeta queda elegida.
+  async function runAction(sport: Sport, failTitle: string, action: () => Promise<void>) {
+    setSelectedId(sport.id)
     setBusyId(sport.id)
     setActionError(null)
     try {
       await action()
     } catch (err) {
-      setActionError(errorMessage(err))
+      setActionError({ title: failTitle, message: errorMessage(err) })
+      revealIfStacked(() => detailRef.current)
     } finally {
       setBusyId(null)
     }
@@ -168,7 +169,8 @@ export function SportsPage() {
       })
       if (!confirmed) return
     }
-    await runAction(sport, async () => {
+    const failTitle = sport.active ? 'No se pudo desactivar el deporte' : 'No se pudo activar el deporte'
+    await runAction(sport, failTitle, async () => {
       const saved = await (sport.active ? disableSport(sport.id) : enableSport(sport.id))
       upsert(saved)
       showToast(saved.active ? `${saved.name} quedó activo.` : `${saved.name} quedó desactivado.`)
@@ -186,7 +188,7 @@ export function SportsPage() {
       subject: subjectOf(sport),
     })
     if (!confirmed) return
-    await runAction(sport, async () => {
+    await runAction(sport, 'No se puede eliminar el deporte', async () => {
       await deleteSport(sport.id) // 400 con el motivo si tiene subdeportes o equipos (HU-GD-01)
       setSports((list) => list.filter((item) => item.id !== sport.id))
       showToast(`Se eliminó ${sport.name}.`)
@@ -195,99 +197,78 @@ export function SportsPage() {
   }
 
   return (
-    <div className="page">
-      <div className="page__head list-head">
-        <div>
-          <h1 className="page__title">Deportes</h1>
-          <p className="page__finding">{finding}</p>
-        </div>
-        {canCreate && (
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={() => setEditing({ sport: null, parentId: null })}
-          >
-            <Plus size={18} aria-hidden="true" />
-            Nuevo deporte
-          </button>
-        )}
-      </div>
+    <div className="page page--vivid">
+      <PageHeading icon={SoccerBallIcon} title="Deportes" finding={finding} />
+
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Buscar por nombre o descripción"
+        actions={
+          canCreate && (
+            <ToolbarButton
+              primary
+              icon={Plus}
+              label="Nuevo deporte"
+              onClick={() => setEditing({ sport: null, parentId: null })}
+            />
+          )
+        }
+      >
+        <select
+          aria-label="Filtrar por estado"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as StatusFilter)}
+        >
+          <option value="">Todos los estados</option>
+          <option value="activos">Activos</option>
+          <option value="inactivos">Inactivos</option>
+        </select>
+      </ListToolbar>
 
       <div className="page__grid">
-        <section className="panel" aria-label="Deportes registrados" aria-busy={loading}>
-          <div className="list-filters">
-            <label className="list-search">
-              <Search size={16} aria-hidden="true" />
-              <input
-                type="search"
-                placeholder="Buscar por nombre o descripción"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-            <select
-              aria-label="Filtrar por estado"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as StatusFilter)}
-            >
-              <option value="">Todos los estados</option>
-              <option value="activos">Activos</option>
-              <option value="inactivos">Inactivos</option>
-            </select>
-          </div>
-
-          {loadError ? (
-            <div className="inline-error" role="alert">
-              <CircleAlert size={16} aria-hidden="true" />
-              <span>{loadError}</span>
-              <button
-                type="button"
-                className="text-action"
-                onClick={() => {
-                  setLoading(true)
-                  setLoadError(null)
-                  reload()
-                }}
-              >
-                Reintentar
-              </button>
-            </div>
-          ) : loading ? (
-            <p className="empty-state">Cargando deportes…</p>
-          ) : visible.length === 0 ? (
-            <p className="empty-state">
-              {sports.length === 0
+        <ListPanel
+          title="Lista de deportes"
+          titleId="sports-list-title"
+          noun={['deporte', 'deportes']}
+          total={sports.length}
+          loading={loading}
+          loadError={loadError}
+          onRetry={retry}
+          emptyMessage={
+            visible.length > 0
+              ? null
+              : sports.length === 0
                 ? canCreate
                   ? 'No hay deportes registrados. Crea el primero con "Nuevo deporte".'
                   : 'No hay deportes registrados.'
-                : 'Ningún deporte coincide con los filtros.'}
-            </p>
-          ) : (
-            <ul className="card-grid">
-              {visible.map((sport, index) => (
-                <EntityCard
-                  key={sport.id}
-                  index={index}
-                  layout="center"
-                  visual={<SportIcon kind={resolveSportKind(sport, sports)} id={sport.id} size={48} />}
-                  name={sport.name}
-                  meta={sportKindLabel(sport)}
-                  figure={sport.teamsCount}
-                  unit={sport.teamsCount === 1 ? 'equipo' : 'equipos'}
-                  inactiveLabel={sport.active ? null : 'Inactivo'}
-                  selected={sport.id === selected?.id}
-                  busy={busyId === sport.id}
-                  canEdit={canUpdate}
-                  canDelete={canDelete}
-                  onSelect={() => select(sport.id, false)}
-                  onView={() => select(sport.id, true)}
-                  onEdit={() => setEditing({ sport, parentId: null })}
-                  onDelete={() => remove(sport)}
-                />
-              ))}
-            </ul>
-          )}
-        </section>
+                : 'Ningún deporte coincide con los filtros.'
+          }
+        >
+          <ul className="card-grid">
+            {visible.map((sport, index) => (
+              <EntityCard
+                key={sport.id}
+                index={index}
+                layout="center"
+                visual={<SportIcon kind={resolveSportKind(sport, sports)} id={sport.id} size={48} />}
+                name={sport.name}
+                meta={sportKindLabel(sport)}
+                figure={sport.teamsCount}
+                unit={sport.teamsCount === 1 ? 'equipo' : 'equipos'}
+                inactiveLabel={sport.active ? null : 'Inactivo'}
+                selected={sport.id === selected?.id}
+                busy={busyId === sport.id}
+                canEdit={canUpdate}
+                canDelete={canDelete}
+                onSelect={() => select(sport.id, false)}
+                onView={() => select(sport.id, true)}
+                onEdit={() => setEditing({ sport, parentId: null })}
+                onDelete={() => remove(sport)}
+              />
+            ))}
+          </ul>
+        </ListPanel>
 
         <SportDetail
           ref={detailRef}
@@ -304,6 +285,7 @@ export function SportsPage() {
           }
           busy={selected !== null && busyId === selected.id}
           error={actionError}
+          onDismissError={() => setActionError(null)}
           canAddSub={canCreate}
           canUpdate={canUpdate}
           canDelete={canDelete}

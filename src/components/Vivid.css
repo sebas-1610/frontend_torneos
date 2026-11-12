@@ -1,7 +1,9 @@
 /*
- * Capa visual de Equipos y Jugadores (pedido del usuario, 2026-11-11): más color y más luz, como los
- * mockups, sin salirse de la base de Arcanos (negro, dorado y Barlow). Todo cuelga de .page--vivid:
- * sin esa clase, la pantalla vuelve al estilo plano de las demás.
+ * Capa visual de las pantallas de lista (pedido del usuario, 2026-11-11): más color y más luz, como los
+ * mockups, sin salirse de la base de Arcanos (negro, dorado y Barlow). Empezó en Equipos y Jugadores y
+ * ahora la usan todas las listas: Usuarios, Roles, Permisos, Deportes, Equipos, Jugadores y Habilidades
+ * (sus piezas están en ListView.tsx, PageHeading.tsx y DetailPanel.tsx). Todo cuelga de .page--vivid:
+ * sin esa clase, la pantalla vuelve al estilo plano (Asignar permisos, Mi perfil).
  *   - los paneles llevan un borde fino y una luz dorada arriba;
  *   - cada fila de la tabla es una tira con borde, y la elegida se enciende en dorado;
  *   - los botones de fila son cuadros de color (azul: ver y editar; rojo: eliminar o desactivar);
@@ -18,9 +20,37 @@
   border: 1px solid var(--edge);
 }
 
-/* Las tarjetas de "Asociar deportes", con el mismo borde fino. */
+/* Tarjetas (Deportes, Habilidades, Asociar deportes): borde fino y, la elegida, encendida en dorado. */
 .page--vivid .entity-card {
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
   border: 1px solid var(--edge);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.page--vivid .entity-card:hover {
+  background: var(--raised);
+}
+
+.page--vivid .entity-card.is-selected {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  outline: none;
+}
+
+.page--vivid .entity-card--static,
+.page--vivid .entity-card--static:hover {
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+}
+
+.page--vivid .entity-card .row-actions {
+  gap: 4px;
+}
+
+.page--vivid .entity-card .act {
+  width: 28px;
+  height: 28px;
 }
 
 /* Título de un panel con su icono en un cuadro de color y, si aplica, cuántos elementos tiene. */
@@ -106,9 +136,16 @@
   border-radius: 10px;
 }
 
-.page--vivid .toolbar__action {
-  height: 40px;
+/* Las acciones de la barra van a la derecha (la principal, al final). */
+.page--vivid .toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-left: auto;
+}
+
+.page--vivid .toolbar__actions .button {
+  height: 40px;
   padding: 0 18px;
 }
 
@@ -158,6 +195,10 @@
 
 .page--vivid .data-table--rows tbody tr:hover td {
   background: var(--raised);
+}
+
+.page--vivid .data-table--rows tbody tr.is-inactive .data-table__strong {
+  color: var(--muted);
 }
 
 /* La fila elegida se enciende en dorado. */
@@ -236,6 +277,36 @@
   color: var(--tone-blue);
 }
 
+/* Algo que está encendido (ej: la verificación en dos pasos del usuario). */
+.page--vivid .icon-text--on,
+.page--vivid .icon-text--on svg {
+  color: var(--positive);
+}
+
+/* Icono del recurso en un cuadro de color, delante de su nombre (Permisos). */
+.page--vivid .cell-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--tone-blue);
+  background: color-mix(in srgb, var(--tone-blue) 12%, transparent);
+  border-radius: 10px;
+}
+
+/* "(tú)" junto al nombre de la cuenta con la que se entró. */
+.page--vivid .cell-lines__own {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* El método de cada endpoint, más visible que la ruta. */
+.page--vivid .endpoint-list__method {
+  font-weight: 600;
+  color: var(--text);
+}
+
 .page--vivid .icon-text--figure {
   font-family: var(--figure);
   font-size: 17px;
@@ -250,6 +321,7 @@
 
 .page--vivid .act {
   display: grid;
+  text-decoration: none; /* también puede ser un enlace (ej: la matriz de permisos del rol) */
   flex-shrink: 0;
   place-items: center;
   width: 30px;
@@ -359,14 +431,15 @@
   margin: -4px -4px 0 0;
 }
 
-/* El elegido bajo un foco de luz del tono del equipo (--hue). */
+/* El elegido bajo un foco de luz de su color (--glow: el tono del equipo, de la categoría...). */
 .page--vivid .hero {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px 14px;
   background:
-    radial-gradient(110% 130% at 14% 0%, hsl(var(--hue) 65% 48% / 0.2), transparent 62%), var(--raised);
+    radial-gradient(110% 130% at 14% 0%, color-mix(in srgb, var(--glow) 20%, transparent), transparent 62%),
+    var(--raised);
   border: 1px solid var(--edge);
   border-radius: 14px;
 }
@@ -382,6 +455,30 @@
   font-weight: 600;
   line-height: 1.2;
   overflow-wrap: anywhere;
+}
+
+/* Icono grande del deporte o de la habilidad. */
+.page--vivid .hero__glyph {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  background: color-mix(in srgb, var(--glow) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glow) 35%, transparent);
+  border-radius: 50%;
+}
+
+.page--vivid .hero__meta {
+  margin-top: 8px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.page--vivid .hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* La posición del jugador, en su color. */
@@ -432,6 +529,11 @@
   box-shadow: 0 0 0 3px var(--raised); /* taste-skill-ignore: separa el círculo de la foto */
 }
 
+/* Un escudo no es un círculo: va sin el aro. */
+.page--vivid .hero__badge:has(.team-shield) {
+  box-shadow: none;
+}
+
 /* Nota bajo la identidad (ej: por qué un inactivo no recibe jugadores). */
 .page--vivid .detail__note {
   margin-top: 10px;
@@ -454,6 +556,11 @@
   background: color-mix(in srgb, var(--raised) 60%, var(--surface));
   border: 1px solid var(--edge);
   border-radius: 12px;
+}
+
+/* Una sola cifra ocupa todo el ancho. */
+.page--vivid .stat-tile:only-child {
+  grid-column: 1 / -1;
 }
 
 .page--vivid .stat-tile__icon {
@@ -610,8 +717,8 @@
   margin: -4px -6px -4px 0;
 }
 
-/* Elegir la foto del jugador: vista previa y botones. */
-.page--vivid .photo-field {
+/* Campo de imagen (foto del jugador, escudo del equipo): vista previa y botones. */
+.page--vivid .image-field {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -621,35 +728,35 @@
   border-radius: 12px;
 }
 
-.page--vivid .photo-field__body {
+.page--vivid .image-field__body {
   flex: 1;
   min-width: 0;
 }
 
-.page--vivid .photo-field__label {
+.page--vivid .image-field__label {
   font-size: var(--fs-small);
   color: var(--muted);
 }
 
-.page--vivid .photo-field__actions {
+.page--vivid .image-field__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 6px;
 }
 
-.page--vivid .photo-field__actions .button {
+.page--vivid .image-field__actions .button {
   height: 32px;
   padding: 0 12px;
 }
 
-.page--vivid .photo-field__hint {
+.page--vivid .image-field__hint {
   margin-top: 6px;
   font-size: 12px;
   color: var(--faint);
 }
 
-.page--vivid .photo-field__error {
+.page--vivid .image-field__error {
   margin-top: 6px;
   font-size: var(--fs-small);
   color: var(--negative);
@@ -724,8 +831,12 @@
     max-width: none;
   }
 
-  .page--vivid .toolbar__action {
+  .page--vivid .toolbar__actions {
     width: 100%;
+  }
+
+  .page--vivid .toolbar__actions .button {
+    flex: 1 1 auto;
   }
 }
 
@@ -743,6 +854,22 @@
   .page--vivid .data-table--rows td {
     padding-right: 8px;
     padding-left: 8px;
+  }
+}
+
+/*
+ * En el teléfono, una fila con más de tres botones (Usuarios tiene cinco) los reparte en líneas de a
+ * tres para dejarle espacio al nombre, y el icono del recurso (Permisos) se quita.
+ */
+@media (max-width: 479px) {
+  .page--vivid .data-table--rows .row-actions:has(> :nth-child(4)) {
+    display: grid;
+    grid-template-columns: repeat(3, 30px);
+    justify-content: end;
+  }
+
+  .page--vivid .data-table--rows .cell-icon {
+    display: none;
   }
 }
 

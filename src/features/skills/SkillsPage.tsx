@@ -1,33 +1,22 @@
-import { CircleAlert, Plus, Search } from 'lucide-react'
+import { Plus, Star } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { errorMessage } from '../../api/client'
-import {
-  deleteSkill,
-  disableSkill,
-  enableSkill,
-  findSkills,
-  type Skill,
-  type SkillCategory,
-} from '../../api/skills'
+import { deleteSkill, disableSkill, enableSkill, findSkills, type Skill, type SkillCategory } from '../../api/skills'
 import { RESOURCES, useAccess } from '../../auth/access'
+import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { EntityCard } from '../../components/EntityCard'
+import { ListPanel, ListToolbar, ToolbarButton } from '../../components/ListView'
+import { PageHeading } from '../../components/PageHeading'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useToast } from '../../hooks/useToast'
+import { plural } from '../../utils/plural'
+import { revealIfStacked } from '../../utils/reveal'
 import { normalize } from '../roles/labels'
 import { CATEGORIES, categoryOf } from './categories'
 import { SkillDetail } from './SkillDetail'
 import { SkillFormDialog } from './SkillFormDialog'
 import { SkillIcon } from './SkillIcon'
-import '../../components/ListPage.css'
-import '../../components/DetailPanel.css'
-
-// En pantallas angostas el detalle queda debajo del catálogo: "Ver" baja hasta él.
-const STACKED = '(max-width: 1279px)'
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`
-}
 
 // Pantalla "Habilidades" (HU-GD-06): catálogo en tarjetas agrupado por categoría, búsqueda, filtro de
 // categoría, crear, editar, activar/desactivar y eliminar. A la derecha, el detalle con los jugadores que
@@ -50,7 +39,7 @@ export function SkillsPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [editing, setEditing] = useState<Skill | 'new' | null>(null)
   const [busy, setBusy] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<ActionError | null>(null)
   const detailRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -73,6 +62,11 @@ export function SkillsPage() {
   }, [reloadKey])
 
   const reload = () => setReloadKey((key) => key + 1)
+  const retry = () => {
+    setLoading(true)
+    setLoadError(null)
+    reload()
+  }
 
   // El backend no filtra: búsqueda por nombre o descripción (sin tildes) y categoría, aquí.
   const groups = useMemo(() => {
@@ -111,10 +105,7 @@ export function SkillsPage() {
   function select(skillId: number, reveal: boolean) {
     if (skillId !== selected?.id) setActionError(null)
     setSelectedId(skillId)
-    if (reveal && window.matchMedia(STACKED).matches) {
-      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      requestAnimationFrame(() => detailRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' }))
-    }
+    if (reveal) revealIfStacked(() => detailRef.current)
   }
 
   function upsert(saved: Skill) {
@@ -125,13 +116,16 @@ export function SkillsPage() {
     )
   }
 
-  async function runAction(action: () => Promise<void>) {
+  // Si el backend rechaza la acción, el aviso sale en el detalle: por eso la tarjeta queda elegida.
+  async function runAction(skill: Skill, failTitle: string, action: () => Promise<void>) {
+    setSelectedId(skill.id)
     setBusy(true)
     setActionError(null)
     try {
       await action()
     } catch (err) {
-      setActionError(errorMessage(err))
+      setActionError({ title: failTitle, message: errorMessage(err) })
+      revealIfStacked(() => detailRef.current)
     } finally {
       setBusy(false)
     }
@@ -165,7 +159,8 @@ export function SkillsPage() {
       })
       if (!confirmed) return
     }
-    await runAction(async () => {
+    const failTitle = skill.active ? 'No se pudo desactivar la habilidad' : 'No se pudo activar la habilidad'
+    await runAction(skill, failTitle, async () => {
       const saved = await (skill.active ? disableSkill(skill.id) : enableSkill(skill.id))
       upsert(saved)
       showToast(saved.active ? `${saved.name} quedó activa.` : `${saved.name} quedó desactivada.`)
@@ -182,7 +177,7 @@ export function SkillsPage() {
       subject: subjectOf(skill),
     })
     if (!confirmed) return
-    await runAction(async () => {
+    await runAction(skill, 'No se puede eliminar la habilidad', async () => {
       await deleteSkill(skill.id) // 400 con a cuántos jugadores está asignada (HU-GD-06)
       setSkills((list) => list.filter((item) => item.id !== skill.id))
       showToast(`Se eliminó ${skill.name}.`)
@@ -192,109 +187,85 @@ export function SkillsPage() {
 
   let cardIndex = 0
   return (
-    <div className="page">
-      <div className="page__head list-head">
-        <div>
-          <h1 className="page__title">Habilidades</h1>
-          <p className="page__finding">{finding}</p>
-        </div>
-        {canCreate && (
-          <button type="button" className="button button--primary" onClick={() => setEditing('new')}>
-            <Plus size={18} aria-hidden="true" />
-            Nueva habilidad
-          </button>
-        )}
-      </div>
+    <div className="page page--vivid">
+      <PageHeading icon={Star} title="Habilidades" finding={finding} />
+
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Buscar por nombre o descripción"
+        actions={
+          canCreate && <ToolbarButton primary icon={Plus} label="Nueva habilidad" onClick={() => setEditing('new')} />
+        }
+      >
+        <select
+          aria-label="Filtrar por categoría"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value as SkillCategory | '')}
+        >
+          <option value="">Todas las categorías</option>
+          {CATEGORIES.map((category) => (
+            <option key={category.key} value={category.key}>
+              {category.label}
+            </option>
+          ))}
+        </select>
+      </ListToolbar>
 
       <div className="page__grid">
-        <section className="panel" aria-label="Catálogo de habilidades" aria-busy={loading}>
-          <div className="list-filters">
-            <label className="list-search">
-              <Search size={16} aria-hidden="true" />
-              <input
-                type="search"
-                placeholder="Buscar por nombre o descripción"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-            <select
-              aria-label="Filtrar por categoría"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value as SkillCategory | '')}
-            >
-              <option value="">Todas las categorías</option>
-              {CATEGORIES.map((category) => (
-                <option key={category.key} value={category.key}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {loadError ? (
-            <div className="inline-error" role="alert">
-              <CircleAlert size={16} aria-hidden="true" />
-              <span>{loadError}</span>
-              <button
-                type="button"
-                className="text-action"
-                onClick={() => {
-                  setLoading(true)
-                  setLoadError(null)
-                  reload()
-                }}
-              >
-                Reintentar
-              </button>
-            </div>
-          ) : loading ? (
-            <p className="empty-state">Cargando habilidades…</p>
-          ) : groups.length === 0 ? (
-            <p className="empty-state">
-              {skills.length === 0
+        <ListPanel
+          title="Catálogo de habilidades"
+          titleId="skills-list-title"
+          noun={['habilidad', 'habilidades']}
+          total={skills.length}
+          loading={loading}
+          loadError={loadError}
+          onRetry={retry}
+          emptyMessage={
+            groups.length > 0
+              ? null
+              : skills.length === 0
                 ? canCreate
                   ? 'El catálogo está vacío. Crea la primera habilidad con "Nueva habilidad".'
                   : 'El catálogo está vacío.'
-                : 'Ninguna habilidad coincide con los filtros.'}
-            </p>
-          ) : (
-            <div className="catalog">
-              {groups.map(({ category, items }) => (
-                <section key={category.key} className="catalog__group" aria-labelledby={`skills-${category.key}`}>
-                  <h2 id={`skills-${category.key}`} className="catalog__title">
-                    <span className="catalog__dot" style={{ '--tone': `var(${category.tone})` } as CSSProperties} />
-                    {category.label}
-                    <span className="catalog__count num">{items.length}</span>
-                  </h2>
-                  <ul className="card-grid">
-                    {items.map((skill) => (
-                      <EntityCard
-                        key={skill.id}
-                        index={cardIndex++}
-                        layout="start"
-                        visual={<SkillIcon skill={skill} size={30} />}
-                        name={skill.name}
-                        description={skill.description ?? 'Sin descripción.'}
-                        figure={skill.playersCount}
-                        unit={skill.playersCount === 1 ? 'jugador' : 'jugadores'}
-                        inactiveLabel={skill.active ? null : 'Inactiva'}
-                        selected={skill.id === selected?.id}
-                        busy={busy && skill.id === selected?.id}
-                        canEdit={canUpdate}
-                        canDelete={canDelete}
-                        onSelect={() => select(skill.id, false)}
-                        onView={() => select(skill.id, true)}
-                        onEdit={() => setEditing(skill)}
-                        onDelete={() => remove(skill)}
-                      />
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
-          )}
-        </section>
+                : 'Ninguna habilidad coincide con los filtros.'
+          }
+        >
+          <div className="catalog">
+            {groups.map(({ category, items }) => (
+              <section key={category.key} className="catalog__group" aria-labelledby={`skills-${category.key}`}>
+                <h2 id={`skills-${category.key}`} className="catalog__title">
+                  <span className="catalog__dot" style={{ '--tone': `var(${category.tone})` } as CSSProperties} />
+                  {category.label}
+                  <span className="catalog__count num">{items.length}</span>
+                </h2>
+                <ul className="card-grid">
+                  {items.map((skill) => (
+                    <EntityCard
+                      key={skill.id}
+                      index={cardIndex++}
+                      layout="start"
+                      visual={<SkillIcon skill={skill} size={30} />}
+                      name={skill.name}
+                      description={skill.description ?? 'Sin descripción.'}
+                      figure={skill.playersCount}
+                      unit={skill.playersCount === 1 ? 'jugador' : 'jugadores'}
+                      inactiveLabel={skill.active ? null : 'Inactiva'}
+                      selected={skill.id === selected?.id}
+                      busy={busy && skill.id === selected?.id}
+                      canEdit={canUpdate}
+                      canDelete={canDelete}
+                      onSelect={() => select(skill.id, false)}
+                      onView={() => select(skill.id, true)}
+                      onEdit={() => setEditing(skill)}
+                      onDelete={() => remove(skill)}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </ListPanel>
 
         <SkillDetail
           ref={detailRef}
@@ -310,6 +281,7 @@ export function SkillsPage() {
           }
           busy={busy}
           error={actionError}
+          onDismissError={() => setActionError(null)}
           canUpdate={canUpdate}
           canDelete={canDelete}
           canSeePlayers={canSeePlayers}

@@ -15,6 +15,7 @@
   --active: #24251c;
   --rule: #24251c;
   --edge: #33352b; /* borde fino de paneles y filas en las pantallas con más color (Vivid.css) */
+  --doodle: rgba(255, 255, 255, 0.16); /* dibujos deportivos del fondo (App.css, .canvas) */
   --control: #44463b;
 
   --text: #f2f2ef;
@@ -98,6 +99,7 @@
   --active: #e8e8e2;
   --rule: #e7e7e1;
   --edge: #dcddd5;
+  --doodle: rgba(0, 0, 0, 0.14);
   --control: #c9cac2;
 
   --text: #0d0e09;

@@ -1,12 +1,23 @@
-import { CircleAlert, Pencil, Plus, Power, PowerOff, Trash2 } from 'lucide-react'
+import { CircleAlert, Info, ListTree, Plus, Shield } from 'lucide-react'
 import { useEffect, useState, type Ref } from 'react'
 import { errorMessage } from '../../api/client'
 import type { Sport } from '../../api/sports'
 import type { TeamSummary } from '../../api/teams'
 import { findTeamsBySport } from '../../api/teamSports'
-import { AnimatedNumber } from '../../components/AnimatedNumber'
+import type { ActionError } from '../../components/ActionAlert'
+import {
+  DetailActions,
+  DetailHero,
+  DetailMain,
+  DetailPanel,
+  DetailSection,
+  DetailSide,
+  StatTile,
+  StatTiles,
+} from '../../components/DetailPanel'
 import { SportIcon } from '../../components/SportIcon'
 import { TeamMonogram } from '../../components/TeamMonogram'
+import { hueFor } from '../../utils/hue'
 import { resolveSportKind, sportKindOf } from './sportKind'
 
 interface SportDetailProps {
@@ -15,7 +26,8 @@ interface SportDetailProps {
   sports: Sport[] // para el balón de los subdeportes sin palabra conocida (usan el de su padre)
   emptyMessage: string
   busy: boolean
-  error: string | null // error de la última acción (ej: no se puede eliminar porque tiene subdeportes)
+  error: ActionError | null // la última acción rechazada (ej: no se puede eliminar porque tiene subdeportes)
+  onDismissError: () => void
   canAddSub: boolean
   canUpdate: boolean
   canDelete: boolean
@@ -35,6 +47,7 @@ export function SportDetail({
   emptyMessage,
   busy,
   error,
+  onDismissError,
   canAddSub,
   canUpdate,
   canDelete,
@@ -46,154 +59,129 @@ export function SportDetail({
   onDelete,
 }: SportDetailProps) {
   if (!sport) {
-    return (
-      <aside ref={ref} className="rail rail--detail" aria-label="Detalle del deporte">
-        <section className="panel">
-          <p className="empty-state">{emptyMessage}</p>
-        </section>
-      </aside>
-    )
+    return <DetailPanel ref={ref} label="Detalle del deporte" icon={Info} emptyMessage={emptyMessage} />
   }
 
   const { parent, teamsCount: teams } = sport
+  const subs = sport.subSports.length
   const kind = resolveSportKind(sport, sports)
   return (
-    <aside ref={ref} className="rail rail--detail" aria-label="Detalle del deporte">
-      <section className="panel summary" aria-labelledby="sport-detail-title">
-        <div className="detail__head">
-          <span className="detail__glyph">
-            <SportIcon kind={kind} id={sport.id} size={40} />
+    <DetailPanel
+      ref={ref}
+      label="Detalle del deporte"
+      icon={Info}
+      titleId="sport-detail-title"
+      emptyMessage={null}
+      error={error}
+      onDismissError={onDismissError}
+    >
+      <DetailMain>
+        <DetailHero
+          glow={`hsl(${hueFor(sport.id)} 65% 48%)`}
+          visual={
+            <span className="hero__glyph">
+              <SportIcon kind={kind} id={sport.id} size={56} />
+            </span>
+          }
+        >
+          <h3 id="sport-detail-title" className="hero__name">
+            {sport.name}
+          </h3>
+          <span className={`pill ${sport.active ? 'pill--positive' : 'pill--neutral'}`}>
+            <span className="status-dot" aria-hidden="true" />
+            {sport.active ? 'Activo' : 'Inactivo'}
           </span>
-          <div className="detail__identity">
-            <h2 id="sport-detail-title" className="detail__name">
-              {sport.name}
-            </h2>
-            <p className="detail__meta">
-              {parent ? (
-                <>
-                  Subdeporte de{' '}
-                  <button type="button" className="detail__link" onClick={() => onSelect(parent.id)}>
-                    {parent.name}
-                  </button>
-                </>
-              ) : (
-                'Deporte principal'
-              )}
-            </p>
-          </div>
-        </div>
-
-        <p className="detail__description">{sport.description ?? <span className="dash">Sin descripción.</span>}</p>
-
-        <div className="score">
-          <p className="score__label">Equipos asociados</p>
-          <p className="score__figure">
-            <AnimatedNumber value={teams} className="score__value" />
-            <span className="score__of">{teams === 1 ? 'equipo participa' : 'equipos participan'}</span>
+          <p className="hero__meta">
+            {parent ? (
+              <>
+                Subdeporte de{' '}
+                <button type="button" className="detail__link" onClick={() => onSelect(parent.id)}>
+                  {parent.name}
+                </button>
+              </>
+            ) : (
+              'Deporte principal'
+            )}
           </p>
-        </div>
+        </DetailHero>
 
-        <dl className="facts">
-          <div>
-            <dt>Estado</dt>
-            <dd>
-              <span className={`pill ${sport.active ? 'pill--positive' : 'pill--neutral'}`}>
-                <span className="status-dot" aria-hidden="true" />
-                {sport.active ? 'Activo' : 'Inactivo'}
-              </span>
-            </dd>
-          </div>
-        </dl>
+        <StatTiles>
+          <StatTile
+            icon={Shield}
+            tone="--tone-blue"
+            value={teams}
+            label={teams === 1 ? 'Equipo asociado' : 'Equipos asociados'}
+          />
+          <StatTile icon={ListTree} tone="--tone-green" value={subs} label={subs === 1 ? 'Subdeporte' : 'Subdeportes'} />
+        </StatTiles>
         {!sport.active && (
-          <p className="detail__empty">No recibe equipos nuevos ni puede ser deporte padre hasta que lo actives.</p>
-        )}
-
-        {error && (
-          <p className="login__error detail__error" role="alert">
-            {error}
+          <p className="detail__empty detail__note">
+            No recibe equipos nuevos ni puede ser deporte padre hasta que lo actives.
           </p>
         )}
+      </DetailMain>
 
-        {canUpdate && (
-          <div className="detail__actions">
-            <button type="button" className="button button--outline" disabled={busy} onClick={() => onEdit(sport)}>
-              <Pencil size={16} aria-hidden="true" />
-              Editar
-            </button>
-            <button
-              type="button"
-              className="button button--text"
-              disabled={busy}
-              onClick={() => onToggleActive(sport)}
-            >
-              {sport.active ? <PowerOff size={16} aria-hidden="true" /> : <Power size={16} aria-hidden="true" />}
-              {sport.active ? 'Desactivar' : 'Activar'}
-            </button>
-          </div>
-        )}
-        {/* Lo que borra va aparte, lejos de Editar. */}
-        {canDelete && (
-          <div className="detail__danger">
-            <button
-              type="button"
-              className="button button--text row-actions__danger"
-              disabled={busy}
-              onClick={() => onDelete(sport)}
-            >
-              <Trash2 size={16} aria-hidden="true" />
-              Eliminar deporte
-            </button>
-          </div>
-        )}
-      </section>
+      <DetailSide>
+        <DetailSection title="Descripción">
+          <p className="detail-section__text">{sport.description ?? 'Sin descripción.'}</p>
+        </DetailSection>
 
-      <section className="panel" aria-labelledby="sport-subs-title">
-        <div className="detail__section-head">
-          <h2 id="sport-subs-title" className="panel__title">
-            Subdeportes
-          </h2>
-          {/* Un deporte desactivado no puede ser padre: el backend lo rechazaría. */}
-          {canAddSub && sport.active && (
-            <button type="button" className="button button--text detail__add" onClick={() => onAddSub(sport)}>
-              <Plus size={16} aria-hidden="true" />
-              Agregar
-            </button>
+        <DetailSection
+          title="Subdeportes"
+          action={
+            // Un deporte desactivado no puede ser padre: el backend lo rechazaría.
+            canAddSub &&
+            sport.active && (
+              <button type="button" className="button button--text detail__add" onClick={() => onAddSub(sport)}>
+                <Plus size={16} aria-hidden="true" />
+                Agregar
+              </button>
+            )
+          }
+        >
+          {subs === 0 ? (
+            <p className="detail__empty">{sport.name} no tiene subdeportes.</p>
+          ) : (
+            <ul className="detail-list">
+              {sport.subSports.map((sub) => {
+                const subKind = sportKindOf(sub.name)
+                return (
+                  <li key={sub.id}>
+                    <button
+                      type="button"
+                      className="detail-list__item detail-list__button"
+                      onClick={() => onSelect(sub.id)}
+                    >
+                      <SportIcon kind={subKind === 'generic' ? kind : subKind} id={sub.id} size={26} />
+                      <span className="detail-list__name">{sub.name}</span>
+                      {!sub.active && <span className="pill pill--neutral">Inactivo</span>}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           )}
-        </div>
-        {sport.subSports.length === 0 ? (
-          <p className="detail__empty">{sport.name} no tiene subdeportes.</p>
-        ) : (
-          <ul className="detail-list">
-            {sport.subSports.map((sub) => {
-              const subKind = sportKindOf(sub.name)
-              return (
-                <li key={sub.id}>
-                  <button
-                    type="button"
-                    className="detail-list__item detail-list__button"
-                    onClick={() => onSelect(sub.id)}
-                  >
-                    <SportIcon kind={subKind === 'generic' ? kind : subKind} id={sub.id} size={26} />
-                    <span className="detail-list__name">{sub.name}</span>
-                    {!sub.active && <span className="pill pill--neutral">Inactivo</span>}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+        </DetailSection>
 
-      {canSeeTeams && (
-        <section className="panel" aria-labelledby="sport-teams-title">
-          <h2 id="sport-teams-title" className="panel__title detail__section-title">
-            Equipos asociados
-          </h2>
-          {/* La key vuelve a pedir la lista al cambiar de deporte o cuando cambia su cantidad de equipos. */}
-          <SportTeams key={`${sport.id}:${teams}`} sport={sport} />
-        </section>
-      )}
-    </aside>
+        {canSeeTeams && (
+          <DetailSection title="Equipos asociados">
+            {/* La key vuelve a pedir la lista al cambiar de deporte o cuando cambia su cantidad de equipos. */}
+            <SportTeams key={`${sport.id}:${teams}`} sport={sport} />
+          </DetailSection>
+        )}
+      </DetailSide>
+
+      <DetailActions
+        noun="deporte"
+        active={sport.active}
+        busy={busy}
+        canUpdate={canUpdate}
+        canDelete={canDelete}
+        onEdit={() => onEdit(sport)}
+        onToggleActive={() => onToggleActive(sport)}
+        onDelete={() => onDelete(sport)}
+      />
+    </DetailPanel>
   )
 }
 

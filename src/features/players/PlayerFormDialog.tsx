@@ -10,8 +10,10 @@ import {
   type DominantFoot,
   type Player,
 } from '../../api/players'
+import { ImageField } from '../../components/ImageField'
+import { PlayerAvatar } from '../../components/PlayerAvatar'
 import { today } from '../../utils/dates'
-import { PhotoField } from './PhotoField'
+import { photoFromFile } from '../../utils/image'
 import '../auth/LoginPage.css'
 import '../../components/ListPage.css'
 
@@ -140,7 +142,17 @@ export function PlayerFormDialog({ player, onClose, onSaved }: PlayerFormDialogP
           </button>
         </div>
 
-        <PhotoField player={{ id: player?.id ?? 0, firstName, lastName, photo }} onChange={setPhoto} />
+        <ImageField
+          label="Foto (opcional)"
+          hint="JPG, PNG o WEBP. Se recorta en cuadrado."
+          preview={<PlayerAvatar player={{ id: player?.id ?? 0, firstName, lastName, photo }} size="lg" />}
+          value={photo}
+          read={photoFromFile}
+          uploadLabel="Subir foto"
+          changeLabel="Cambiar foto"
+          inputLabel="Elegir foto del jugador"
+          onChange={setPhoto}
+        />
 
         <div className="form-dialog__row">
           <label className="login__field">

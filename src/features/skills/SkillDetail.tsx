@@ -1,11 +1,21 @@
-import { CircleAlert, Pencil, Power, PowerOff, Trash2 } from 'lucide-react'
-import { useEffect, useState, type Ref } from 'react'
+import { CircleAlert, Info, Users } from 'lucide-react'
+import { useEffect, useState, type CSSProperties, type Ref } from 'react'
 import { errorMessage } from '../../api/client'
 import type { PlayerSummary } from '../../api/players'
 import { findPlayersBySkill } from '../../api/playerSkills'
 import type { Skill } from '../../api/skills'
-import { AnimatedNumber } from '../../components/AnimatedNumber'
-import { initials } from '../../utils/initials'
+import type { ActionError } from '../../components/ActionAlert'
+import {
+  DetailActions,
+  DetailHero,
+  DetailMain,
+  DetailPanel,
+  DetailSection,
+  DetailSide,
+  StatTile,
+  StatTiles,
+} from '../../components/DetailPanel'
+import { PlayerAvatar } from '../../components/PlayerAvatar'
 import { categoryOf } from './categories'
 import { SkillIcon } from './SkillIcon'
 
@@ -14,7 +24,8 @@ interface SkillDetailProps {
   skill: Skill | null // null: no hay habilidades que mostrar
   emptyMessage: string
   busy: boolean
-  error: string | null // error de la última acción (ej: no se puede eliminar porque está asignada)
+  error: ActionError | null // la última acción rechazada (ej: no se puede eliminar porque está asignada)
+  onDismissError: () => void
   canUpdate: boolean
   canDelete: boolean
   canSeePlayers: boolean // asignacion-habilidades · Listar: sin él solo se muestra cuántos jugadores
@@ -30,6 +41,7 @@ export function SkillDetail({
   emptyMessage,
   busy,
   error,
+  onDismissError,
   canUpdate,
   canDelete,
   canSeePlayers,
@@ -38,106 +50,84 @@ export function SkillDetail({
   onDelete,
 }: SkillDetailProps) {
   if (!skill) {
-    return (
-      <aside ref={ref} className="rail rail--detail" aria-label="Detalle de la habilidad">
-        <section className="panel">
-          <p className="empty-state">{emptyMessage}</p>
-        </section>
-      </aside>
-    )
+    return <DetailPanel ref={ref} label="Detalle de la habilidad" icon={Info} emptyMessage={emptyMessage} />
   }
 
   const category = categoryOf(skill.category)
   const players = skill.playersCount
   return (
-    <aside ref={ref} className="rail rail--detail" aria-label="Detalle de la habilidad">
-      <section className="panel summary" aria-labelledby="skill-detail-title">
-        <div className="detail__head">
-          <span className="detail__glyph">
-            <SkillIcon skill={skill} size={30} />
-          </span>
-          <div className="detail__identity">
-            <h2 id="skill-detail-title" className="detail__name">
-              {skill.name}
-            </h2>
-            <p className="detail__meta">Habilidad {category.label.toLowerCase()}</p>
-          </div>
-        </div>
-
-        <p className="detail__description">{skill.description ?? <span className="dash">Sin descripción.</span>}</p>
-
-        <div className="score">
-          <p className="score__label">Jugadores con esta habilidad</p>
-          <p className="score__figure">
-            <AnimatedNumber value={players} className="score__value" />
-            <span className="score__of">{players === 1 ? 'jugador' : 'jugadores'}</span>
+    <DetailPanel
+      ref={ref}
+      label="Detalle de la habilidad"
+      icon={Info}
+      titleId="skill-detail-title"
+      emptyMessage={null}
+      error={error}
+      onDismissError={onDismissError}
+    >
+      <DetailMain>
+        {/* El foco de luz y la etiqueta llevan el color de su categoría. */}
+        <DetailHero
+          glow={`var(${category.tone})`}
+          visual={
+            <span className="hero__glyph">
+              <SkillIcon skill={skill} size={44} />
+            </span>
+          }
+        >
+          <h3 id="skill-detail-title" className="hero__name">
+            {skill.name}
+          </h3>
+          <p className="hero__tags">
+            <span className="tag" style={{ '--tag': `var(${category.tone})` } as CSSProperties}>
+              {category.label}
+            </span>
+            <span className={`pill ${skill.active ? 'pill--positive' : 'pill--neutral'}`}>
+              <span className="status-dot" aria-hidden="true" />
+              {skill.active ? 'Activa' : 'Inactiva'}
+            </span>
           </p>
-        </div>
+        </DetailHero>
 
-        <dl className="facts">
-          <div>
-            <dt>Estado</dt>
-            <dd>
-              <span className={`pill ${skill.active ? 'pill--positive' : 'pill--neutral'}`}>
-                <span className="status-dot" aria-hidden="true" />
-                {skill.active ? 'Activa' : 'Inactiva'}
-              </span>
-            </dd>
-          </div>
-        </dl>
+        <StatTiles>
+          <StatTile
+            icon={Users}
+            tone="--tone-blue"
+            value={players}
+            label={players === 1 ? 'Jugador con esta habilidad' : 'Jugadores con esta habilidad'}
+          />
+        </StatTiles>
         {!skill.active && (
-          <p className="detail__empty">No se puede asignar a más jugadores; los que ya la tienen la conservan.</p>
-        )}
-
-        {error && (
-          <p className="login__error detail__error" role="alert">
-            {error}
+          <p className="detail__empty detail__note">
+            No se puede asignar a más jugadores; los que ya la tienen la conservan.
           </p>
         )}
+      </DetailMain>
 
-        {canUpdate && (
-          <div className="detail__actions">
-            <button type="button" className="button button--outline" disabled={busy} onClick={() => onEdit(skill)}>
-              <Pencil size={16} aria-hidden="true" />
-              Editar
-            </button>
-            <button
-              type="button"
-              className="button button--text"
-              disabled={busy}
-              onClick={() => onToggleActive(skill)}
-            >
-              {skill.active ? <PowerOff size={16} aria-hidden="true" /> : <Power size={16} aria-hidden="true" />}
-              {skill.active ? 'Desactivar' : 'Activar'}
-            </button>
-          </div>
-        )}
-        {/* Lo que borra va aparte, lejos de Editar. */}
-        {canDelete && (
-          <div className="detail__danger">
-            <button
-              type="button"
-              className="button button--text row-actions__danger"
-              disabled={busy}
-              onClick={() => onDelete(skill)}
-            >
-              <Trash2 size={16} aria-hidden="true" />
-              Eliminar habilidad
-            </button>
-          </div>
-        )}
-      </section>
+      <DetailSide>
+        <DetailSection title="Descripción">
+          <p className="detail-section__text">{skill.description ?? 'Sin descripción.'}</p>
+        </DetailSection>
 
-      {canSeePlayers && (
-        <section className="panel" aria-labelledby="skill-players-title">
-          <h2 id="skill-players-title" className="panel__title detail__section-title">
-            Jugadores con esta habilidad
-          </h2>
-          {/* La key vuelve a pedir la lista al cambiar de habilidad o cuando cambia su cantidad de jugadores. */}
-          <SkillPlayers key={`${skill.id}:${players}`} skill={skill} />
-        </section>
-      )}
-    </aside>
+        {canSeePlayers && (
+          <DetailSection title="Jugadores con esta habilidad">
+            {/* La key vuelve a pedir la lista al cambiar de habilidad o cuando cambia su cantidad de jugadores. */}
+            <SkillPlayers key={`${skill.id}:${players}`} skill={skill} />
+          </DetailSection>
+        )}
+      </DetailSide>
+
+      <DetailActions
+        noun="habilidad"
+        active={skill.active}
+        busy={busy}
+        canUpdate={canUpdate}
+        canDelete={canDelete}
+        onEdit={() => onEdit(skill)}
+        onToggleActive={() => onToggleActive(skill)}
+        onDelete={() => onDelete(skill)}
+      />
+    </DetailPanel>
   )
 }
 
@@ -190,23 +180,19 @@ function SkillPlayers({ skill }: { skill: Skill }) {
   }
   return (
     <ul className="detail-list">
-      {players.map((player) => {
-        const fullName = `${player.firstName} ${player.lastName}`
-        return (
-          <li key={player.id} className="detail-list__item">
-            <span className="avatar" aria-hidden="true">
-              {initials(fullName)}
+      {players.map((player) => (
+        <li key={player.id} className="detail-list__item">
+          {/* Esta lista no trae la foto (PlayerSummary): salen las iniciales. */}
+          <PlayerAvatar player={player} size="sm" />
+          <span className="detail-list__name">
+            {player.firstName} {player.lastName}
+            <span className="detail-list__detail">
+              {player.documentType} {player.documentNumber}
             </span>
-            <span className="detail-list__name">
-              {fullName}
-              <span className="detail-list__detail">
-                {player.documentType} {player.documentNumber}
-              </span>
-            </span>
-            {!player.active && <span className="pill pill--neutral">Inactivo</span>}
-          </li>
-        )
-      })}
+          </span>
+          {!player.active && <span className="pill pill--neutral">Inactivo</span>}
+        </li>
+      ))}
     </ul>
   )
 }

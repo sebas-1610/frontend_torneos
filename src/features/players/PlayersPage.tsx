@@ -1,4 +1,4 @@
-import { Ban, CircleAlert, Eye, List, Pencil, Search, Shirt, UserPlus, UserRoundCheck } from 'lucide-react'
+import { Ban, Eye, Pencil, Shirt, UserPlus, UserRoundCheck } from 'lucide-react'
 import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import { errorMessage } from '../../api/client'
 import { deletePlayer, disablePlayer, enablePlayer, findPlayers, type Player } from '../../api/players'
@@ -7,6 +7,8 @@ import { RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { PlayerAvatar } from '../../components/PlayerAvatar'
+import { ListPanel, ListToolbar, RowAction, RowActions, StatusPill, ToolbarButton } from '../../components/ListView'
+import { PageHeading } from '../../components/PageHeading'
 import { SortHeader } from '../../components/SortHeader'
 import { TeamMonogram } from '../../components/TeamMonogram'
 import { useConfirm } from '../../hooks/useConfirm'
@@ -14,15 +16,13 @@ import { useLoadList } from '../../hooks/useLoadList'
 import { useSort } from '../../hooks/useSort'
 import { useToast } from '../../hooks/useToast'
 import { ageFrom } from '../../utils/dates'
+import { plural } from '../../utils/plural'
 import { revealIfStacked } from '../../utils/reveal'
 import { normalize } from '../roles/labels'
 import { PlayerDetail } from './PlayerDetail'
 import { PlayerFormDialog } from './PlayerFormDialog'
 import { fullNameOf } from './playerName'
 import { positionCode, positionColor } from './position'
-import '../../components/ListPage.css'
-import '../../components/DetailPanel.css'
-import '../../components/Vivid.css'
 
 type StatusFilter = '' | 'activos' | 'inactivos'
 type TeamFilter = number | 'sin-equipo' | null // null: todos
@@ -35,10 +35,6 @@ const SORT_VALUES: Record<SortKey, (player: Player) => string | number | null> =
   position: (player) => player.position,
   team: (player) => player.currentTeams[0]?.name ?? null,
   status: (player) => (player.active ? 'Activo' : 'Inactivo'),
-}
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`
 }
 
 // Pantalla "Jugadores" (HU-GD-04): tabla con búsqueda, filtros de estado, equipo y deporte, y orden
@@ -211,29 +207,21 @@ export function PlayersPage() {
 
   return (
     <div className="page page--vivid">
-      <div className="page__head">
-        <div className="page__heading">
-          <span className="page__icon" aria-hidden="true">
-            <Shirt size={22} />
-          </span>
-          <div>
-            <h1 className="page__title">Jugadores</h1>
-            <p className="page__finding">{finding}</p>
-          </div>
-        </div>
-      </div>
+      <PageHeading icon={Shirt} title="Jugadores" finding={finding} />
 
-      <div className="panel toolbar">
-        <label className="list-search">
-          <Search size={16} aria-hidden="true" />
-          <input
-            type="search"
-            placeholder="Buscar por nombre o documento"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </label>
-        <select aria-label="Filtrar por estado" value={status} onChange={(e) => setStatus(e.target.value as StatusFilter)}>
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        placeholder="Buscar por nombre o documento"
+        actions={
+          canCreate && <ToolbarButton primary icon={UserPlus} label="Nuevo jugador" onClick={() => setEditing('new')} />
+        }
+      >
+        <select
+          aria-label="Filtrar por estado"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as StatusFilter)}
+        >
           <option value="">Todos los estados</option>
           <option value="activos">Activos</option>
           <option value="inactivos">Inactivos</option>
@@ -268,197 +256,154 @@ export function PlayersPage() {
             ))}
           </select>
         )}
-        {canCreate && (
-          <button type="button" className="button button--primary toolbar__action" onClick={() => setEditing('new')}>
-            <UserPlus size={18} aria-hidden="true" />
-            Nuevo jugador
-          </button>
-        )}
-      </div>
+      </ListToolbar>
 
       <div className="page__grid">
-        <section className="panel" aria-labelledby="players-list-title" aria-busy={loading}>
-          <div className="panel-head">
-            <span className="panel-head__icon" aria-hidden="true">
-              <List size={16} />
-            </span>
-            <h2 id="players-list-title" className="panel__title">
-              Lista de jugadores
-            </h2>
-            {!loading && !loadError && (
-              <span className="count-chip">{plural(players.length, 'jugador', 'jugadores')}</span>
-            )}
-          </div>
-
-          {loadError ? (
-            <div className="inline-error" role="alert">
-              <CircleAlert size={16} aria-hidden="true" />
-              <span>{loadError}</span>
-              <button type="button" className="text-action" onClick={retry}>
-                Reintentar
-              </button>
-            </div>
-          ) : loading ? (
-            <p className="empty-state">Cargando jugadores…</p>
-          ) : visible.length === 0 ? (
-            <p className="empty-state">
-              {players.length === 0
+        <ListPanel
+          title="Lista de jugadores"
+          titleId="players-list-title"
+          noun={['jugador', 'jugadores']}
+          total={players.length}
+          shown={visible.length}
+          loading={loading}
+          loadError={loadError}
+          onRetry={retry}
+          emptyMessage={
+            visible.length > 0
+              ? null
+              : players.length === 0
                 ? canCreate
                   ? 'No hay jugadores registrados. Crea el primero con "Nuevo jugador".'
                   : 'No hay jugadores registrados.'
-                : 'Ningún jugador coincide con los filtros.'}
-            </p>
-          ) : (
-            <>
-              <div className="table-scroll">
-                <table className="data-table data-table--select data-table--rows">
-                  <thead>
-                    <tr>
-                      <SortHeader label="Jugador" sortKey="name" sort={sort} onSort={toggleSort} />
-                      <SortHeader
-                        label="Edad"
-                        sortKey="age"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Posición"
-                        sortKey="position"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Equipo actual"
-                        sortKey="team"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <SortHeader
-                        label="Estado"
-                        sortKey="status"
-                        sort={sort}
-                        onSort={toggleSort}
-                        className="data-table__optional"
-                      />
-                      <th>Acciones</th>
+                : 'Ningún jugador coincide con los filtros.'
+          }
+        >
+          <div className="table-scroll">
+            <table className="data-table data-table--select data-table--rows">
+              <thead>
+                <tr>
+                  <SortHeader label="Jugador" sortKey="name" sort={sort} onSort={toggleSort} />
+                  <SortHeader
+                    label="Edad"
+                    sortKey="age"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Posición"
+                    sortKey="position"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Equipo actual"
+                    sortKey="team"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <SortHeader
+                    label="Estado"
+                    sortKey="status"
+                    sort={sort}
+                    onSort={toggleSort}
+                    className="data-table__optional"
+                  />
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((player) => {
+                  const name = fullNameOf(player)
+                  const busy = busyId === player.id
+                  const isSelected = player.id === selected?.id
+                  const [team, ...otherTeams] = player.currentTeams
+                  return (
+                    <tr
+                      key={player.id}
+                      className={`${isSelected ? 'is-selected' : ''}${player.active ? '' : ' is-inactive'}`}
+                      aria-current={isSelected ? 'true' : undefined}
+                      onClick={() => select(player.id, false)}
+                    >
+                      <td className="data-table__name">
+                        <span className="role-cell">
+                          <PlayerAvatar player={player} />
+                          {/* El documento va debajo del nombre: como columna aparte, la tabla no cabe. */}
+                          <span className="cell-lines">
+                            <span className="data-table__strong">{name}</span>
+                            <span className="cell-lines__detail">
+                              {player.documentType} {player.documentNumber}
+                            </span>
+                          </span>
+                        </span>
+                      </td>
+                      <td className="data-table__optional">
+                        <span className="data-table__figure">{ageFrom(player.birthDate)}</span>
+                      </td>
+                      <td className="data-table__optional">
+                        {player.position ? (
+                          <span
+                            className="tag"
+                            title={player.position}
+                            style={{ '--tag': positionColor(player.position) } as CSSProperties}
+                          >
+                            {positionCode(player.position)}
+                          </span>
+                        ) : (
+                          <span className="dash">—</span>
+                        )}
+                      </td>
+                      <td className="data-table__optional data-table__name">
+                        {team ? (
+                          <span className="role-cell" title={player.currentTeams.map((item) => item.name).join(', ')}>
+                            <TeamMonogram team={team} size="sm" />
+                            <span className="cell-lines">{team.name}</span>
+                            {otherTeams.length > 0 && <span className="sport-stack__more">+{otherTeams.length}</span>}
+                          </span>
+                        ) : (
+                          <span className="dash">Sin equipo</span>
+                        )}
+                      </td>
+                      <td className="data-table__optional">
+                        <StatusPill active={player.active} />
+                      </td>
+                      <RowActions>
+                        <RowAction
+                          icon={Eye}
+                          title="Ver"
+                          label={`Ver a ${name}`}
+                          onClick={() => select(player.id, true)}
+                        />
+                        {canUpdate && (
+                          <RowAction
+                            icon={Pencil}
+                            title="Editar"
+                            label={`Editar a ${name}`}
+                            disabled={busy}
+                            onClick={() => setEditing(player)}
+                          />
+                        )}
+                        {/* Como en el mockup, el tercero desactiva; eliminar está en el detalle. */}
+                        {canUpdate && (
+                          <RowAction
+                            icon={player.active ? Ban : UserRoundCheck}
+                            tone={player.active ? 'red' : 'green'}
+                            title={player.active ? 'Desactivar' : 'Activar'}
+                            label={`${player.active ? 'Desactivar' : 'Activar'} a ${name}`}
+                            disabled={busy}
+                            onClick={() => toggleActive(player)}
+                          />
+                        )}
+                      </RowActions>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((player) => {
-                      const name = fullNameOf(player)
-                      const busy = busyId === player.id
-                      const isSelected = player.id === selected?.id
-                      const [team, ...otherTeams] = player.currentTeams
-                      return (
-                        <tr
-                          key={player.id}
-                          className={`${isSelected ? 'is-selected' : ''}${player.active ? '' : ' is-inactive'}`}
-                          aria-current={isSelected ? 'true' : undefined}
-                          onClick={() => select(player.id, false)}
-                        >
-                          <td className="data-table__name">
-                            <span className="role-cell">
-                              <PlayerAvatar player={player} />
-                              {/* El documento va debajo del nombre: como columna aparte, la tabla no cabe. */}
-                              <span className="cell-lines">
-                                <span className="data-table__strong">{name}</span>
-                                <span className="cell-lines__detail">
-                                  {player.documentType} {player.documentNumber}
-                                </span>
-                              </span>
-                            </span>
-                          </td>
-                          <td className="data-table__optional">
-                            <span className="data-table__figure">{ageFrom(player.birthDate)}</span>
-                          </td>
-                          <td className="data-table__optional">
-                            {player.position ? (
-                              <span
-                                className="tag"
-                                title={player.position}
-                                style={{ '--tag': positionColor(player.position) } as CSSProperties}
-                              >
-                                {positionCode(player.position)}
-                              </span>
-                            ) : (
-                              <span className="dash">—</span>
-                            )}
-                          </td>
-                          <td className="data-table__optional data-table__name">
-                            {team ? (
-                              <span className="role-cell" title={player.currentTeams.map((item) => item.name).join(', ')}>
-                                <TeamMonogram team={team} size="sm" />
-                                <span className="cell-lines">{team.name}</span>
-                                {otherTeams.length > 0 && <span className="sport-stack__more">+{otherTeams.length}</span>}
-                              </span>
-                            ) : (
-                              <span className="dash">Sin equipo</span>
-                            )}
-                          </td>
-                          <td className="data-table__optional">
-                            <span className={`pill ${player.active ? 'pill--positive' : 'pill--neutral'}`}>
-                              <span className="status-dot" aria-hidden="true" />
-                              {player.active ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </td>
-                          {/* Los botones no eligen la fila por su cuenta: cada uno hace lo suyo. */}
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div className="row-actions">
-                              <button
-                                type="button"
-                                className="act act--blue"
-                                title="Ver"
-                                aria-label={`Ver a ${name}`}
-                                onClick={() => select(player.id, true)}
-                              >
-                                <Eye size={16} aria-hidden="true" />
-                              </button>
-                              {canUpdate && (
-                                <button
-                                  type="button"
-                                  className="act act--blue"
-                                  title="Editar"
-                                  aria-label={`Editar a ${name}`}
-                                  disabled={busy}
-                                  onClick={() => setEditing(player)}
-                                >
-                                  <Pencil size={16} aria-hidden="true" />
-                                </button>
-                              )}
-                              {/* Como en el mockup, el tercero desactiva; eliminar está en el detalle. */}
-                              {canUpdate && (
-                                <button
-                                  type="button"
-                                  className={`act ${player.active ? 'act--red' : 'act--green'}`}
-                                  title={player.active ? 'Desactivar' : 'Activar'}
-                                  aria-label={`${player.active ? 'Desactivar' : 'Activar'} a ${name}`}
-                                  disabled={busy}
-                                  onClick={() => toggleActive(player)}
-                                >
-                                  {player.active ? (
-                                    <Ban size={16} aria-hidden="true" />
-                                  ) : (
-                                    <UserRoundCheck size={16} aria-hidden="true" />
-                                  )}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="list-foot">
-                Mostrando {visible.length} de {plural(players.length, 'jugador', 'jugadores')}
-              </p>
-            </>
-          )}
-        </section>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </ListPanel>
 
         <PlayerDetail
           ref={detailRef}

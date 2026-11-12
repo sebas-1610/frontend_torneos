@@ -15,7 +15,7 @@
   --active: #24251c;
   --rule: #24251c;
   --edge: #33352b; /* borde fino de paneles y filas en las pantallas con más color (Vivid.css) */
-  --doodle: rgba(255, 255, 255, 0.16); /* dibujos deportivos del fondo (App.css, .canvas) */
+  --doodle: rgba(255, 255, 255, 0.16); /* dibujos deportivos del fondo de todas las pantallas (body::before) */
   --control: #44463b;
 
   --text: #f2f2ef;
@@ -157,10 +157,29 @@
   box-sizing: border-box;
 }
 
+/* Sin fondo propio: el de la página lo pone :root (--ground) y encima van los dibujos de body::before.
+   Si body tuviera fondo, taparía los dibujos. */
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--ground);
+}
+
+/*
+ * Fondo de todas las pantallas (inicio de sesión, registro, recuperar contraseña y todo el panel): un
+ * patrón de dibujos deportivos a trazo (balones, raquetas, pesas, trofeos, fichas de ajedrez,
+ * silbato...), el que eligió el usuario. Queda fijo detrás de todo; la barra lateral y la superior lo
+ * tapan con su propio fondo. assets/doodles.svg solo da la forma (se usa como máscara, cuadro de 560 px
+ * dibujado a 400 px) y el color es --doodle, distinto en cada tema.
+ */
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: '';
+  background: var(--doodle);
+  -webkit-mask: url('./assets/doodles.svg') 0 0 / 400px 400px repeat;
+  mask: url('./assets/doodles.svg') 0 0 / 400px 400px repeat;
 }
 
 h1,

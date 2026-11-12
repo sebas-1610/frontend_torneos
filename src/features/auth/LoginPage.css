@@ -2,8 +2,7 @@
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 24px 16px;
-  background: var(--ground);
+  padding: 24px 16px; /* sin fondo propio: deja ver los dibujos del fondo de la página (index.css) */
 }
 
 .login__card {

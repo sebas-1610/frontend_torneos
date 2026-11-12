@@ -24,24 +24,6 @@
   position: relative;
   flex: 1;
   padding: 24px 29px 56px;
-  isolation: isolate; /* para que el fondo de dibujos (z-index: -1) quede detrás del contenido, no de la página */
-}
-
-/*
- * Fondo de todo el panel: un patrón de dibujos deportivos a trazo (balones, raquetas, pesas, trofeos,
- * fichas de ajedrez, silbato...), el que eligió el usuario. El archivo assets/doodles.svg solo da la
- * forma (se usa como máscara, cuadro de 560 px dibujado a 400 px) y el color es --doodle, distinto en
- * cada tema.
- */
-.canvas::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  content: '';
-  background: var(--doodle);
-  -webkit-mask: url('./assets/doodles.svg') 0 0 / 400px 400px repeat;
-  mask: url('./assets/doodles.svg') 0 0 / 400px 400px repeat;
 }
 
 .panel {

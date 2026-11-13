@@ -1,0 +1,488 @@
+/*
+ * ---------- Perfil deportivo (HU-GD-08) ----------
+ * Como el mockup: tarjeta del jugador · atributos (radar) · equipos y habilidades; abajo, la
+ * información básica a todo el ancho.
+ * A 1440px: 1149 = tarjeta 330 + 16 + atributos 443 + 16 + columna derecha 344 ✓
+ */
+
+/* Buscador: el rótulo y el campo en una franja. */
+.page--vivid .profile-search {
+  position: relative;
+  z-index: 5; /* la lista de coincidencias flota por encima de los paneles de abajo */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: var(--gap);
+  padding: 12px 20px;
+}
+
+.profile-search__label {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.profile-search .player-search {
+  flex: 1;
+  max-width: 560px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-areas:
+    'card attributes side'
+    'info info info';
+  grid-template-columns: 330px minmax(0, 1fr) 344px;
+  gap: var(--gap);
+  align-items: stretch;
+}
+
+.profile-card {
+  grid-area: card;
+}
+
+.profile-attributes {
+  grid-area: attributes;
+}
+
+.profile-grid__side {
+  display: flex;
+  grid-area: side;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+.profile-info {
+  grid-area: info;
+}
+
+/* ---------- Tarjeta del jugador ---------- */
+
+/* La luz del color de su equipo, como el foco del detalle (DetailHero). */
+.page--vivid .profile-card {
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(120% 70% at 85% 0%, color-mix(in srgb, var(--glow) 22%, transparent), transparent 70%),
+    var(--surface);
+}
+
+.profile-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-card__rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* La media, en grande y en el dorado del club: el dato de la tarjeta. */
+.profile-card__overall {
+  font-family: var(--figure);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 0.9;
+  color: var(--gold-text);
+}
+
+.profile-card__overall--empty {
+  color: var(--faint);
+}
+
+.profile-card__overall-label {
+  margin-top: -2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* La posición como en el mockup: la sigla grande, subrayada con su color. */
+.profile-card__position {
+  padding-bottom: 4px;
+  font-family: var(--figure);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  border-bottom: 3px solid var(--tag);
+}
+
+.profile-card__position--none {
+  font-family: var(--font);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--muted);
+  border-bottom-color: var(--edge);
+}
+
+.profile-card__nation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.profile-card__nation svg {
+  flex-shrink: 0;
+  color: var(--tone-blue);
+}
+
+/* Nombre en dos líneas: el nombre normal y el apellido en grande. */
+.profile-card__name {
+  display: flex;
+  flex-direction: column;
+  margin: 18px 0 14px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.profile-card__name span {
+  font-size: var(--fs-name);
+  font-weight: 400;
+}
+
+.profile-card__name strong {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+/* Edad · Altura · Estado, separados por reglas. */
+.profile-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: auto 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--edge);
+}
+
+.profile-card__stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.profile-card__stats > div + div {
+  border-left: 1px solid var(--edge);
+}
+
+.profile-card__stats dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.profile-card__stats dd {
+  margin: 0;
+  font-family: var(--figure);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.profile-card__stats .pill {
+  font-family: var(--font);
+}
+
+/* ---------- Atributos ---------- */
+
+.page--vivid .profile-attributes {
+  display: flex;
+  flex-direction: column;
+}
+
+.page--vivid .profile-attributes__view {
+  height: 32px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 8px;
+}
+
+.profile-attributes .radar {
+  max-width: 420px;
+  margin: auto;
+}
+
+.profile-attributes__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.profile-attributes__swatch {
+  width: 18px;
+  height: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.profile-attributes__average {
+  margin-left: auto;
+}
+
+.profile-attributes__average strong {
+  font-family: var(--figure);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+/* ---------- Equipos asociados: línea de tiempo ---------- */
+
+.page--vivid .profile-teams__toggle {
+  height: 30px;
+  padding: 0 12px;
+  font-size: var(--fs-small);
+}
+
+.profile-teams__empty {
+  margin-bottom: 4px;
+}
+
+.timeline {
+  position: relative;
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style: none;
+}
+
+/* La línea que une los puntos. */
+.timeline::before {
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  left: 4px;
+  width: 2px;
+  content: '';
+  background: var(--edge);
+}
+
+.timeline__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 8px 0;
+}
+
+.timeline__item + .timeline__item {
+  border-top: 1px solid var(--rule);
+}
+
+.timeline__dot {
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  background: var(--faint);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+}
+
+/* El equipo actual: punto y período en dorado. */
+.timeline__item.is-current .timeline__dot {
+  background: var(--gold);
+}
+
+.timeline__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline__period {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.timeline__item.is-current .timeline__period {
+  color: var(--gold-text);
+}
+
+/* ---------- Habilidades ---------- */
+
+.skill-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.skill-chips__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: var(--fs-small);
+  background: color-mix(in srgb, var(--tone) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tone) 35%, transparent);
+  border-radius: 10px;
+}
+
+.skill-chips__item svg {
+  flex-shrink: 0;
+}
+
+.skill-chips__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-chips__level {
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+/* ---------- Información básica ---------- */
+
+.info-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.info-strip__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 16px;
+}
+
+.info-strip__item:first-child {
+  padding-left: 0;
+}
+
+.info-strip__item + .info-strip__item {
+  border-left: 1px solid var(--edge);
+}
+
+.info-strip__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--tile);
+  background: color-mix(in srgb, var(--tile) 14%, transparent);
+  border-radius: 10px;
+}
+
+.info-strip__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.info-strip__label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.info-strip__value {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Tamaños ---------- */
+
+/* Sin espacio para tres columnas: tarjeta y atributos arriba, equipos y habilidades lado a lado. */
+@media (max-width: 1365px) {
+  .profile-grid {
+    grid-template-areas:
+      'card attributes'
+      'side side'
+      'info info';
+    grid-template-columns: 330px minmax(0, 1fr);
+  }
+
+  .profile-grid__side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .info-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+
+  .info-strip__item:nth-child(3n + 1) {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+@media (max-width: 759px) {
+  .profile-grid {
+    grid-template-areas:
+      'card'
+      'attributes'
+      'side'
+      'info';
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-grid__side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page--vivid .profile-search {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .profile-search .player-search {
+    max-width: none;
+  }
+
+  .info-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .info-strip__item,
+  .info-strip__item + .info-strip__item,
+  .info-strip__item:nth-child(3n + 1) {
+    padding: 6px 12px 6px 0;
+    border-left: none;
+  }
+}
+
+@media (max-width: 419px) {
+  .skill-chips,
+  .info-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

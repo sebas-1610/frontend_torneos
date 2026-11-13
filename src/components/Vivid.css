@@ -72,6 +72,10 @@
   border-radius: 8px;
 }
 
+.page--vivid .panel-head__action {
+  margin-left: auto;
+}
+
 .page--vivid .count-chip {
   display: inline-flex;
   align-items: center;

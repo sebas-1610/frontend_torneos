@@ -35,10 +35,12 @@ interface PanelHeadProps {
   title: string
   titleId?: string // para el aria-labelledby del panel
   count?: string | null // ej: "5 equipos"
+  action?: ReactNode // botón o enlace al final del título (ej: "Ver historial")
 }
 
-// Título de un panel con su icono en un cuadro de color y, si aplica, cuántos elementos tiene.
-export function PanelHead({ icon: Icon, title, titleId, count }: PanelHeadProps) {
+// Título de un panel con su icono en un cuadro de color, si aplica cuántos elementos tiene y, al final,
+// su acción.
+export function PanelHead({ icon: Icon, title, titleId, count, action }: PanelHeadProps) {
   return (
     <div className="panel-head">
       <span className="panel-head__icon" aria-hidden="true">
@@ -48,6 +50,7 @@ export function PanelHead({ icon: Icon, title, titleId, count }: PanelHeadProps)
         {title}
       </h2>
       {count && <span className="count-chip">{count}</span>}
+      {action && <span className="panel-head__action">{action}</span>}
     </div>
   )
 }

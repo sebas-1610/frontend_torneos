@@ -74,6 +74,9 @@ export function canOpenPage(page: string, can: Can): boolean {
       return can(RESOURCES.players, 'LIST')
     case 'habilidades':
       return can(RESOURCES.skills, 'LIST')
+    case 'perfil-deportivo':
+      // Carga los jugadores para buscar y el perfil del elegido.
+      return can(RESOURCES.players, 'LIST') && can(RESOURCES.sportsProfile, 'VIEW')
     case 'habilidades-jugadores':
       // Carga los jugadores, el catálogo y las habilidades del jugador elegido.
       return can(RESOURCES.players, 'LIST') && can(RESOURCES.skills, 'LIST') && can(RESOURCES.playerSkills, 'LIST')
@@ -83,7 +86,16 @@ export function canOpenPage(page: string, can: Can): boolean {
 }
 
 // En orden: el Administrador entra a Roles; el Administrador deportivo, a Deportes.
-const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'equipos', 'jugadores', 'habilidades'] as const
+const START_PAGES = [
+  'roles',
+  'usuarios',
+  'permisos',
+  'deportes',
+  'equipos',
+  'jugadores',
+  'habilidades',
+  'perfil-deportivo',
+] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
 export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {

@@ -51,6 +51,7 @@ export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
   const canUpdate = can(RESOURCES.players, 'UPDATE')
   const canDelete = can(RESOURCES.players, 'DELETE')
   const canSeeSkills = can(RESOURCES.skills, 'LIST') && can(RESOURCES.playerSkills, 'LIST')
+  const canSeeProfile = can(RESOURCES.sportsProfile, 'VIEW')
   const canListTeams = can(RESOURCES.teams, 'LIST')
 
   const { items: players, setItems: setPlayers, loading, loadError, reload, retry } = useLoadList(findPlayers)
@@ -131,10 +132,9 @@ export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
           `${activeCount} ${activeCount === 1 ? 'activo' : 'activos'}. ` +
           `${withTeam} ${withTeam === 1 ? 'tiene' : 'tienen'} equipo hoy.`
 
-  function select(playerId: number, reveal: boolean) {
+  function select(playerId: number) {
     if (playerId !== selected?.id) setActionError(null)
     setSelectedId(playerId)
-    if (reveal) revealIfStacked(() => detailRef.current)
   }
 
   function upsert(saved: Player) {
@@ -330,7 +330,7 @@ export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
                       key={player.id}
                       className={`${isSelected ? 'is-selected' : ''}${player.active ? '' : ' is-inactive'}`}
                       aria-current={isSelected ? 'true' : undefined}
-                      onClick={() => select(player.id, false)}
+                      onClick={() => select(player.id)}
                     >
                       <td className="data-table__name">
                         <span className="role-cell">
@@ -375,12 +375,15 @@ export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
                         <StatusPill active={player.active} />
                       </td>
                       <RowActions>
-                        <RowAction
-                          icon={Eye}
-                          title="Ver"
-                          label={`Ver a ${name}`}
-                          onClick={() => select(player.id, true)}
-                        />
+                        {/* Ver abre su perfil deportivo: sin ese permiso, el botón no aparece. */}
+                        {canSeeProfile && (
+                          <RowAction
+                            icon={Eye}
+                            title="Ver perfil deportivo"
+                            label={`Ver el perfil deportivo de ${name}`}
+                            href={`#perfil-deportivo/${player.id}`}
+                          />
+                        )}
                         {canUpdate && (
                           <RowAction
                             icon={Pencil}

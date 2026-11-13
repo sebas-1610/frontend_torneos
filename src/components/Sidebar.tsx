@@ -1,4 +1,5 @@
 import {
+  ChartNoAxesColumnIncreasing,
   KeyRound,
   Shield,
   ShieldCheck,
@@ -25,8 +26,7 @@ interface NavGroup {
 }
 
 // Solo pantallas que ya existen: cuando otro microservicio traiga las suyas (torneos, reportes...),
-// se agregan aquí y en PAGES de App.tsx. Perfil deportivo se suma a Gestión deportiva cuando tenga
-// pantalla.
+// se agregan aquí y en PAGES de App.tsx.
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Control de acceso',
@@ -43,6 +43,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'equipos', label: 'Equipos', icon: Shield },
       { id: 'jugadores', label: 'Jugadores', icon: Shirt },
       { id: 'habilidades', label: 'Habilidades', icon: Star },
+      { id: 'perfil-deportivo', label: 'Perfil deportivo', icon: ChartNoAxesColumnIncreasing },
     ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },
@@ -72,9 +73,10 @@ export function Sidebar({ activeId, open, onClose, canOpen, roles }: SidebarProp
   }, [open, onClose])
 
   // Solo las opciones permitidas; un grupo sin opciones no se muestra.
-  const groups = NAV_GROUPS.map((group) => ({ ...group, items: group.items.filter((item) => canOpen(item.id)) })).filter(
-    (group) => group.items.length > 0,
-  )
+  const groups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => canOpen(item.id)),
+  })).filter((group) => group.items.length > 0)
 
   const roleLabel = roles === null ? 'Cargando…' : roles.length > 0 ? roles.join(' · ') : 'Sin roles asignados'
 

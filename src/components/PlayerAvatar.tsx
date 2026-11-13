@@ -9,7 +9,7 @@ type Person = { id: number; photo?: string | null } & ({ firstName: string; last
 
 interface PlayerAvatarProps {
   player: Person
-  size?: 'sm' | 'md' | 'lg' | 'card'
+  size?: 'sm' | 'md' | 'lg' | 'card' | 'portrait'
 }
 
 function initialsOf(person: Person): string {
@@ -19,7 +19,7 @@ function initialsOf(person: Person): string {
 
 // Cómo se ve un jugador (o un usuario, en su lista) en todas las pantallas: su foto o, si no tiene, la
 // inicial de su nombre y la de su apellido sobre un tono fijo por id. "card" es el retrato cuadrado
-// del detalle.
+// del detalle; "portrait", el retrato grande de la tarjeta del perfil deportivo.
 export function PlayerAvatar({ player, size = 'md' }: PlayerAvatarProps) {
   const letters = initialsOf(player)
   return (

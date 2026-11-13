@@ -41,6 +41,15 @@
   font-size: 28px;
 }
 
+/* El retrato grande de la tarjeta del perfil deportivo. */
+.player-avatar--portrait {
+  width: 148px;
+  height: 172px;
+  font-size: 54px;
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+}
+
 /* El retrato del detalle: cuadrado, con las esquinas redondeadas. */
 .player-avatar--card {
   width: 104px;

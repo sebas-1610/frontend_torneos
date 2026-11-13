@@ -45,6 +45,7 @@ import { plural } from '../../utils/plural'
 import { fullNameOf } from '../players/playerName'
 import { positionCode, positionColor } from '../players/position'
 import { AssignPlayerDialog } from './AssignPlayerDialog'
+import { contractPeriod, contractReason } from './contractInfo'
 
 // La URL dice qué equipo está abierto (#equipos-plantilla/{id}): al recargar se abre el mismo.
 function showTeamInUrl(teamId: number) {
@@ -151,33 +152,7 @@ const CURRENT_VALUES: Record<CurrentKey, (contract: Contract) => string | null> 
 const HISTORY_VALUES: Record<HistoryKey, (contract: Contract) => string | null> = {
   player: (contract) => lastFirst(contract.player),
   end: (contract) => effectiveEnd(contract),
-  reason: (contract) => reasonOf(contract).label,
-}
-
-// Por qué terminó un contrato del historial, como en el mockup: una etiqueta y una frase.
-function reasonOf(contract: Contract): { label: string; tone: string; detail: string } {
-  if (contract.status === 'FINALIZADO') {
-    return { label: 'Finalizó contrato', tone: 'var(--tone-amber)', detail: 'Fin del contrato acordado.' }
-  }
-  const retiredAt = contract.retiredAt ?? contract.endDate
-  return retiredAt < contract.startDate
-    ? {
-        label: 'Cancelado',
-        tone: 'var(--tone-purple)',
-        detail: `Se retiró antes de empezar (iniciaba el ${formatDateShort(contract.startDate)}).`,
-      }
-    : {
-        label: 'Retirado',
-        tone: 'var(--tone-blue)',
-        detail: `Retirado antes del fin pactado (${formatDateShort(contract.endDate)}).`,
-      }
-}
-
-// "2023 – 2025", o solo "2025" si empezó y terminó el mismo año.
-function periodOf(contract: Contract): string {
-  const from = contract.startDate.slice(0, 4)
-  const to = effectiveEnd(contract).slice(0, 4)
-  return from === to || to < from ? from : `${from} – ${to}`
+  reason: (contract) => contractReason(contract).label,
 }
 
 interface RosterProps {
@@ -445,13 +420,13 @@ function Roster({ team, teams, players, canListPlayers, onChooseTeam, onChanged 
                 </thead>
                 <tbody>
                   {history.sorted.map((contract) => {
-                    const reason = reasonOf(contract)
+                    const reason = contractReason(contract)
                     return (
                       <tr key={contract.id}>
                         <td className="data-table__name">
                           <PlayerCell player={playerOf(contract)} />
                         </td>
-                        <td className="data-table__optional num">{periodOf(contract)}</td>
+                        <td className="data-table__optional num">{contractPeriod(contract)}</td>
                         <td className="data-table__optional num">{formatDateShort(effectiveEnd(contract))}</td>
                         <td>
                           <span className="tag" style={{ '--tag': reason.tone } as CSSProperties}>

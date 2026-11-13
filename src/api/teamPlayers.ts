@@ -19,6 +19,10 @@ export interface Contract {
   status: ContractStatus
 }
 
+// Lo que dice cuándo empieza, cuándo termina y en qué va un contrato, venga de la plantilla de un
+// equipo (Contract) o del perfil de un jugador (ProfileContract).
+export type ContractDates = Pick<Contract, 'status' | 'startDate' | 'endDate' | 'retiredAt'>
+
 export interface ContractInput {
   teamId: number
   playerId: number
@@ -43,11 +47,11 @@ export function retireContract(id: number): Promise<Contract> {
 }
 
 // Hasta cuándo duró de verdad: la fecha de retiro si lo retiraron; si no, su fin pactado.
-export function effectiveEnd(contract: Contract): string {
+export function effectiveEnd(contract: ContractDates): string {
   return contract.retiredAt ?? contract.endDate
 }
 
 // ¿Sigue abierto? Vigente o por empezar: el jugador "está asociado" al equipo.
-export function isOpen(contract: Contract): boolean {
+export function isOpen(contract: ContractDates): boolean {
   return contract.status === 'VIGENTE' || contract.status === 'FUTURO'
 }

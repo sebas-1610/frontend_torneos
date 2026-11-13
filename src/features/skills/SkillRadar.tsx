@@ -43,12 +43,18 @@ function shortName(name: string): string {
   return name.length > 13 ? `${name.slice(0, 12).trimEnd()}…` : name
 }
 
+interface SkillRadarProps {
+  skills: PlayerSkill[]
+  showValues?: boolean // el nivel bajo el nombre de cada eje, como en el perfil deportivo
+  emptyText?: string // qué decir si no hay ejes suficientes
+}
+
 // Radar de capacidades: un eje por habilidad y, sobre cada eje, su nivel.
-export function SkillRadar({ skills }: { skills: PlayerSkill[] }) {
+export function SkillRadar({ skills, showValues = false, emptyText }: SkillRadarProps) {
   if (skills.length < MIN_AXES) {
     return (
       <p className="detail__empty radar__empty">
-        El radar aparece cuando el jugador tiene al menos {MIN_AXES} habilidades.
+        {emptyText ?? `El radar aparece cuando el jugador tiene al menos ${MIN_AXES} habilidades.`}
       </p>
     )
   }
@@ -58,7 +64,13 @@ export function SkillRadar({ skills }: { skills: PlayerSkill[] }) {
   const summary = shown.map((skill) => `${skill.name} ${skill.level}`).join(', ')
   return (
     <>
-      <svg className="radar" viewBox="-180 -112 360 224" role="img" aria-label={`Radar de capacidades. ${summary}.`}>
+      <svg
+        className={`radar${showValues ? ' radar--values' : ''}`}
+        // Con el nivel debajo de cada nombre hace falta una línea más arriba y abajo.
+        viewBox={showValues ? '-180 -126 360 256' : '-180 -112 360 224'}
+        role="img"
+        aria-label={`Radar de capacidades. ${summary}.`}
+      >
         {RINGS.map((ring) => (
           <polygon key={ring} className="radar__ring" points={polygon(count, () => ring)} />
         ))}
@@ -72,19 +84,29 @@ export function SkillRadar({ skills }: { skills: PlayerSkill[] }) {
           const [labelX, labelY] = pointAt(index, count, 1.16)
           // El nombre se aleja del centro: a la derecha empieza en el punto y a la izquierda termina en él.
           const anchor = Math.abs(labelX) < 8 ? 'middle' : labelX > 0 ? 'start' : 'end'
+          const baseline = labelY < -8 ? 'auto' : labelY > 8 ? 'hanging' : 'middle'
+          // Arriba, el nombre sube para dejar el nivel junto a la punta; en lo demás, el nivel va debajo.
+          const nameY = showValues && labelY < -8 ? labelY - 15 : labelY
+          const valueY = labelY < -8 ? labelY : labelY + 15
           return (
             <g key={skill.id}>
               <circle className="radar__dot" cx={x} cy={y} r={3} />
-              <text
-                className="radar__label"
-                x={labelX}
-                y={labelY}
-                textAnchor={anchor}
-                dominantBaseline={labelY < -8 ? 'auto' : labelY > 8 ? 'hanging' : 'middle'}
-              >
+              <text className="radar__label" x={labelX} y={nameY} textAnchor={anchor} dominantBaseline={baseline}>
                 <title>{skill.name}</title>
                 {shortName(skill.name)}
               </text>
+              {showValues && (
+                <text
+                  className="radar__value"
+                  x={labelX}
+                  y={valueY}
+                  textAnchor={anchor}
+                  dominantBaseline={baseline}
+                  aria-hidden="true"
+                >
+                  {skill.level}
+                </text>
+              )}
             </g>
           )
         })}

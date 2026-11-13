@@ -17,6 +17,8 @@ import { TeamsPage } from './features/teams/TeamsPage'
 import { TeamSportsPage } from './features/teams/TeamSportsPage'
 import { TeamRosterPage } from './features/teams/TeamRosterPage'
 import { PlayerSkillsPage } from './features/skills/PlayerSkillsPage'
+import { SportsProfilePage } from './features/sports-profile/SportsProfilePage'
+import { sportsProfileApi } from './features/sports-profile/profileSource'
 import { PlayersPage } from './features/players/PlayersPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
@@ -38,6 +40,7 @@ type PageId =
   | 'jugadores'
   | 'habilidades'
   | 'habilidades-jugadores'
+  | 'perfil-deportivo'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -59,6 +62,7 @@ const PAGES: Record<PageId, Crumb> = {
   habilidades: { section: 'Gestión deportiva', page: 'Habilidades' },
   // No está en el menú: se abre desde Habilidades ("Asignar a jugadores") o desde el detalle de un jugador.
   'habilidades-jugadores': { section: 'Habilidades', sectionHref: '#habilidades', page: 'Asignar habilidades' },
+  'perfil-deportivo': { section: 'Gestión deportiva', page: 'Perfil deportivo' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -301,6 +305,15 @@ function App() {
         return <SkillsPage />
       case 'habilidades-jugadores':
         return <PlayerSkillsPage key={route.param ?? 'inicial'} initialPlayerId={idFrom(route.param)} />
+      case 'perfil-deportivo':
+        // Aquí se elige de dónde saca sus datos (el backend); la pantalla solo conoce la interfaz.
+        return (
+          <SportsProfilePage
+            key={route.param ?? 'inicial'}
+            source={sportsProfileApi}
+            initialPlayerId={idFrom(route.param)}
+          />
+        )
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

@@ -1,0 +1,185 @@
+/*
+ * ---------- Asignar habilidades (HU-GD-07) ----------
+ * A 1440px: 1149 = disponibles 453 + separación 16 + del jugador 680 ✓ (2fr y 3fr de 1133).
+ * Tarjetas de mínimo 170px: caben 2 a la izquierda (413 útiles) y 3 a la derecha (640 útiles).
+ */
+
+/* Arriba: el buscador y, al lado, el jugador elegido. */
+.player-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.page--vivid .player-bar__search {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* La lista de coincidencias flota por encima de los paneles de abajo. */
+  position: relative;
+  z-index: 5;
+}
+
+.page--vivid .player-bar__card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+}
+
+.player-bar__identity {
+  flex: 1;
+  min-width: 140px;
+}
+
+.player-bar__name {
+  font-size: var(--fs-name);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .player-bar__identity .hero__role {
+  margin: 2px 0 0;
+}
+
+.player-bar__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+}
+
+.player-bar__facts dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.player-bar__facts dt svg {
+  color: var(--tone-blue);
+}
+
+.player-bar__facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+.player-bar__facts .role-cell {
+  gap: 8px;
+}
+
+/* ---------- Tarjetas de habilidad ---------- */
+
+.card-grid--tight {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+}
+
+.page--vivid .skill-card {
+  gap: 6px;
+  padding: 16px 12px 12px;
+}
+
+/* El icono en un círculo del color de su categoría (--tone). */
+.skill-card__glyph {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 4px;
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  border-radius: 50%;
+}
+
+.page--vivid .skill-card .tag {
+  height: 22px;
+  font-size: 12px;
+}
+
+.skill-card .entity-card__description {
+  margin-bottom: 10px;
+}
+
+/* El nivel, arriba a la derecha: el dato de la tarjeta, en dorado. */
+.level-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-family: var(--figure);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold-text);
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+}
+
+.level-badge--button {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.level-badge--button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--gold) 18%, var(--surface));
+}
+
+.level-badge--button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.level-badge--button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* ---------- Radar y resumen ---------- */
+
+.capacity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 24px;
+}
+
+.capacity__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding-top: 6px;
+}
+
+/* ---------- Tamaños ---------- */
+
+@media (max-width: 1023px) {
+  .player-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 759px) {
+  .capacity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 479px) {
+  .capacity__summary {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .capacity__summary .skill-bars {
+    width: 100%;
+  }
+}

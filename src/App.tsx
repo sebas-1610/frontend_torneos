@@ -15,6 +15,8 @@ import { SportsPage } from './features/sports/SportsPage'
 import { SkillsPage } from './features/skills/SkillsPage'
 import { TeamsPage } from './features/teams/TeamsPage'
 import { TeamSportsPage } from './features/teams/TeamSportsPage'
+import { TeamRosterPage } from './features/teams/TeamRosterPage'
+import { PlayerSkillsPage } from './features/skills/PlayerSkillsPage'
 import { PlayersPage } from './features/players/PlayersPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
@@ -32,8 +34,10 @@ type PageId =
   | 'deportes'
   | 'equipos'
   | 'equipos-deportes'
+  | 'equipos-plantilla'
   | 'jugadores'
   | 'habilidades'
+  | 'habilidades-jugadores'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -49,13 +53,22 @@ const PAGES: Record<PageId, Crumb> = {
   equipos: { section: 'Gestión deportiva', page: 'Equipos' },
   // No está en el menú: se abre desde Equipos ("Asociar" en el detalle de un equipo).
   'equipos-deportes': { section: 'Equipos', sectionHref: '#equipos', page: 'Asociar deportes' },
+  // Tampoco: se abre desde Equipos ("Plantilla" en el detalle de un equipo).
+  'equipos-plantilla': { section: 'Equipos', sectionHref: '#equipos', page: 'Plantilla' },
   jugadores: { section: 'Gestión deportiva', page: 'Jugadores' },
   habilidades: { section: 'Gestión deportiva', page: 'Habilidades' },
+  // No está en el menú: se abre desde Habilidades ("Asignar a jugadores") o desde el detalle de un jugador.
+  'habilidades-jugadores': { section: 'Habilidades', sectionHref: '#habilidades', page: 'Asignar habilidades' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
 // Pantallas que no están en el menú: qué opción queda marcada mientras están abiertas.
-const MENU_OWNER: Record<string, PageId> = { 'roles-permisos': 'roles', 'equipos-deportes': 'equipos' }
+const MENU_OWNER: Record<string, PageId> = {
+  'roles-permisos': 'roles',
+  'equipos-deportes': 'equipos',
+  'equipos-plantilla': 'equipos',
+  'habilidades-jugadores': 'habilidades',
+}
 
 // Título de la pestaña sin sesión.
 const AUTH_TITLES = { login: 'Iniciar sesión', register: 'Crear cuenta', forgot: 'Recuperar contraseña' }
@@ -75,7 +88,7 @@ function routeFromHash(): Route {
   return isPageId(page) ? { page, param: param || null } : { page: null, param: null }
 }
 
-// El id que viaja en la URL (#roles-permisos/5, #equipos-deportes/3); null si no es un número.
+// El id que viaja en la URL (#roles-permisos/5, #equipos-deportes/3, #jugadores/7); null si no es un número.
 function idFrom(param: string | null): number | null {
   const id = Number(param)
   return param !== null && Number.isInteger(id) ? id : null
@@ -275,13 +288,19 @@ function App() {
       case 'deportes':
         return <SportsPage />
       case 'equipos':
-        return <TeamsPage />
+        // #equipos/5 abre la lista con ese equipo ya elegido (ej: "Ver en Equipos" desde su plantilla).
+        return <TeamsPage key={route.param ?? 'inicial'} initialTeamId={idFrom(route.param)} />
       case 'equipos-deportes':
         return <TeamSportsPage key={route.param ?? 'inicial'} initialTeamId={idFrom(route.param)} />
+      case 'equipos-plantilla':
+        return <TeamRosterPage key={route.param ?? 'inicial'} initialTeamId={idFrom(route.param)} />
       case 'jugadores':
-        return <PlayersPage />
+        // #jugadores/7 abre la lista con ese jugador ya elegido (ej: "Ver jugador" desde una plantilla).
+        return <PlayersPage key={route.param ?? 'inicial'} initialPlayerId={idFrom(route.param)} />
       case 'habilidades':
         return <SkillsPage />
+      case 'habilidades-jugadores':
+        return <PlayerSkillsPage key={route.param ?? 'inicial'} initialPlayerId={idFrom(route.param)} />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

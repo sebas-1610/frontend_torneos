@@ -1,4 +1,4 @@
-import { Plus, Star } from 'lucide-react'
+import { Plus, Sparkles, Star } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { errorMessage } from '../../api/client'
 import { deleteSkill, disableSkill, enableSkill, findSkills, type Skill, type SkillCategory } from '../../api/skills'
@@ -29,6 +29,7 @@ export function SkillsPage() {
   const canUpdate = can(RESOURCES.skills, 'UPDATE')
   const canDelete = can(RESOURCES.skills, 'DELETE')
   const canSeePlayers = can(RESOURCES.playerSkills, 'LIST')
+  const canAssign = canSeePlayers && can(RESOURCES.players, 'LIST')
 
   const [skills, setSkills] = useState<Skill[]>([])
   const [loading, setLoading] = useState(true)
@@ -195,7 +196,12 @@ export function SkillsPage() {
         onQueryChange={setQuery}
         placeholder="Buscar por nombre o descripción"
         actions={
-          canCreate && <ToolbarButton primary icon={Plus} label="Nueva habilidad" onClick={() => setEditing('new')} />
+          <>
+            {canAssign && <ToolbarButton icon={Sparkles} label="Asignar a jugadores" href="#habilidades-jugadores" />}
+            {canCreate && (
+              <ToolbarButton primary icon={Plus} label="Nueva habilidad" onClick={() => setEditing('new')} />
+            )}
+          </>
         }
       >
         <select

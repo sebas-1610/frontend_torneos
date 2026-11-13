@@ -1,0 +1,68 @@
+/* ---------- Selector de equipo (Asociar deportes, Plantilla) ---------- */
+
+/* Selector de equipo: sus iniciales, el desplegable y la ciudad. */
+.team-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: var(--gap);
+}
+
+.team-picker__field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 420px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.team-picker__field select {
+  height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: var(--fs-section);
+  font-weight: 600;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.team-picker__field select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.team-picker__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+
+/* Acción de la pantalla (ej: "Asignar jugador"), a la derecha. */
+.team-picker__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.team-picker__actions .button {
+  height: 40px;
+  padding: 0 18px;
+}
+
+@media (max-width: 759px) {
+  .team-picker__actions {
+    width: 100%;
+  }
+
+  .team-picker__actions .button {
+    flex: 1 1 auto;
+  }
+}

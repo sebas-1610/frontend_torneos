@@ -762,6 +762,62 @@
   color: var(--negative);
 }
 
+/* El elegido en una ventana (ej: el jugador que se va a asignar), con "Cambiar" al final. */
+.page--vivid .picked {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+}
+
+.page--vivid .picked .cell-lines {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-body);
+}
+
+/* Nivel de una habilidad: la barra para arrastrar y, al lado, el número exacto. */
+.page--vivid .level-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page--vivid .level-field input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0;
+  accent-color: var(--gold);
+  background: transparent;
+  border: none;
+}
+
+.page--vivid .level-field .level-field__number {
+  width: 76px;
+  padding: 0 10px;
+  font-family: var(--figure);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gold-text);
+  text-align: center;
+}
+
+.page--vivid .level-field__hint {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* Botón a todo el ancho al pie del detalle (ej: "Ver en Equipos"). */
+.page--vivid .detail__wide {
+  width: 100%;
+  margin-top: 16px;
+}
+
 .page--vivid .field-hint {
   font-size: 12px;
   color: var(--negative);

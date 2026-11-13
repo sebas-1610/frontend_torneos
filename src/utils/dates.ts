@@ -16,6 +16,15 @@ export function ageFrom(birthDate: string): number {
   return now.slice(5) < birthDate.slice(5) ? years - 1 : years
 }
 
+// La misma fecha, años después (o antes): "2026-05-20" + 1 -> "2027-05-20". Un 29 de febrero pasa
+// al 28 si ese año no es bisiesto.
+export function addYears(date: string, years: number): string {
+  const [year, month, day] = date.split('-')
+  const target = Number(year) + years
+  const leap = (target % 4 === 0 && target % 100 !== 0) || target % 400 === 0
+  return `${target}-${month}-${month === '02' && day === '29' && !leap ? '28' : day}`
+}
+
 const FORMAT = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
 
 // "1947-03-07" -> "07/03/1947", para donde hay poco espacio.

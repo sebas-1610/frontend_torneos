@@ -67,10 +67,16 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'equipos-deportes':
       // Carga los equipos (con sus deportes) y el catálogo de deportes.
       return can(RESOURCES.teams, 'LIST') && can(RESOURCES.sports, 'LIST') && can(RESOURCES.teamSports, 'LIST')
+    case 'equipos-plantilla':
+      // Carga los equipos y los contratos del elegido. Sin "listar jugadores" se ve, pero sin fotos.
+      return can(RESOURCES.teams, 'LIST') && can(RESOURCES.contracts, 'LIST')
     case 'jugadores':
       return can(RESOURCES.players, 'LIST')
     case 'habilidades':
       return can(RESOURCES.skills, 'LIST')
+    case 'habilidades-jugadores':
+      // Carga los jugadores, el catálogo y las habilidades del jugador elegido.
+      return can(RESOURCES.players, 'LIST') && can(RESOURCES.skills, 'LIST') && can(RESOURCES.playerSkills, 'LIST')
     default:
       return true // perfil: cualquier usuario con sesión
   }

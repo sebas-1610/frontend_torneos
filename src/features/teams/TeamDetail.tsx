@@ -30,6 +30,7 @@ interface TeamDetailProps {
   canUpdate: boolean
   canDelete: boolean
   canAssociate: boolean // puede abrir "Asociar deportes"
+  canSeeRoster: boolean // puede abrir "Plantilla"
   onEdit: (team: Team) => void
   onToggleActive: (team: Team) => void
   onDelete: (team: Team) => void
@@ -47,6 +48,7 @@ export function TeamDetail({
   canUpdate,
   canDelete,
   canAssociate,
+  canSeeRoster,
   onEdit,
   onToggleActive,
   onDelete,
@@ -144,6 +146,26 @@ export function TeamDetail({
               ))}
             </ul>
           )}
+        </DetailSection>
+
+        <DetailSection
+          title="Plantilla"
+          action={
+            canSeeRoster && (
+              <a className="button button--text detail__add" href={`#equipos-plantilla/${team.id}`}>
+                <Users size={16} aria-hidden="true" />
+                Gestionar
+              </a>
+            )
+          }
+        >
+          <p className="detail__empty">
+            {players === 0
+              ? `${team.name} no tiene jugadores con contrato vigente.`
+              : players === 1
+                ? '1 jugador con contrato vigente.'
+                : `${players} jugadores con contrato vigente.`}
+          </p>
         </DetailSection>
       </DetailSide>
 

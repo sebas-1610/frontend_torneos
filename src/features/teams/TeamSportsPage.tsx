@@ -10,6 +10,7 @@ import { SubjectBreak, SubjectVisual } from '../../components/ConfirmDialog'
 import { PageHeading } from '../../components/PageHeading'
 import { SportIcon } from '../../components/SportIcon'
 import { TeamMonogram } from '../../components/TeamMonogram'
+import { TeamPicker } from '../../components/TeamPicker'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useLoadList } from '../../hooks/useLoadList'
 import { useToast } from '../../hooks/useToast'
@@ -20,7 +21,7 @@ import '../../components/ListPage.css'
 import '../../components/CardGrid.css'
 import '../../components/DetailPanel.css'
 import '../../components/Vivid.css'
-import './TeamSportsPage.css'
+import '../../components/Association.css'
 
 // La URL dice qué equipo está abierto (#equipos-deportes/{id}): al recargar se abre el mismo.
 // replaceState no agrega pasos al botón "Atrás" del navegador.
@@ -170,24 +171,7 @@ export function TeamSportsPage({ initialTeamId }: TeamSportsPageProps) {
         </section>
       ) : (
         <>
-          <section className="panel team-picker" aria-label="Equipo">
-            <TeamMonogram team={team} size="lg" />
-            <label className="team-picker__field">
-              <span>Equipo</span>
-              <select value={team.id} onChange={(e) => chooseTeam(Number(e.target.value))}>
-                {teams.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                    {item.active ? '' : ' (inactivo)'}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="team-picker__meta">
-              {team.city}
-              {!team.active && <span className="pill pill--neutral">Inactivo</span>}
-            </p>
-          </section>
+          <TeamPicker teams={teams} team={team} onChoose={chooseTeam} />
 
           {actionError && (
             <p className="login__error" role="alert">
@@ -237,7 +221,7 @@ export function TeamSportsPage({ initialTeamId }: TeamSportsPageProps) {
                         {canAssociate && (
                           <button
                             type="button"
-                            className="button button--outline assoc__button"
+                            className="button button--tint button--tint-green assoc__button"
                             disabled={busySportId !== null}
                             aria-label={`Asociar ${sport.name} a ${team.name}`}
                             onClick={() => associate(sport)}

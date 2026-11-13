@@ -40,7 +40,11 @@ const MAX_ICONS = 3
 // Pantalla "Equipos" (HU-GD-02): tabla con búsqueda, filtros de deporte y estado, y orden por
 // columna; crear, editar, activar/desactivar y eliminar. A la derecha, el detalle con sus datos, sus
 // cifras y sus deportes (HU-GD-03).
-export function TeamsPage() {
+interface TeamsPageProps {
+  initialTeamId: number | null // equipo pedido en la URL (#equipos/5); null: el primero de la lista
+}
+
+export function TeamsPage({ initialTeamId }: TeamsPageProps) {
   const { can } = useAccess()
   const { confirm, confirmDialog } = useConfirm()
   const { showToast, toast } = useToast()
@@ -49,6 +53,7 @@ export function TeamsPage() {
   const canDelete = can(RESOURCES.teams, 'DELETE')
   const canListSports = can(RESOURCES.sports, 'LIST')
   const canAssociate = canListSports && can(RESOURCES.teamSports, 'LIST')
+  const canSeeRoster = can(RESOURCES.contracts, 'LIST')
 
   const { items: teams, setItems: setTeams, loading, loadError, reload, retry } = useLoadList(findTeams)
   // Solo para dibujar el balón de cada deporte (un subdeporte usa el de su padre). Si falla o no hay
@@ -58,7 +63,7 @@ export function TeamsPage() {
   const [query, setQuery] = useState('')
   const [sportId, setSportId] = useState<number | null>(null)
   const [status, setStatus] = useState<StatusFilter>('')
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(initialTeamId)
   const [editing, setEditing] = useState<Team | 'new' | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
   const detailRef = useRef<HTMLElement>(null)
@@ -368,6 +373,7 @@ export function TeamsPage() {
           canUpdate={canUpdate}
           canDelete={canDelete}
           canAssociate={canAssociate}
+          canSeeRoster={canSeeRoster}
           onEdit={setEditing}
           onToggleActive={toggleActive}
           onDelete={remove}

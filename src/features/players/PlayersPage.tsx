@@ -39,13 +39,18 @@ const SORT_VALUES: Record<SortKey, (player: Player) => string | number | null> =
 
 // Pantalla "Jugadores" (HU-GD-04): tabla con búsqueda, filtros de estado, equipo y deporte, y orden
 // por columna; crear, editar, activar/desactivar y eliminar. A la derecha, el detalle del elegido.
-export function PlayersPage() {
+interface PlayersPageProps {
+  initialPlayerId: number | null // jugador pedido en la URL (#jugadores/7); null: el primero de la lista
+}
+
+export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
   const { can } = useAccess()
   const { confirm, confirmDialog } = useConfirm()
   const { showToast, toast } = useToast()
   const canCreate = can(RESOURCES.players, 'CREATE')
   const canUpdate = can(RESOURCES.players, 'UPDATE')
   const canDelete = can(RESOURCES.players, 'DELETE')
+  const canSeeSkills = can(RESOURCES.skills, 'LIST') && can(RESOURCES.playerSkills, 'LIST')
   const canListTeams = can(RESOURCES.teams, 'LIST')
 
   const { items: players, setItems: setPlayers, loading, loadError, reload, retry } = useLoadList(findPlayers)
@@ -57,7 +62,7 @@ export function PlayersPage() {
   const [status, setStatus] = useState<StatusFilter>('')
   const [teamFilter, setTeamFilter] = useState<TeamFilter>(null)
   const [sportId, setSportId] = useState<number | null>(null)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(initialPlayerId)
   const [editing, setEditing] = useState<Player | 'new' | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
   const detailRef = useRef<HTMLElement>(null)
@@ -422,6 +427,7 @@ export function PlayersPage() {
           onDismissError={() => setActionError(null)}
           canUpdate={canUpdate}
           canDelete={canDelete}
+          canSeeSkills={canSeeSkills}
           onEdit={setEditing}
           onToggleActive={toggleActive}
           onDelete={remove}

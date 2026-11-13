@@ -1,48 +1,8 @@
-/* ---------- Asociar deportes (HU-GD-03) ---------- */
-
-/* Selector de equipo: sus iniciales, el desplegable y la ciudad. */
-.team-picker {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: var(--gap);
-}
-
-.team-picker__field {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 200px;
-  max-width: 420px;
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.team-picker__field select {
-  height: 44px;
-  padding: 0 12px;
-  font: inherit;
-  font-size: var(--fs-section);
-  font-weight: 600;
-  color: var(--text);
-  background: var(--raised);
-  border: 1px solid var(--control);
-  border-radius: 10px;
-}
-
-.team-picker__field select:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.team-picker__meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-}
+/*
+ * ---------- Pantallas de asociación ----------
+ * Asociar deportes a un equipo (HU-GD-03) y Asignar habilidades a un jugador (HU-GD-07): a un lado lo
+ * disponible, en tarjetas con su botón; al otro, lo que ya tiene, con "Retirar".
+ */
 
 /* Dos columnas como en el mockup: disponibles (más ancha, en tarjetas) y asociados (lista). */
 .assoc {
@@ -50,6 +10,11 @@
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: var(--gap);
   align-items: start;
+}
+
+/* Asignar habilidades: lo que el jugador ya tiene es lo más ancho (tarjetas, radar y resumen). */
+.assoc--wide-right {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
 }
 
 .assoc__search {

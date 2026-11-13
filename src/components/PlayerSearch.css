@@ -1,0 +1,76 @@
+/* ---------- Buscador de jugador (Plantilla, Asignar habilidades) ---------- */
+
+.player-search {
+  position: relative;
+  min-width: 0;
+}
+
+.player-search .list-search {
+  max-width: none;
+  margin-bottom: 0;
+}
+
+/* La lista de coincidencias flota bajo el campo. */
+.player-search__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 30;
+  max-height: 336px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  box-shadow: var(--overlay-shadow);
+}
+
+/* En una ventana va debajo del campo, sin flotar: así la ventana no la recorta. */
+.player-search--inline .player-search__list {
+  position: static;
+  max-height: 232px;
+  margin-top: 8px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  box-shadow: none;
+}
+
+.player-search__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.player-search__option.is-active {
+  background: var(--active);
+}
+
+.player-search__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.player-search__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.player-search__detail {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.player-search__empty {
+  padding: 12px 8px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}

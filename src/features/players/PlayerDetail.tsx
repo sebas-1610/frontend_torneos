@@ -8,6 +8,7 @@ import {
   Ruler,
   Shield,
   Shirt,
+  Sparkles,
   UserRound,
   UserRoundCheck,
   UserRoundX,
@@ -15,7 +16,14 @@ import {
 import type { CSSProperties, Ref } from 'react'
 import { DOCUMENT_TYPES, DOMINANT_FEET, type Player } from '../../api/players'
 import type { ActionError } from '../../components/ActionAlert'
-import { DetailActions, DetailHero, DetailMain, DetailPanel, DetailSide } from '../../components/DetailPanel'
+import {
+  DetailActions,
+  DetailHero,
+  DetailMain,
+  DetailPanel,
+  DetailSection,
+  DetailSide,
+} from '../../components/DetailPanel'
 import { PlayerAvatar } from '../../components/PlayerAvatar'
 import { TeamMonogram } from '../../components/TeamMonogram'
 import { ageFrom, formatDate } from '../../utils/dates'
@@ -32,6 +40,7 @@ interface PlayerDetailProps {
   onDismissError: () => void
   canUpdate: boolean
   canDelete: boolean
+  canSeeSkills: boolean // puede abrir "Asignar habilidades"
   onEdit: (player: Player) => void
   onToggleActive: (player: Player) => void
   onDelete: (player: Player) => void
@@ -47,6 +56,7 @@ export function PlayerDetail({
   onDismissError,
   canUpdate,
   canDelete,
+  canSeeSkills,
   onEdit,
   onToggleActive,
   onDelete,
@@ -201,6 +211,20 @@ export function PlayerDetail({
             </dd>
           </div>
         </dl>
+
+        {canSeeSkills && (
+          <DetailSection
+            title="Habilidades"
+            action={
+              <a className="button button--text detail__add" href={`#habilidades-jugadores/${player.id}`}>
+                <Sparkles size={16} aria-hidden="true" />
+                Gestionar
+              </a>
+            }
+          >
+            <p className="detail__empty">Sus habilidades, el nivel de cada una y su radar de capacidades.</p>
+          </DetailSection>
+        )}
       </DetailSide>
 
       <DetailActions

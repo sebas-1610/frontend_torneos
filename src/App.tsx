@@ -62,7 +62,7 @@ const PAGES: Record<PageId, Crumb> = {
   habilidades: { section: 'Gestión deportiva', page: 'Habilidades' },
   // No está en el menú: se abre desde Habilidades ("Asignar a jugadores") o desde el detalle de un jugador.
   'habilidades-jugadores': { section: 'Habilidades', sectionHref: '#habilidades', page: 'Asignar habilidades' },
-  'perfil-deportivo': { section: 'Gestión deportiva', page: 'Perfil deportivo' },
+  'perfil-deportivo': { section: 'Jugadores', sectionHref: '#jugadores', page: 'Perfil deportivo' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -72,6 +72,7 @@ const MENU_OWNER: Record<string, PageId> = {
   'equipos-deportes': 'equipos',
   'equipos-plantilla': 'equipos',
   'habilidades-jugadores': 'habilidades',
+  'perfil-deportivo': 'jugadores',
 }
 
 // Título de la pestaña sin sesión.
@@ -299,7 +300,7 @@ function App() {
       case 'equipos-plantilla':
         return <TeamRosterPage key={route.param ?? 'inicial'} initialTeamId={idFrom(route.param)} />
       case 'jugadores':
-        // #jugadores/7 abre la lista con ese jugador ya elegido (ej: "Ver jugador" desde una plantilla).
+        // #jugadores/7 abre la lista con ese jugador ya elegido (ej: "Volver a Jugadores" desde su perfil deportivo).
         return <PlayersPage key={route.param ?? 'inicial'} initialPlayerId={idFrom(route.param)} />
       case 'habilidades':
         return <SkillsPage />

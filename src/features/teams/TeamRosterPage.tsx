@@ -17,7 +17,7 @@ import { errorMessage } from '../../api/client'
 import { findPlayers, type Player, type PlayerSummary } from '../../api/players'
 import { effectiveEnd, findContractsByTeam, isOpen, retireContract, type Contract } from '../../api/teamPlayers'
 import { findTeams, type Team } from '../../api/teams'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectBreak, SubjectVisual } from '../../components/ConfirmDialog'
 import {
@@ -170,6 +170,8 @@ function Roster({ team, teams, players, canListPlayers, onChooseTeam, onChanged 
   const { showToast, toast } = useToast()
   const canAssign = can(RESOURCES.contracts, 'CREATE') && canListPlayers
   const canRetire = can(RESOURCES.contracts, 'UPDATE')
+  // El ojo de cada fila abre su perfil deportivo: sin permiso para esa pantalla, no aparece.
+  const canSeeProfile = canOpenPage('perfil-deportivo', can)
 
   const fetchContracts = useCallback(() => findContractsByTeam(team.id), [team.id])
   const { items: contracts, loading, loadError, reload, retry } = useLoadList(fetchContracts)
@@ -360,12 +362,12 @@ function Roster({ team, teams, players, canListPlayers, onChooseTeam, onChanged 
                           />
                         </td>
                         <RowActions>
-                          {canListPlayers && (
+                          {canSeeProfile && (
                             <RowAction
                               icon={Eye}
-                              title="Ver jugador"
-                              label={`Ver a ${name} en Jugadores`}
-                              href={`#jugadores/${contract.player.id}`}
+                              title="Ver perfil deportivo"
+                              label={`Ver el perfil deportivo de ${name}`}
+                              href={`#perfil-deportivo/${contract.player.id}`}
                             />
                           )}
                           {canRetire && (

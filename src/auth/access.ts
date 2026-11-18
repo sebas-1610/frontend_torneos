@@ -86,16 +86,7 @@ export function canOpenPage(page: string, can: Can): boolean {
 }
 
 // En orden: el Administrador entra a Roles; el Administrador deportivo, a Deportes.
-const START_PAGES = [
-  'roles',
-  'usuarios',
-  'permisos',
-  'deportes',
-  'equipos',
-  'jugadores',
-  'habilidades',
-  'perfil-deportivo',
-] as const
+const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'equipos', 'jugadores', 'habilidades'] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
 export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {

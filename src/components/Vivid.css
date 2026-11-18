@@ -822,6 +822,31 @@
   margin-top: 16px;
 }
 
+/* El mismo botón de texto con un resplandor azul suave detrás (pedido del usuario: "Gestionar" de la
+   plantilla). Al pasar el mouse, el resplandor se aviva. */
+.page--vivid .detail-section__head .detail__add--glow {
+  position: relative;
+  isolation: isolate;
+  margin-right: 0; /* sin el margen negativo, el resplandor no se corta en el borde del panel */
+}
+
+/* La nube de luz va detrás del texto (z-index -1 dentro del botón), difuminada. */
+.page--vivid .detail__add--glow::before {
+  position: absolute;
+  inset: -4px -2px;
+  z-index: -1;
+  content: '';
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--tone-blue) 38%, transparent), transparent);
+  border-radius: inherit;
+  filter: blur(6px);
+  transition: opacity 0.2s var(--ease-out);
+  opacity: 0.85;
+}
+
+.page--vivid .detail__add--glow:hover::before {
+  opacity: 1;
+}
+
 .page--vivid .field-hint {
   font-size: 12px;
   color: var(--negative);

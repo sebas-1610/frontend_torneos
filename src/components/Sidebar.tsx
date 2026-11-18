@@ -1,5 +1,4 @@
 import {
-  ChartNoAxesColumnIncreasing,
   KeyRound,
   Shield,
   ShieldCheck,
@@ -43,7 +42,6 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'equipos', label: 'Equipos', icon: Shield },
       { id: 'jugadores', label: 'Jugadores', icon: Shirt },
       { id: 'habilidades', label: 'Habilidades', icon: Star },
-      { id: 'perfil-deportivo', label: 'Perfil deportivo', icon: ChartNoAxesColumnIncreasing },
     ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },

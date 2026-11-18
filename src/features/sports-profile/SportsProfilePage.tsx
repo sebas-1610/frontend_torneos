@@ -1,4 +1,4 @@
-import { ChartNoAxesColumnIncreasing, CircleAlert } from 'lucide-react'
+import { ArrowLeft, ChartNoAxesColumnIncreasing, CircleAlert } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { PageHeading } from '../../components/PageHeading'
 import { PlayerSearch } from '../../components/PlayerSearch'
@@ -15,10 +15,11 @@ function showPlayerInUrl(playerId: number) {
 
 interface SportsProfilePageProps {
   source: SportsProfileSource // de dónde salen los jugadores y los perfiles (profileSource.ts)
-  initialPlayerId: number | null // jugador pedido en la URL, por ejemplo desde su detalle en Jugadores
+  initialPlayerId: number | null // jugador pedido en la URL: el del ojo (Ver) de su fila en Jugadores
 }
 
-// Pantalla "Perfil deportivo" (HU-GD-08). Su única tarea es elegir al jugador: carga entre quiénes
+// Pantalla "Perfil deportivo" (HU-GD-08). No está en el menú: se abre con el ojo de cada fila de
+// Jugadores. Su única tarea es elegir al jugador: carga entre quiénes
 // buscar, lee y escribe la URL y le pasa el elegido a ProfileView, que es quien arma el perfil.
 export function SportsProfilePage({ source, initialPlayerId }: SportsProfilePageProps) {
   const fetchPlayers = useCallback(() => source.findPlayers(), [source])
@@ -41,7 +42,13 @@ export function SportsProfilePage({ source, initialPlayerId }: SportsProfilePage
 
   return (
     <div className="page page--vivid">
-      <PageHeading icon={ChartNoAxesColumnIncreasing} title="Perfil deportivo" finding={finding} />
+      <PageHeading icon={ChartNoAxesColumnIncreasing} title="Perfil deportivo" finding={finding}>
+        {/* Vuelve a la lista con el mismo jugador elegido. */}
+        <a className="button button--outline" href={player ? `#jugadores/${player.id}` : '#jugadores'}>
+          <ArrowLeft size={18} aria-hidden="true" />
+          Volver a Jugadores
+        </a>
+      </PageHeading>
 
       {loadError ? (
         <section className="panel">

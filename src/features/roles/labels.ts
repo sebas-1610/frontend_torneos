@@ -5,6 +5,7 @@ import {
   ChartNoAxesColumnIncreasing,
   ClipboardCheck,
   ClipboardList,
+  CreditCard,
   Goal,
   Grid2x2,
   Layers,
@@ -24,6 +25,7 @@ import {
   UserRound,
   UserRoundCheck,
   Users,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react'
 import type { ModuleType, Operation, Role } from '../../api/security'
@@ -99,6 +101,9 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['grupo', Grid2x2],
   ['resultado', ClipboardCheck],
   ['anotacion', Goal],
+  // Los del aficionado antes que el catálogo: "metodos-pago-aficionado" también empieza por "metodos-pago".
+  ['metodos-pago-aficionado', Wallet],
+  ['metodos-pago', CreditCard],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -109,6 +114,8 @@ const RESOURCE_LABELS = new Map([
   ['asignacion-habilidades', 'Asignación de habilidades'],
   ['asignacion-grupos', 'Asignación de grupos'],
   ['desarrollo-torneos', 'Desarrollo de torneos'],
+  ['metodos-pago', 'Métodos de pago'],
+  ['metodos-pago-aficionado', 'Métodos de pago del aficionado'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

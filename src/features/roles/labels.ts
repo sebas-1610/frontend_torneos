@@ -4,6 +4,8 @@ import {
   ChartColumn,
   ChartNoAxesColumnIncreasing,
   ClipboardList,
+  Grid2x2,
+  Layers,
   Handshake,
   IdCard,
   KeyRound,
@@ -18,6 +20,7 @@ import {
   UserCog,
   UserRound,
   UserRoundCheck,
+  Users,
   type LucideIcon,
 } from 'lucide-react'
 import type { ModuleType, Operation, Role } from '../../api/security'
@@ -86,6 +89,9 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['asignacion-habilidad', Sparkles],
   // Gestión de Competencias (Anexo 3). Torneos ya tiene el trofeo de arriba.
   ['inscripcion', ClipboardList],
+  ['fase', Layers],
+  ['asignacion-grupo', Users],
+  ['grupo', Grid2x2],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -94,6 +100,7 @@ const RESOURCE_LABELS = new Map([
   ['asignacion-permisos', 'Asignación de permisos'],
   ['asignacion-deportes', 'Asignación de deportes'],
   ['asignacion-habilidades', 'Asignación de habilidades'],
+  ['asignacion-grupos', 'Asignación de grupos'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

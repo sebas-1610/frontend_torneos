@@ -7,6 +7,7 @@ export type Operation = 'VIEW' | 'LIST' | 'CREATE' | 'UPDATE' | 'DELETE'
 export type ModuleType =
   | 'ADMINISTRACION'
   | 'GESTION_DEPORTIVA'
+  | 'GESTION_COMPETENCIAS'
   | 'COMERCIAL'
   | 'INFRAESTRUCTURA'
   | 'REPORTES'

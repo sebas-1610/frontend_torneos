@@ -3,6 +3,7 @@ import {
   Building2,
   ChartColumn,
   ChartNoAxesColumnIncreasing,
+  ClipboardList,
   Handshake,
   IdCard,
   KeyRound,
@@ -40,6 +41,7 @@ export const OPERATIONS: { key: Operation; label: string }[] = [
 export const MODULE_LABELS: Record<ModuleType, string> = {
   ADMINISTRACION: 'Administración',
   GESTION_DEPORTIVA: 'Gestión Deportiva',
+  GESTION_COMPETENCIAS: 'Gestión de Competencias',
   COMERCIAL: 'Comercial',
   INFRAESTRUCTURA: 'Infraestructura',
   REPORTES: 'Reportes',
@@ -82,6 +84,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['contrato', Handshake],
   ['habilidad', Star],
   ['asignacion-habilidad', Sparkles],
+  // Gestión de Competencias (Anexo 3). Torneos ya tiene el trofeo de arriba.
+  ['inscripcion', ClipboardList],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.

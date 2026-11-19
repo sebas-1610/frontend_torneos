@@ -3,7 +3,9 @@ import {
   Building2,
   ChartColumn,
   ChartNoAxesColumnIncreasing,
+  ClipboardCheck,
   ClipboardList,
+  Goal,
   Grid2x2,
   Layers,
   Handshake,
@@ -92,6 +94,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['fase', Layers],
   ['asignacion-grupo', Users],
   ['grupo', Grid2x2],
+  ['resultado', ClipboardCheck],
+  ['anotacion', Goal],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.

@@ -5,6 +5,7 @@ import {
   ChartNoAxesColumnIncreasing,
   ClipboardCheck,
   ClipboardList,
+  Coins,
   CreditCard,
   Goal,
   Grid2x2,
@@ -15,6 +16,8 @@ import {
   Link2,
   ListChecks,
   Network,
+  Percent,
+  ReceiptText,
   Shield,
   Shirt,
   Sparkles,
@@ -104,6 +107,10 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   // Los del aficionado antes que el catálogo: "metodos-pago-aficionado" también empieza por "metodos-pago".
   ['metodos-pago-aficionado', Wallet],
   ['metodos-pago', CreditCard],
+  // Las del administrador antes que las del aficionado: "apuestas-partido" también empieza por "apuesta".
+  ['apuestas-partido', ReceiptText],
+  ['apuesta', Coins],
+  ['cuota', Percent],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -116,6 +123,7 @@ const RESOURCE_LABELS = new Map([
   ['desarrollo-torneos', 'Desarrollo de torneos'],
   ['metodos-pago', 'Métodos de pago'],
   ['metodos-pago-aficionado', 'Métodos de pago del aficionado'],
+  ['apuestas-partido', 'Apuestas por partido'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

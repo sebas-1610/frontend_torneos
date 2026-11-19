@@ -13,6 +13,7 @@ import {
   KeyRound,
   Link2,
   ListChecks,
+  Network,
   Shield,
   Shirt,
   Sparkles,
@@ -70,6 +71,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['asignacion-permis', ListChecks],
   ['torneo', Trophy],
   ['tournament', Trophy],
+  // Desarrollo de un torneo (HU-GC-08): sus fases y llaves.
+  ['desarrollo-torneo', Network],
   // Los mismos iconos del menú.
   ['equipo', Shield],
   ['team', Shield],
@@ -105,6 +108,7 @@ const RESOURCE_LABELS = new Map([
   ['asignacion-deportes', 'Asignación de deportes'],
   ['asignacion-habilidades', 'Asignación de habilidades'],
   ['asignacion-grupos', 'Asignación de grupos'],
+  ['desarrollo-torneos', 'Desarrollo de torneos'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

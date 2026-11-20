@@ -20,6 +20,9 @@ import { PlayerSkillsPage } from './features/skills/PlayerSkillsPage'
 import { SportsProfilePage } from './features/sports-profile/SportsProfilePage'
 import { sportsProfileApi } from './features/sports-profile/profileSource'
 import { PlayersPage } from './features/players/PlayersPage'
+import { TournamentsPage } from './features/tournaments/TournamentsPage'
+import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
+import { PhasesPage } from './features/phases/PhasesPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -41,6 +44,9 @@ type PageId =
   | 'habilidades'
   | 'habilidades-jugadores'
   | 'perfil-deportivo'
+  | 'torneos'
+  | 'torneos-inscripciones'
+  | 'torneos-fases'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -63,6 +69,12 @@ const PAGES: Record<PageId, Crumb> = {
   // No está en el menú: se abre desde Habilidades ("Asignar a jugadores") o desde el detalle de un jugador.
   'habilidades-jugadores': { section: 'Habilidades', sectionHref: '#habilidades', page: 'Asignar habilidades' },
   'perfil-deportivo': { section: 'Jugadores', sectionHref: '#jugadores', page: 'Perfil deportivo' },
+  // Gestión de competencias (Anexo 3): también ms_torneos_deportiva.
+  torneos: { section: 'Gestión de competencias', page: 'Torneos' },
+  // No está en el menú: se abre con su tarjeta en el detalle de un torneo o con las pestañas del torneo.
+  'torneos-inscripciones': { section: 'Torneos', sectionHref: '#torneos', page: 'Inscripciones' },
+  // Tampoco: igual que Inscripciones.
+  'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -73,6 +85,8 @@ const MENU_OWNER: Record<string, PageId> = {
   'equipos-plantilla': 'equipos',
   'habilidades-jugadores': 'habilidades',
   'perfil-deportivo': 'jugadores',
+  'torneos-inscripciones': 'torneos',
+  'torneos-fases': 'torneos',
 }
 
 // Título de la pestaña sin sesión.
@@ -315,6 +329,13 @@ function App() {
             initialPlayerId={idFrom(route.param)}
           />
         )
+      case 'torneos':
+        // #torneos/5 abre la lista con ese torneo ya elegido (ej: "Volver a Torneos" desde sus inscripciones).
+        return <TournamentsPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'torneos-inscripciones':
+        return <TournamentTeamsPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'torneos-fases':
+        return <PhasesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

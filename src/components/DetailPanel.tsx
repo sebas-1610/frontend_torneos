@@ -1,4 +1,4 @@
-import { Pencil, Power, PowerOff, Trash2 } from 'lucide-react'
+import { ChevronRight, Pencil, Power, PowerOff, Trash2 } from 'lucide-react'
 import type { CSSProperties, ReactNode, Ref } from 'react'
 import { ActionAlert, type ActionError } from './ActionAlert'
 import { AnimatedNumber } from './AnimatedNumber'
@@ -103,6 +103,42 @@ export function StatTile({ icon: Icon, tone, value, label }: StatTileProps) {
       <AnimatedNumber value={value} className="stat-tile__value" />
       <span className="stat-tile__label">{label}</span>
     </p>
+  )
+}
+
+// Accesos del elegido a sus otras pantallas (ej: Inscripciones y Fases y grupos de un torneo).
+export function ShortcutTiles({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <ul className="shortcuts" aria-label={label}>
+      {children}
+    </ul>
+  )
+}
+
+interface ShortcutTileProps {
+  icon: IconType
+  tone: string // variable de color: "--tone-blue"
+  title: string // el nombre de la pantalla que abre
+  detail: ReactNode // un dato vivo: "Abiertas hasta el 10/12/2026", "2 fases · 4 grupos"
+  detailClassName?: string // ej: el verde de "abiertas"
+  href: string
+}
+
+// Una tarjeta que abre otra pantalla con un clic: icono en un cuadro de color, nombre y un dato.
+export function ShortcutTile({ icon: Icon, tone, title, detail, detailClassName, href }: ShortcutTileProps) {
+  return (
+    <li>
+      <a className="shortcut" href={href} style={{ '--tile': `var(${tone})` } as CSSProperties}>
+        <span className="shortcut__head">
+          <span className="shortcut__icon" aria-hidden="true">
+            <Icon size={18} />
+          </span>
+          <ChevronRight size={16} className="shortcut__go" aria-hidden="true" />
+        </span>
+        <span className="shortcut__title">{title}</span>
+        <span className={`shortcut__detail${detailClassName ? ` ${detailClassName}` : ''}`}>{detail}</span>
+      </a>
+    </li>
   )
 }
 

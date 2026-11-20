@@ -21,6 +21,12 @@ export const RESOURCES = {
   skills: 'habilidades',
   playerSkills: 'asignacion-habilidades',
   sportsProfile: 'perfil-deportivo',
+  // Gestión de Competencias (Anexo 3): también ms_torneos_deportiva.
+  tournaments: 'torneos',
+  registrations: 'inscripciones',
+  phases: 'fases',
+  groups: 'grupos',
+  groupTeams: 'asignacion-grupos',
 } as const
 
 // Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.
@@ -80,13 +86,22 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'habilidades-jugadores':
       // Carga los jugadores, el catálogo y las habilidades del jugador elegido.
       return can(RESOURCES.players, 'LIST') && can(RESOURCES.skills, 'LIST') && can(RESOURCES.playerSkills, 'LIST')
+    case 'torneos':
+      return can(RESOURCES.tournaments, 'LIST')
+    case 'torneos-inscripciones':
+      // Carga los torneos y los inscritos del elegido. Sin "listar equipos" se ven los inscritos, pero no
+      // se puede inscribir.
+      return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.registrations, 'LIST')
+    case 'torneos-fases':
+      // Carga los torneos y las fases del elegido. Los grupos y los inscritos solo se ven con sus permisos.
+      return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.phases, 'LIST')
     default:
       return true // perfil: cualquier usuario con sesión
   }
 }
 
 // En orden: el Administrador entra a Roles; el Administrador deportivo, a Deportes.
-const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'equipos', 'jugadores', 'habilidades'] as const
+const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'equipos', 'jugadores', 'habilidades', 'torneos'] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
 export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {

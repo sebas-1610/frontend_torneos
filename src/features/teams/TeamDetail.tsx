@@ -18,6 +18,7 @@ import { TeamMonogram } from '../../components/TeamMonogram'
 import { formatDateShort } from '../../utils/dates'
 import { hueFor } from '../../utils/hue'
 import { kindOfSummary } from '../sports/sportKind'
+import { TeamTournaments } from './TeamTournaments'
 
 interface TeamDetailProps {
   ref?: Ref<HTMLElement>
@@ -31,12 +32,15 @@ interface TeamDetailProps {
   canDelete: boolean
   canAssociate: boolean // puede abrir "Asociar deportes"
   canSeeRoster: boolean // puede abrir "Plantilla"
+  canSeeTournaments: boolean // puede consultar los torneos del equipo (HU-GC-02)
+  canOpenTournaments: boolean // y abrir cada uno en Torneos
   onEdit: (team: Team) => void
   onToggleActive: (team: Team) => void
   onDelete: (team: Team) => void
 }
 
-// Panel derecho de Equipos: el equipo elegido con sus datos, sus cifras y sus deportes (HU-GD-02 y 03).
+// Panel derecho de Equipos: el equipo elegido con sus datos, sus cifras, sus deportes (HU-GD-02 y 03) y
+// los torneos en los que está inscrito (HU-GC-02).
 export function TeamDetail({
   ref,
   team,
@@ -49,6 +53,8 @@ export function TeamDetail({
   canDelete,
   canAssociate,
   canSeeRoster,
+  canSeeTournaments,
+  canOpenTournaments,
   onEdit,
   onToggleActive,
   onDelete,
@@ -167,6 +173,11 @@ export function TeamDetail({
             </ul>
           )}
         </DetailSection>
+
+        {canSeeTournaments && (
+          // La key vuelve a pedir los torneos al cambiar de equipo.
+          <TeamTournaments key={team.id} team={team} canOpenTournaments={canOpenTournaments} />
+        )}
       </DetailSide>
 
       <DetailActions

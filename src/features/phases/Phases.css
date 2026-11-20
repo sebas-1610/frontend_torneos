@@ -1,0 +1,532 @@
+/*
+ * ---------- Fases y grupos (HU-GC-03, 04 y 05) ----------
+ * A la izquierda el camino del torneo (sus fases en orden) y a la derecha la fase elegida: sus grupos o
+ * sus llaves. Lo demás sale de las piezas de lista, detalle y asociación (Vivid.css, DetailPanel.css,
+ * Association.css). A 1440px: fases 344 + separación 16 + fase elegida 789 = 1149 = 1208 − 58 ✓
+ */
+
+.phases-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 344px) minmax(0, 1fr);
+  gap: var(--gap);
+  align-items: start;
+}
+
+@media (max-width: 1023px) {
+  .phases-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- El camino: cada fase con su número, unida a la siguiente por una línea ---------- */
+
+.phase-path {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page--vivid .phase-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 16ms);
+}
+
+.page--vivid .phase-step:hover {
+  background: var(--raised);
+}
+
+.page--vivid .phase-step.is-selected {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+
+/* La línea baja desde el número de esta fase hasta el de la siguiente (el número va arriba, a 12px). */
+.phase-step:not(:last-child)::after {
+  position: absolute;
+  top: 48px;
+  bottom: -16px;
+  left: 28px;
+  z-index: 1;
+  width: 1px;
+  content: '';
+  background: var(--control);
+}
+
+.phase-step__main {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 8px 12px 12px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.phase-step__main:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.phase-step__order {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: 50%;
+}
+
+.phase-step.is-selected .phase-step__order {
+  color: var(--gold-text);
+  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
+  border-color: var(--gold);
+}
+
+.phase-step__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.phase-step__name {
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.phase-step__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.page--vivid .phase-step__meta .tag {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+/* Subir y bajar, uno encima del otro para no quitarle ancho al nombre. */
+.phase-step__move {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.page--vivid .phase-step__move .act {
+  width: 28px;
+  height: 26px;
+}
+
+/* ---------- Panel de la fase elegida ---------- */
+
+.phase-panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: -4px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.page--vivid .phase-panel .stat-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  margin-top: 14px;
+}
+
+/* Si los equipos de la fase anterior llenan esta fase final: verde si cuadra, ámbar si no. */
+.phase-feed {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  background: color-mix(in srgb, var(--tone-amber) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone-amber) 35%, transparent);
+  border-radius: 10px;
+}
+
+.phase-feed svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--tone-amber);
+}
+
+.phase-feed.is-ok {
+  background: color-mix(in srgb, var(--positive) 8%, transparent);
+  border-color: color-mix(in srgb, var(--positive) 35%, transparent);
+}
+
+.phase-feed.is-ok svg {
+  color: var(--positive);
+}
+
+/* ---------- Grupos ---------- */
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page--vivid .group-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 16ms);
+}
+
+.group-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--edge);
+}
+
+/* La letra del grupo, como en un cuadro de posiciones impreso. */
+.group-card__mark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  font-family: var(--figure);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.group-card__title {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.group-card__name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.group-card__count {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.page--vivid .group-card .row-actions {
+  gap: 4px;
+}
+
+.page--vivid .group-card .act {
+  width: 28px;
+  height: 28px;
+}
+
+.group-card__teams,
+.group-card__empty {
+  margin-bottom: 12px;
+}
+
+.group-card__empty {
+  padding-top: 12px;
+}
+
+.group-card__teams .detail-list__item {
+  min-height: 42px;
+  padding: 4px 0;
+}
+
+.group-card__remove:hover:not(:disabled) {
+  color: var(--negative);
+}
+
+.group-card__remove:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Abajo de la tarjeta, alineado entre tarjetas de distinto alto. */
+.group-card__assign {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* ---------- Llaves de una fase final ---------- */
+
+.bracket-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Borde punteado: la llave existe, pero sus equipos todavía no. */
+.bracket-slot {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px dashed var(--control);
+  border-radius: 12px;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 16ms);
+}
+
+.bracket-slot__label {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.bracket-slot__team {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.bracket-slot__versus {
+  font-family: var(--figure);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* ---------- Formulario de fase: el tipo en dos tarjetas ---------- */
+
+.type-choice {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.type-choice__legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.type-choice__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.type-choice__option {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* La casilla de radio no se ve (la tarjeta entera es la opción), pero sigue recibiendo el foco. */
+.type-choice__option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.type-choice__option:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.type-choice__option.is-checked {
+  background: color-mix(in srgb, var(--tag) 10%, var(--raised));
+  border-color: var(--tag);
+}
+
+.type-choice__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--tag);
+  background: color-mix(in srgb, var(--tag) 14%, transparent);
+  border-radius: 9px;
+}
+
+.type-choice__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.type-choice__label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.type-choice__description {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.type-choice:disabled .type-choice__option {
+  cursor: not-allowed;
+}
+
+.type-choice:disabled .type-choice__option:not(.is-checked) {
+  opacity: 0.45;
+}
+
+/* ---------- Asignar equipos: lista con casillas ---------- */
+
+.pick-list__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 30px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: min(46vh, 360px);
+  margin: 0;
+  padding: 2px;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.pick-list__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pick-list__item:hover {
+  background: var(--raised);
+}
+
+.pick-list__item.is-checked {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+}
+
+.pick-list__item input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
+.pick-list__item:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.pick-list__item input:focus-visible {
+  outline: none;
+}
+
+.pick-list__name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Fases en el detalle de un torneo ---------- */
+
+.page--vivid .phase-trail__item {
+  padding-left: 6px;
+}
+
+.phase-trail__order {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-family: var(--figure);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tag);
+  background: color-mix(in srgb, var(--tag) 14%, transparent);
+  border-radius: 50%;
+}
+
+:root[data-theme='light'] .phase-trail__order {
+  color: color-mix(in srgb, var(--tag) 70%, var(--tone-ink));
+}
+
+/* ---------- Tamaños ---------- */
+
+@media (max-width: 479px) {
+  .type-choice__options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .group-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

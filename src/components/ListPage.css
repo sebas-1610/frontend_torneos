@@ -332,7 +332,8 @@
   color: var(--negative);
 }
 
-.form-dialog input:disabled {
+.form-dialog input:disabled,
+.form-dialog select:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }

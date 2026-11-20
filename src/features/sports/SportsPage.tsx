@@ -161,8 +161,8 @@ export function SportsPage() {
       const confirmed = await confirm({
         title: `¿Desactivar ${sport.name}?`,
         message:
-          'No se podrá asociar a equipos nuevos ni elegir como deporte padre. ' +
-          'Sus subdeportes y los equipos que ya tiene se conservan.',
+          'No se podrá asociar a equipos nuevos, elegir como deporte padre ni usar en torneos nuevos. ' +
+          'Sus subdeportes, sus equipos y sus torneos se conservan.',
         confirmLabel: 'Desactivar deporte',
         tone: 'neutral',
         subject: subjectOf(sport),
@@ -182,7 +182,7 @@ export function SportsPage() {
     const confirmed = await confirm({
       title: `¿Eliminar ${sport.name}?`,
       message:
-        'Se borra del sistema. Si tiene subdeportes o equipos asociados no se puede eliminar: ' +
+        'Se borra del sistema. Si tiene subdeportes, equipos asociados o torneos no se puede eliminar: ' +
         'en ese caso, desactívalo.',
       confirmLabel: 'Eliminar deporte',
       subject: subjectOf(sport),

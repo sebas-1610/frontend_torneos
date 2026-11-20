@@ -1,0 +1,129 @@
+/*
+ * ---------- Torneos e inscripciones (HU-GC-01 y 02) ----------
+ * Lo demás sale de las piezas de lista, detalle y asociación (Vivid.css, DetailPanel.css, Association.css).
+ */
+
+/* Inscripciones abiertas en verde, como el estado "Activo"; cerradas, en el gris del texto. */
+.page--vivid .registration-state.is-open {
+  color: var(--positive);
+}
+
+/* ---------- Equipos para inscribir: tarjetas que se eligen con su casilla ---------- */
+
+/* Toda la tarjeta es la etiqueta de su casilla: un clic en cualquier parte la marca o desmarca. */
+.page--vivid .entity-card--pick {
+  min-height: 132px;
+  cursor: pointer;
+}
+
+.page--vivid .entity-card--pick:has(.entity-card__check:disabled) {
+  cursor: default;
+}
+
+/* El foco del teclado sobre la casilla se ve en toda la tarjeta. */
+.page--vivid .entity-card--pick:has(.entity-card__check:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.page--vivid .entity-card__check {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--gold);
+  cursor: inherit;
+}
+
+.page--vivid .entity-card__check:focus-visible {
+  outline: none;
+}
+
+/* Cuántos equipos van elegidos y el botón para inscribirlos, siempre arriba de las tarjetas. */
+.page--vivid .enroll-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.page--vivid .enroll-bar__count {
+  flex: 1;
+  min-width: 140px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+@media (max-width: 479px) {
+  .page--vivid .enroll-bar .button--primary {
+    flex: 1 1 100%;
+  }
+}
+
+/*
+ * ---------- Pestañas entre las pantallas de un torneo (TournamentTabs) ----------
+ * Debajo del selector de torneo. La activa se marca como el ítem activo del menú (texto claro sobre
+ * --active), sin dorado: el acento no va en pestañas.
+ */
+.page--vivid .tournament-tabs {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: var(--gap);
+  padding: 4px;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  scrollbar-width: none;
+}
+
+.page--vivid .tournament-tabs__tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.page--vivid .tournament-tabs__tab:hover {
+  color: var(--text);
+  background: var(--raised);
+}
+
+.page--vivid .tournament-tabs__tab.is-active {
+  font-weight: 600;
+  color: var(--text);
+  background: var(--active);
+  border-color: var(--control);
+}
+
+.page--vivid .tournament-tabs__tab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+@media (max-width: 479px) {
+  .page--vivid .tournament-tabs {
+    width: 100%;
+  }
+
+  .page--vivid .tournament-tabs__tab {
+    flex: 1 0 auto;
+    padding: 0 12px;
+  }
+}

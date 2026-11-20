@@ -5,6 +5,7 @@ import {
   ShieldUser,
   Shirt,
   Star,
+  Trophy,
   UserRound,
   Users,
   X,
@@ -43,6 +44,10 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'jugadores', label: 'Jugadores', icon: Shirt },
       { id: 'habilidades', label: 'Habilidades', icon: Star },
     ],
+  },
+  {
+    label: 'Gestión de competencias',
+    items: [{ id: 'torneos', label: 'Torneos', icon: Trophy }],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },
 ]

@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { errorMessage } from '../../api/client'
 import { findSports } from '../../api/sports'
 import { deleteTeam, disableTeam, enableTeam, findTeams, type Team } from '../../api/teams'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { ListPanel, ListToolbar, RowAction, RowActions, StatusPill, ToolbarButton } from '../../components/ListView'
@@ -54,6 +54,7 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
   const canListSports = can(RESOURCES.sports, 'LIST')
   const canAssociate = canListSports && can(RESOURCES.teamSports, 'LIST')
   const canSeeRoster = can(RESOURCES.contracts, 'LIST')
+  const canSeeTournaments = can(RESOURCES.registrations, 'LIST')
 
   const { items: teams, setItems: setTeams, loading, loadError, reload, retry } = useLoadList(findTeams)
   // Solo para dibujar el balón de cada deporte (un subdeporte usa el de su padre). Si falla o no hay
@@ -145,8 +146,8 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
       const confirmed = await confirm({
         title: `¿Desactivar ${team.name}?`,
         message:
-          'No se le podrán asociar deportes ni asignar jugadores nuevos. ' +
-          'Sus deportes y sus contratos actuales se conservan.',
+          'No se le podrán asociar deportes, asignar jugadores nuevos ni inscribir en torneos. ' +
+          'Sus deportes, sus contratos y sus inscripciones actuales se conservan.',
         confirmLabel: 'Desactivar equipo',
         tone: 'neutral',
         subject: subjectOf(team),
@@ -165,8 +166,8 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
     const confirmed = await confirm({
       title: `¿Eliminar ${team.name}?`,
       message:
-        'Se borra del sistema. Si tiene deportes asociados o historial de contratos con jugadores ' +
-        'no se puede eliminar: en ese caso, desactívalo.',
+        'Se borra del sistema. Si tiene deportes asociados, historial de contratos con jugadores o ' +
+        'inscripciones en torneos no se puede eliminar: en ese caso, desactívalo.',
       confirmLabel: 'Eliminar equipo',
       subject: subjectOf(team),
     })
@@ -374,6 +375,8 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
           canDelete={canDelete}
           canAssociate={canAssociate}
           canSeeRoster={canSeeRoster}
+          canSeeTournaments={canSeeTournaments}
+          canOpenTournaments={canOpenPage('torneos', can)}
           onEdit={setEditing}
           onToggleActive={toggleActive}
           onDelete={remove}

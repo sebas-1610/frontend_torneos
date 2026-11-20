@@ -7,11 +7,11 @@ import { ActionAlert, type ActionError } from '../../components/ActionAlert'
 import { SubjectItem } from '../../components/ConfirmDialog'
 import { DetailSection } from '../../components/DetailPanel'
 import { RowAction } from '../../components/ListView'
-import { TeamMonogram } from '../../components/TeamMonogram'
 import { useConfirm } from '../../hooks/useConfirm'
 import { useLoadList } from '../../hooks/useLoadList'
 import { fullNameOf } from '../players/playerName'
 import { ScoreFormDialog } from './ScoreFormDialog'
+import { ScoreList } from './ScoreList'
 
 // Lo que la sesión puede hacer con las anotaciones; lo decide la pantalla con los permisos.
 export interface ScoreAbilities {
@@ -100,42 +100,37 @@ export function MatchScores({ match, abilities, onChanged, onToast }: MatchScore
           {canCreate ? 'Todavía no hay anotaciones: registra la primera con "Agregar".' : 'Este partido no tiene anotaciones.'}
         </p>
       ) : (
-        <ul className="score-list" aria-label={`Anotaciones de ${match.homeTeam.name} vs ${match.awayTeam.name}`}>
-          {scores.map((score) => (
-            <li key={score.id} className={`score-row${score.team.id === match.awayTeam.id ? ' is-away' : ''}`}>
-              <span className="score-row__minute">{score.minute}'</span>
-              <TeamMonogram team={score.team} size="sm" />
-              <span className="score-row__text">
-                <span className="score-row__player">{fullNameOf(score.player)}</span>
-                <span className="score-row__team">{score.team.name}</span>
-              </span>
-              <span className="score-row__points">+{score.points}</span>
-              {(canUpdate || abilities.remove) && (
-                <span className="row-actions">
-                  {canUpdate && (
-                    <RowAction
-                      icon={Pencil}
-                      title="Editar anotación"
-                      label={`Editar la anotación de ${fullNameOf(score.player)}, minuto ${score.minute}`}
-                      disabled={busyId !== null}
-                      onClick={() => setForm({ score })}
-                    />
-                  )}
-                  {abilities.remove && (
-                    <RowAction
-                      icon={Trash2}
-                      tone="red"
-                      title="Eliminar anotación"
-                      label={`Eliminar la anotación de ${fullNameOf(score.player)}, minuto ${score.minute}`}
-                      disabled={busyId !== null}
-                      onClick={() => remove(score)}
-                    />
-                  )}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
+        <ScoreList
+          match={match}
+          scores={scores}
+          actions={
+            canUpdate || abilities.remove
+              ? (score) => (
+                  <span className="row-actions">
+                    {canUpdate && (
+                      <RowAction
+                        icon={Pencil}
+                        title="Editar anotación"
+                        label={`Editar la anotación de ${fullNameOf(score.player)}, minuto ${score.minute}`}
+                        disabled={busyId !== null}
+                        onClick={() => setForm({ score })}
+                      />
+                    )}
+                    {abilities.remove && (
+                      <RowAction
+                        icon={Trash2}
+                        tone="red"
+                        title="Eliminar anotación"
+                        label={`Eliminar la anotación de ${fullNameOf(score.player)}, minuto ${score.minute}`}
+                        disabled={busyId !== null}
+                        onClick={() => remove(score)}
+                      />
+                    )}
+                  </span>
+                )
+              : undefined
+          }
+        />
       )}
 
       {form && (

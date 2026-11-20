@@ -30,6 +30,7 @@ export const RESOURCES = {
   matches: 'partidos',
   results: 'resultados', // registrar o corregir el resultado oficial (aparte de editar partidos)
   scores: 'anotaciones',
+  development: 'desarrollo-torneos', // consultar el desarrollo de un torneo (una sola petición)
 } as const
 
 // Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.
@@ -101,6 +102,9 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'torneos-partidos':
       // Carga los torneos y los partidos del elegido. Programar y anotar piden además sus permisos.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.matches, 'LIST')
+    case 'torneos-desarrollo':
+      // Carga los torneos y el desarrollo del elegido: fases, tablas, llaves, partidos y anotaciones.
+      return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.development, 'VIEW')
     default:
       return true // perfil: cualquier usuario con sesión
   }

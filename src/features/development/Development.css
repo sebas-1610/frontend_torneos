@@ -1,0 +1,709 @@
+/*
+ * ---------- Desarrollo del torneo (HU-GC-08, el mockup) ----------
+ * A 1440px: fases 789 + separación 16 + resumen 344 = 1149 = 1208 − 58 ✓ (la misma cuadrícula de las
+ * listas). El dorado solo en datos: la línea de avance de cada fase, la marca de los que clasifican, los
+ * minutos de las anotaciones y el anillo de "Estado de la competencia", que es la pieza que manda.
+ */
+
+/* ---------- Cifras del torneo, debajo del selector ---------- */
+
+.page--vivid .dev-figures .stat-tiles {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2px;
+}
+
+/* ---------- Cuadrícula: la fase a la izquierda, el torneo a la derecha ---------- */
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 344px;
+  gap: var(--gap);
+  align-items: start;
+}
+
+.dev-main,
+.dev-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-width: 0;
+}
+
+/* Al bajar por las tablas, el resumen y el partido elegido se quedan a la vista. */
+@media (min-width: 1366px) {
+  .dev-side {
+    position: sticky;
+    top: 80px; /* barra superior de 64 + 16 de aire */
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/* ---------- Pestañas de las fases ---------- */
+
+.phase-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+}
+
+.phase-tabs__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 12px 12px;
+  font: inherit;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.phase-tabs__tab:hover {
+  color: var(--text);
+  background: var(--raised);
+}
+
+.phase-tabs__tab.is-active {
+  color: var(--text);
+  background: var(--active);
+  border-color: var(--control);
+}
+
+.phase-tabs__tab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.phase-tabs__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  font-weight: 500;
+}
+
+.phase-tabs__tab.is-active .phase-tabs__name {
+  font-weight: 600;
+}
+
+.phase-tabs__name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phase-tabs__name svg {
+  flex-shrink: 0;
+}
+
+.phase-tabs__meta {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* Lo que lleva jugado la fase: una línea dorada sobre su pista. */
+.phase-tabs__track {
+  width: 100%;
+  height: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: var(--gold-track);
+  border-radius: 2px;
+}
+
+.phase-tabs__fill {
+  display: block;
+  width: calc(var(--fill) * 100%);
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+/* ---------- Tablas de posiciones ---------- */
+
+.standings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr));
+  gap: 12px;
+}
+
+.standings {
+  container-type: inline-size;
+  padding: 12px;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 40ms);
+}
+
+.standings__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.standings__mark {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 700;
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: 8px;
+}
+
+.standings__table {
+  width: 100%;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  border-collapse: collapse;
+}
+
+.standings__table thead th {
+  padding: 0 2px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--faint);
+  text-align: center;
+}
+
+.standings__table abbr {
+  text-decoration: none;
+  cursor: help;
+}
+
+.standings__table thead .standings__team-col {
+  text-align: left;
+}
+
+.standings__table tbody tr {
+  border-top: 1px solid var(--rule);
+}
+
+/* Columnas de cifras angostas: el ancho que sobra es para el nombre del equipo. */
+.standings__table tbody td {
+  width: 22px;
+  padding: 6px 1px;
+  text-align: center;
+}
+
+/* La posición: con la marca dorada a la izquierda si hoy clasifica. */
+.standings__table .standings__pos {
+  position: relative;
+  width: 24px;
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.is-qualified .standings__pos {
+  color: var(--gold-text);
+}
+
+.is-qualified .standings__pos::before {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 3px;
+  content: '';
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.standings__team {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 6px 4px;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* Escudos de 22 px en la tabla. Cuatro clases: DetailPanel.css fija el tamaño del círculo con tres. */
+.standings .standings__team .team-shield,
+.standings .standings__team .monogram.monogram--round {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+/* El nombre en dos líneas como máximo; el completo queda en su título. */
+.standings__name {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.is-out .standings__name,
+.is-out td {
+  color: var(--muted);
+}
+
+.standings__table .standings__points {
+  width: 32px;
+  font-family: var(--figure);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.standings-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.standings-legend__mark {
+  flex-shrink: 0;
+  width: 3px;
+  height: 14px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+/* ---------- Partidos de la fase ---------- */
+
+.match-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.match-cards > li {
+  display: flex;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 30ms);
+}
+
+.match-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.match-card:hover {
+  background: var(--raised);
+}
+
+.match-card.is-selected {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+
+.match-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.match-card.is-cancelled {
+  opacity: 0.7;
+}
+
+.match-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.match-card__slot {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* En la tarjeta el frente a frente ocupa lo que haya (en la tabla de Partidos pide 236 px). */
+.match-card .versus--row {
+  min-width: 0;
+}
+
+.match-card .versus--row .versus__name {
+  font-size: var(--fs-small);
+}
+
+.match-card__scores,
+.match-card__when {
+  display: flex;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+}
+
+.match-card__scores {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.match-card__when {
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.match-card__minute {
+  margin-right: 6px;
+  font-family: var(--figure);
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+.match-card__more {
+  color: var(--faint);
+}
+
+/* ---------- Vista eliminatoria ---------- */
+
+/* Con muchas rondas (octavos) la llave pide más ancho del que hay: se desplaza de lado aquí adentro. */
+.bracket-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* Una columna por ronda y 32 px entre ellas para las líneas que las unen. */
+.bracket {
+  display: grid;
+  grid-auto-columns: minmax(196px, 1fr);
+  grid-auto-flow: column;
+  gap: 0 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bracket__round {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bracket__name {
+  height: 20px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket__round.is-current .bracket__name {
+  color: var(--text);
+}
+
+/* Todas las rondas tienen el alto de la primera: cada llave queda centrada en su parte, así la de la
+   ronda siguiente cae justo entre las dos que la alimentan. */
+.bracket__slots {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bracket__cell {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 6px 0;
+}
+
+/* Sale de cada llave hacia la ronda siguiente... */
+.joins-next .bracket__cell::after {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  width: 16px;
+  content: '';
+  border-top: 1px solid var(--control);
+}
+
+/* ...une cada par (del centro de la primera llave al de la segunda)... */
+.joins-next .bracket__cell:nth-child(odd)::before {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  height: 100%;
+  content: '';
+  border-right: 1px solid var(--control);
+}
+
+/* ...y entra a la llave que alimentan. */
+.joins-previous .bracket-card::before {
+  position: absolute;
+  top: 50%;
+  left: -17px;
+  width: 16px;
+  content: '';
+  border-top: 1px solid var(--control);
+}
+
+.bracket-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.bracket-card:hover {
+  background: var(--raised);
+}
+
+.bracket-card.is-selected {
+  background: color-mix(in srgb, var(--gold) 11%, var(--surface));
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+}
+
+.bracket-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.bracket__round.is-current .bracket-card:not(.is-selected, .is-empty) {
+  border-color: var(--control);
+}
+
+.bracket-card.is-empty {
+  cursor: default;
+  background: transparent;
+  border-style: dashed;
+}
+
+.bracket-card__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bracket-card .scoreline {
+  min-width: 0;
+}
+
+.bracket-card__tbd {
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.bracket-card__when {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Estado de la competencia ---------- */
+
+.dev-status__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-status__facts {
+  align-self: stretch;
+}
+
+.page--vivid .dev-status__facts > div {
+  min-height: 34px;
+}
+
+.dev-status__facts dd {
+  font-weight: 600;
+}
+
+.progress-ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 132px;
+  height: 132px;
+}
+
+.progress-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+.progress-ring__track {
+  stroke: var(--gold-track);
+}
+
+.progress-ring__value {
+  stroke: var(--gold);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s var(--ease-out);
+}
+
+.progress-ring__text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring__figure {
+  font-family: var(--figure);
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--gold-text);
+}
+
+.progress-ring__unit {
+  margin-left: 2px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.progress-ring__label {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Detalle del partido ---------- */
+
+.dev-match .detail-section {
+  margin-top: 14px;
+}
+
+.dev-match__open {
+  width: 100%;
+  margin-top: 14px;
+}
+
+/* ---------- Tamaños ---------- */
+
+/* Como en las listas: por debajo de 1366px el resumen pasa debajo, en este orden: el estado de la
+   competencia arriba (lo que primero importa), luego la fase y al final el partido elegido. */
+@media (max-width: 1365px) {
+  .dev-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dev-side {
+    display: contents;
+  }
+
+  .dev-status {
+    order: -1;
+  }
+
+  .dev-match {
+    order: 1;
+  }
+}
+
+/* Con espacio a lo ancho, el anillo a la izquierda y sus cifras a la derecha. */
+@media (min-width: 640px) and (max-width: 1365px) {
+  .dev-status__body {
+    flex-direction: row;
+    gap: 28px;
+  }
+
+  .dev-status__facts {
+    flex: 1;
+    columns: 2;
+    column-gap: 28px;
+  }
+
+  .page--vivid .dev-status__facts > div {
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 759px) {
+  .page--vivid .dev-figures .stat-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Con la tabla angosta (el teléfono) se quitan ganados, empatados y perdidos para que el nombre del
+   equipo quepa; se mide la tarjeta, no la pantalla. */
+@container (max-width: 340px) {
+  .standings__table .standings__hide {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-ring__value {
+    transition: none;
+  }
+}

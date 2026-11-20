@@ -8,6 +8,9 @@ import {
   type Tournament,
   type TournamentCategory,
 } from '../../api/tournaments'
+import { ImageField } from '../../components/ImageField'
+import { TournamentBadge } from '../../components/TournamentBadge'
+import { shieldFromFile } from '../../utils/image'
 import { sportPath, treeOrder } from '../sports/sportTree'
 import { CATEGORIES } from './tournamentInfo'
 import '../auth/LoginPage.css'
@@ -31,6 +34,7 @@ export function TournamentFormDialog({ tournament, sports, onClose, onSaved }: T
   const [startDate, setStartDate] = useState(tournament?.startDate ?? '')
   const [endDate, setEndDate] = useState(tournament?.endDate ?? '')
   const [deadline, setDeadline] = useState(tournament?.registrationDeadline ?? '')
+  const [logo, setLogo] = useState(tournament?.logo ?? null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -79,6 +83,7 @@ export function TournamentFormDialog({ tournament, sports, onClose, onSaved }: T
       startDate,
       endDate,
       registrationDeadline: deadline || null,
+      logo,
     }
     try {
       onSaved(isNew ? await createTournament(input) : await updateTournament(tournament.id, input), isNew)
@@ -113,6 +118,18 @@ export function TournamentFormDialog({ tournament, sports, onClose, onSaved }: T
             <X size={16} aria-hidden="true" />
           </button>
         </div>
+
+        <ImageField
+          label="Logo (opcional)"
+          hint="JPG, PNG o WEBP. Se ve entero, sin recortar; mejor con fondo transparente. Sin logo, se ve el trofeo."
+          preview={<TournamentBadge tournament={{ id: tournament?.id ?? 0, logo }} size="lg" />}
+          value={logo}
+          read={shieldFromFile}
+          uploadLabel="Subir logo"
+          changeLabel="Cambiar logo"
+          inputLabel="Elegir logo del torneo"
+          onChange={setLogo}
+        />
 
         <label className="login__field">
           <span>Nombre del torneo</span>

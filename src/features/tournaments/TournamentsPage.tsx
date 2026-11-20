@@ -11,7 +11,7 @@ import {
   type TournamentCategory,
   type TournamentStatus,
 } from '../../api/tournaments'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { ListPanel, ListToolbar, RowAction, RowActions, ToolbarButton } from '../../components/ListView'
@@ -66,6 +66,7 @@ export function TournamentsPage({ initialTournamentId }: TournamentsPageProps) {
   const canCreate = can(RESOURCES.tournaments, 'CREATE') && canListSports
   const canUpdate = can(RESOURCES.tournaments, 'UPDATE')
   const canDelete = can(RESOURCES.tournaments, 'DELETE')
+  const canSeeDevelopment = canOpenPage('torneos-desarrollo', can)
 
   const {
     items: tournaments,
@@ -348,12 +349,15 @@ export function TournamentsPage({ initialTournamentId }: TournamentsPageProps) {
                         <TournamentStatusTag tournament={tournament} />
                       </td>
                       <RowActions>
-                        <RowAction
-                          icon={Eye}
-                          title="Ver"
-                          label={`Ver ${tournament.name}`}
-                          onClick={() => select(tournament.id, true)}
-                        />
+                        {/* Ver abre su desarrollo (HU-GC-08): sin ese permiso, el botón no aparece. */}
+                        {canSeeDevelopment && (
+                          <RowAction
+                            icon={Eye}
+                            title="Ver desarrollo"
+                            label={`Ver el desarrollo de ${tournament.name}`}
+                            href={`#torneos-desarrollo/${tournament.id}`}
+                          />
+                        )}
                         {canUpdate && (
                           <RowAction
                             icon={Pencil}

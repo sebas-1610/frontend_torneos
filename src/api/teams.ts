@@ -1,4 +1,5 @@
 import { request } from './client'
+import { createImageMemory } from './imageMemory'
 import type { SportSummary } from './sports'
 
 // Rutas de /api/deportiva/teams (ms_torneos_deportiva, HU-GD-02).
@@ -60,20 +61,16 @@ export async function deleteTeam(id: number): Promise<void> {
   rememberShields([{ id, shield: null }], false)
 }
 
-// ---------- Escudos ya conocidos ----------
-// Las respuestas que traen un equipo de paso (el equipo actual de un jugador, los equipos de un
-// deporte...) no traen su escudo, para no repetirlo en cada fila. TeamMonogram lo busca aquí: se
-// llena con cada lista o equipo que llega del backend.
+// ---------- Escudos ya conocidos (imageMemory.ts) ----------
+// TeamMonogram busca aquí el escudo de los equipos que llegan de paso, sin escudo.
 
-const shields = new Map<number, string | null>()
-const listeners = new Set<() => void>()
-let shieldsLoad: Promise<unknown> | null = null // la lista completa ya se pidió (o se está pidiendo)
+const shieldMemory = createImageMemory(findTeams)
 
 function rememberShields(teams: Pick<Team, 'id' | 'shield'>[], complete: boolean) {
-  if (complete) shields.clear()
-  for (const team of teams) shields.set(team.id, team.shield)
-  if (complete) shieldsLoad ??= Promise.resolve()
-  listeners.forEach((listener) => listener())
+  shieldMemory.remember(
+    teams.map((team) => ({ id: team.id, image: team.shield })),
+    complete,
+  )
 }
 
 function remember(team: Team): Team {
@@ -82,21 +79,7 @@ function remember(team: Team): Team {
 }
 
 // undefined: todavía no se sabe; null: el equipo no tiene escudo.
-export function knownShield(teamId: number): string | null | undefined {
-  if (shields.has(teamId)) return shields.get(teamId)
-  // Con la lista completa ya cargada, un equipo que no está en ella no tiene escudo que mostrar.
-  return shieldsLoad ? null : undefined
-}
-
-export function subscribeToShields(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
+export const knownShield = shieldMemory.known
+export const subscribeToShields = shieldMemory.subscribe
 // Pide la lista de equipos una sola vez, para los escudos de las pantallas que no la cargan.
-export function loadTeamShields() {
-  shieldsLoad ??= findTeams().catch(() => {
-    // Sin escudos se muestran las iniciales; no hay nada que avisar.
-    rememberShields([], true)
-  })
-}
+export const loadTeamShields = shieldMemory.load

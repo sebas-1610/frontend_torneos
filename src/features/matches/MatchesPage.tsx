@@ -1,5 +1,5 @@
 import { Plus, Swords } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { errorMessage } from '../../api/client'
 import {
   cancelMatch,
@@ -25,6 +25,7 @@ import { useSort } from '../../hooks/useSort'
 import { useToast } from '../../hooks/useToast'
 import { revealIfStacked } from '../../utils/reveal'
 import { normalize } from '../roles/labels'
+import { followedTournament } from '../tournaments/tournamentInfo'
 import { BackToTournaments, TournamentScreenFallback } from '../tournaments/TournamentScreen'
 import { TournamentTabs } from '../tournaments/TournamentTabs'
 import { MatchDetail, type MatchAbilities } from './MatchDetail'
@@ -45,25 +46,20 @@ function showTournamentInUrl(tournamentId: number) {
 
 interface MatchesPageProps {
   initialTournamentId: number | null // torneo pedido en la URL, por ejemplo desde su tarjeta en Torneos
+  initialMatchId: number | null // partido pedido en la URL (#torneos-partidos/5/12), ej: desde Desarrollo
 }
 
 // Pantalla "Partidos" (HU-GC-06 y 07): se elige un torneo; la tabla muestra sus partidos con filtros de
 // fase, grupo y estado; a la derecha, el partido elegido con su marcador, lo que se puede hacer según su
 // estado y sus anotaciones.
-export function MatchesPage({ initialTournamentId }: MatchesPageProps) {
+export function MatchesPage({ initialTournamentId, initialMatchId }: MatchesPageProps) {
   const { can } = useAccess()
   const tournamentsList = useLoadList(findTournaments)
   const sportsList = useLoadList(findSports, can(RESOURCES.sports, 'LIST')) // solo para el balón del deporte
   const tournaments = tournamentsList.items
   const [tournamentId, setTournamentId] = useState<number | null>(initialTournamentId)
 
-  // El de la URL; si no hay o ya no existe, el primero en curso, luego el primero activo, luego el primero.
-  const tournament =
-    tournaments.find((item) => item.id === tournamentId) ??
-    tournaments.find((item) => item.active && item.status === 'EN_CURSO') ??
-    tournaments.find((item) => item.active && item.status !== 'FINALIZADO') ??
-    tournaments[0] ??
-    null
+  const tournament = followedTournament(tournaments, tournamentId)
 
   if (tournamentsList.loadError || tournamentsList.loading || !tournament) {
     return (
@@ -84,6 +80,7 @@ export function MatchesPage({ initialTournamentId }: MatchesPageProps) {
       tournament={tournament}
       tournaments={tournaments}
       sports={sportsList.items}
+      initialMatchId={tournament.id === initialTournamentId ? initialMatchId : null}
       onChooseTournament={(id) => {
         setTournamentId(id)
         showTournamentInUrl(id)
@@ -110,12 +107,19 @@ interface TournamentMatchesProps {
   tournament: Tournament
   tournaments: Tournament[]
   sports: Sport[]
+  initialMatchId: number | null // el que se muestra primero, si es de este torneo
   onChooseTournament: (tournamentId: number) => void
 }
 
 // Carga los partidos y las fases del torneo, decide qué puede hacer la sesión y maneja las acciones
 // sobre los partidos. Las anotaciones las maneja MatchScores, dentro del detalle.
-function TournamentMatches({ tournament, tournaments, sports, onChooseTournament }: TournamentMatchesProps) {
+function TournamentMatches({
+  tournament,
+  tournaments,
+  sports,
+  initialMatchId,
+  onChooseTournament,
+}: TournamentMatchesProps) {
   const { can } = useAccess()
   const { confirm, confirmDialog } = useConfirm()
   const { showToast, toast } = useToast()
@@ -149,12 +153,20 @@ function TournamentMatches({ tournament, tournaments, sports, onChooseTournament
   const [phaseId, setPhaseId] = useState<number | null>(null)
   const [groupId, setGroupId] = useState<number | null>(null)
   const [status, setStatus] = useState<MatchStatus | ''>('')
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(initialMatchId)
   const [editing, setEditing] = useState<Match | 'new' | null>(null)
   const [resulting, setResulting] = useState<Match | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [actionError, setActionError] = useState<ActionError | null>(null)
   const detailRef = useRef<HTMLElement>(null)
+
+  // El partido pedido en la URL: si el detalle está debajo de la tabla, se baja hasta él una vez.
+  const revealedRef = useRef(false)
+  useEffect(() => {
+    if (loading || initialMatchId === null || revealedRef.current) return
+    revealedRef.current = true
+    revealIfStacked(() => detailRef.current)
+  }, [loading, initialMatchId])
 
   // Las fases del filtro: las del torneo; sin permiso para listarlas, las que tienen partidos.
   const phaseOptions = useMemo(() => {

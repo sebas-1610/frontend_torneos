@@ -1,6 +1,6 @@
-// Imágenes que se guardan junto a su dueño: la foto de un jugador y el escudo de un equipo. El
-// navegador las reduce y las entrega como texto "data:image/...;base64,...", que es como las recibe
-// y las guarda el backend (common/validation/image.ts).
+// Imágenes que se guardan junto a su dueño: la foto de un jugador, el escudo de un equipo y el logo
+// de un torneo. El navegador las reduce y las entrega como texto "data:image/...;base64,...", que es
+// como las recibe y las guarda el backend (common/validation/image.ts).
 
 const MAX_LENGTH = 90_000 // el mismo límite que valida el backend
 const SOURCE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -27,7 +27,8 @@ export async function photoFromFile(file: File): Promise<string> {
   })
 }
 
-// Escudo de un equipo: entero (sin recortar), centrado en un cuadrado y con su fondo transparente.
+// Escudo de un equipo (o logo de un torneo): entero (sin recortar), centrado en un cuadrado y con su
+// fondo transparente.
 // Se guarda como WEBP, que conserva la transparencia y pesa poco; si el navegador no sabe crear
 // WEBP (Safari), como PNG.
 export async function shieldFromFile(file: File): Promise<string> {

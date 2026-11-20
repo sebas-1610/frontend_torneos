@@ -24,6 +24,7 @@ import { TournamentsPage } from './features/tournaments/TournamentsPage'
 import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
 import { PhasesPage } from './features/phases/PhasesPage'
 import { MatchesPage } from './features/matches/MatchesPage'
+import { DevelopmentPage } from './features/development/DevelopmentPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -49,6 +50,7 @@ type PageId =
   | 'torneos-inscripciones'
   | 'torneos-fases'
   | 'torneos-partidos'
+  | 'torneos-desarrollo'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -78,6 +80,7 @@ const PAGES: Record<PageId, Crumb> = {
   // Tampoco: igual que Inscripciones.
   'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
   'torneos-partidos': { section: 'Gestión de competencias', page: 'Partidos' },
+  'torneos-desarrollo': { section: 'Torneos', sectionHref: '#torneos', page: 'Desarrollo del torneo' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -90,6 +93,7 @@ const MENU_OWNER: Record<string, PageId> = {
   'perfil-deportivo': 'jugadores',
   'torneos-inscripciones': 'torneos',
   'torneos-fases': 'torneos',
+  'torneos-desarrollo': 'torneos',
 }
 
 // Título de la pestaña sin sesión.
@@ -102,12 +106,16 @@ function isPageId(value: string): value is PageId {
 interface Route {
   page: PageId | null // null: la URL no trae una pantalla válida
   param: string | null // lo que va después de la barra, ej: el id del rol en #roles-permisos/5
+  extra: string | null // un segundo id, ej: el partido en #torneos-partidos/5/12
 }
 
-// Lee la pantalla de la URL (lo que va después del #): "#usuarios" o "#roles-permisos/5".
+// Lee la pantalla de la URL (lo que va después del #): "#usuarios", "#roles-permisos/5" o
+// "#torneos-partidos/5/12".
 function routeFromHash(): Route {
-  const [page, param] = window.location.hash.slice(1).split('/')
-  return isPageId(page) ? { page, param: param || null } : { page: null, param: null }
+  const [page, param, extra] = window.location.hash.slice(1).split('/')
+  return isPageId(page)
+    ? { page, param: param || null, extra: extra || null }
+    : { page: null, param: null, extra: null }
 }
 
 // El id que viaja en la URL (#roles-permisos/5, #equipos-deportes/3, #jugadores/7); null si no es un número.
@@ -340,7 +348,16 @@ function App() {
       case 'torneos-fases':
         return <PhasesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'torneos-partidos':
-        return <MatchesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+        // #torneos-partidos/5/12 abre el torneo 5 con el partido 12 elegido (ej: desde Desarrollo).
+        return (
+          <MatchesPage
+            key={`${route.param ?? 'inicial'}/${route.extra ?? ''}`}
+            initialTournamentId={idFrom(route.param)}
+            initialMatchId={idFrom(route.extra)}
+          />
+        )
+      case 'torneos-desarrollo':
+        return <DevelopmentPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

@@ -39,9 +39,29 @@
 
 .team-picker__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   color: var(--muted);
+}
+
+/* Las fechas del torneo (Desarrollo), separadas del deporte por una regla corta. */
+.team-picker__dates {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 8px;
+  border-left: 1px solid var(--edge);
+}
+
+.team-picker__dates svg {
+  color: var(--faint);
+}
+
+/* Debajo, a todo el ancho (las cifras del torneo en Desarrollo). */
+.team-picker__footer {
+  flex-basis: 100%;
+  min-width: 0;
 }
 
 /* Acción de la pantalla (ej: "Asignar jugador"), a la derecha. */

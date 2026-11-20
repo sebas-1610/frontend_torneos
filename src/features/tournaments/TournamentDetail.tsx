@@ -1,5 +1,6 @@
 import { CalendarCheck, CalendarClock, CalendarDays, Info, Tag, Users, VenusAndMars } from 'lucide-react'
 import { useCallback, type CSSProperties, type Ref } from 'react'
+import { findTournamentDevelopment } from '../../api/development'
 import { findMatchesByTournament } from '../../api/matches'
 import { findPhasesByTournament } from '../../api/phases'
 import type { Sport } from '../../api/sports'
@@ -23,9 +24,11 @@ import { StatusPill } from '../../components/ListView'
 import { SportIcon } from '../../components/SportIcon'
 import { TeamMonogram } from '../../components/TeamMonogram'
 import { TournamentBadge } from '../../components/TournamentBadge'
+import { useLoad } from '../../hooks/useLoad'
 import { useLoadList } from '../../hooks/useLoadList'
 import { formatDateShort } from '../../utils/dates'
 import { hueFor } from '../../utils/hue'
+import { developmentShort } from '../development/developmentInfo'
 import { matchesShort } from '../matches/matchInfo'
 import { PhaseTrail } from '../phases/PhaseTrail'
 import { phasesShort } from '../phases/phaseInfo'
@@ -101,7 +104,7 @@ interface TournamentBodyProps {
 }
 
 // Lo que se ve del torneo elegido. Carga sus fases una vez (las usan la tarjeta "Fases y grupos" y la
-// sección "Fases") y sus partidos (para la tarjeta "Partidos").
+// sección "Fases"), sus partidos (para la tarjeta "Partidos") y su desarrollo (para "Desarrollo").
 function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   const { can } = useAccess()
   const canListPhases = can(RESOURCES.phases, 'LIST')
@@ -112,6 +115,9 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   // Para el dato de la tarjeta "Partidos".
   const fetchMatches = useCallback(() => findMatchesByTournament(tournament.id), [tournament.id])
   const matchesList = useLoadList(fetchMatches, canOpenPage('torneos-partidos', can))
+  // Para el dato de la tarjeta "Desarrollo": cuánto lleva y en qué fase va.
+  const fetchDevelopment = useCallback(() => findTournamentDevelopment(tournament.id), [tournament.id])
+  const developmentLoad = useLoad(fetchDevelopment, canOpenPage('torneos-desarrollo', can))
 
   const teams = tournament.teamsCount
   const days = durationDays(tournament)
@@ -140,6 +146,14 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
             : matchesList.loadError
               ? 'No se pudieron cargar los partidos'
               : matchesShort(matchesList.items),
+        }
+      case 'torneos-desarrollo':
+        return {
+          text: developmentLoad.loading
+            ? 'Cargando el desarrollo…'
+            : developmentLoad.loadError || !developmentLoad.data
+              ? 'No se pudo cargar el desarrollo'
+              : developmentShort(developmentLoad.data.summary),
         }
     }
   }

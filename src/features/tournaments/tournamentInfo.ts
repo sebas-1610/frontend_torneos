@@ -59,3 +59,15 @@ export function registrationSentence(tournament: Tournament): string {
   const text = registrationText(tournament)
   return `Inscripciones ${text.charAt(0).toLowerCase()}${text.slice(1)}`
 }
+
+// El torneo que se sigue en Partidos y en Desarrollo: el pedido en la URL; si no hay o ya no existe, el
+// primero en curso, luego el primero activo sin terminar, luego el primero.
+export function followedTournament(tournaments: Tournament[], id: number | null): Tournament | null {
+  return (
+    tournaments.find((item) => item.id === id) ??
+    tournaments.find((item) => item.active && item.status === 'EN_CURSO') ??
+    tournaments.find((item) => item.active && item.status !== 'FINALIZADO') ??
+    tournaments[0] ??
+    null
+  )
+}

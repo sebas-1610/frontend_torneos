@@ -605,7 +605,8 @@
   list-style: none;
 }
 
-.page--vivid .shortcuts > li:only-child {
+/* Con un número impar de tarjetas, la última ocupa todo el ancho (sin un hueco al lado). */
+.page--vivid .shortcuts > li:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
 

@@ -1,0 +1,466 @@
+/*
+ * ---------- Partidos, resultado y anotaciones (HU-GC-06 y 07) ----------
+ * Tabla + detalle como en Torneos (Vivid.css, DetailPanel.css): a 1440px, lista 789 + separación 16 +
+ * detalle 344 = 1149 = 1208 − 58 ✓. Aquí van el frente a frente (en la tabla y en el detalle), el
+ * marcador corto de las llaves, las anotaciones y la ventana del resultado. El dorado solo en datos: el marcador en vivo y el minuto de cada anotación.
+ */
+
+/* ---------- Estado ---------- */
+
+/* "En juego" lleva un punto del color de la etiqueta, como un "en vivo". Quieto: el movimiento solo
+   responde a una acción. */
+.live-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+/* ---------- Tabla de Partidos ---------- */
+
+.matches-table td:first-child {
+  white-space: nowrap;
+}
+
+/* La fecha debajo de los equipos: solo en el celular, donde la columna Fecha se oculta. */
+.matches-table__when {
+  display: none;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- Frente a frente: escudo · VS (o el marcador) · escudo, cada nombre debajo de su escudo ---------- */
+
+.versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.versus__team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Un nombre largo se parte por sílabas (lang="es") antes que por letras. */
+.versus__name {
+  max-width: 100%;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.versus__team.is-winner .versus__name {
+  font-weight: 600;
+}
+
+.versus__team.is-loser .versus__name {
+  color: var(--muted);
+}
+
+.versus__role {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* El centro queda a la altura de los escudos, para que "VS" o el marcador se lean entre los dos. */
+.versus__middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.versus__score {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--figure);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.versus__score.is-live {
+  color: var(--gold-text);
+}
+
+.versus__dash {
+  font-weight: 500;
+  color: var(--faint);
+}
+
+.versus__vs {
+  font-family: var(--figure);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+.versus__pens {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--muted);
+  text-align: center;
+}
+
+.versus__pens-score {
+  white-space: nowrap;
+}
+
+/* En la tabla: escudos de 44 px (entre md 36 y lg 56) y cada nombre en dos líneas como máximo; el
+   nombre completo queda en su título. Cuatro clases: DetailPanel.css fija el tamaño del círculo con tres. */
+.versus--row {
+  min-width: 236px;
+}
+
+.versus.versus--row .team-shield,
+.versus.versus--row .monogram.monogram--round {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.versus--row .versus__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Ancho fijo: así los escudos quedan en la misma línea en todas las filas, tengan penales o no. */
+.versus--row .versus__middle {
+  width: 64px;
+  min-height: 44px;
+}
+
+.versus--row .versus__score {
+  font-size: 24px;
+}
+
+.versus--row .versus__vs {
+  font-size: 17px;
+}
+
+/* En el detalle: el tablero, cifras condensadas sobre el negro del suelo como el marcador de un estadio. */
+.versus--board .versus__name {
+  font-weight: 600;
+}
+
+.versus--board .versus__middle {
+  min-height: 56px;
+}
+
+.versus--board .versus__score {
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 40px;
+  background: var(--ground);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+}
+
+.versus--board .versus__score.is-live {
+  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+.versus--board .versus__vs {
+  font-size: 22px;
+}
+
+/* ---------- Marcador corto: las llaves de una fase final, un equipo por línea ---------- */
+
+.scoreline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+}
+
+.scoreline__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scoreline__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.scoreline__row.is-winner .scoreline__name {
+  font-weight: 600;
+}
+
+.scoreline__row.is-loser {
+  color: var(--muted);
+}
+
+.scoreline__pens {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.scoreline__goals {
+  min-width: 20px;
+  font-family: var(--figure);
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.scoreline__goals.is-live {
+  color: var(--gold-text);
+}
+
+/* ---------- Marcador del detalle: estado y lugar arriba, el frente a frente y la fecha ---------- */
+
+.page--vivid .scoreboard {
+  padding: 14px 14px 12px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--gold) 9%, transparent), transparent 70%),
+    color-mix(in srgb, var(--raised) 55%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+}
+
+.scoreboard__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.scoreboard__place {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.scoreboard__note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.scoreboard__note.is-live {
+  color: var(--gold-text);
+}
+
+.scoreboard__when {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  border-top: 1px solid var(--edge);
+}
+
+/* ---------- Acciones del partido ---------- */
+
+/* Los textos son largos ("Registrar resultado", "Cancelar partido"): en vez de dos columnas fijas, cada
+   botón toma el ancho de su texto y bajan de línea cuando no caben. */
+.page--vivid .match-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page--vivid .match-actions .button {
+  flex: 1 1 auto;
+}
+
+.page--vivid .match-actions .button svg {
+  flex-shrink: 0;
+}
+
+/* ---------- Anotaciones ---------- */
+
+.score-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.score-list > li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 0;
+}
+
+.score-row__minute {
+  min-width: 34px;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-text);
+  text-align: right;
+}
+
+.score-row__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.score-row__player {
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.score-row__team {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.score-row__points {
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.page--vivid .score-row .row-actions {
+  gap: 4px;
+}
+
+.page--vivid .score-row .act {
+  width: 28px;
+  height: 28px;
+}
+
+/* ---------- Ventana del resultado: un tablero con un número grande por equipo ---------- */
+
+.result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+
+.result-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+.result-side__name {
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.result-side__role {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.result-side__input {
+  width: 96px;
+  height: 64px;
+  margin-top: 4px;
+  font-family: var(--figure);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  background: var(--ground);
+  border: 1px solid var(--control);
+  border-radius: 12px;
+}
+
+.result-side__input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.result-grid__dash {
+  padding-bottom: 14px;
+  font-family: var(--figure);
+  font-size: 32px;
+  color: var(--faint);
+}
+
+.result-pens__title {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* En el celular la tabla deja el partido (con su fecha debajo) y los botones, sin desplazarse de lado. */
+@media (max-width: 639px) {
+  .versus--row {
+    min-width: 172px;
+    gap: 4px;
+  }
+
+  .versus.versus--row .team-shield,
+  .versus.versus--row .monogram.monogram--round {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+
+  .versus--row .versus__name {
+    font-size: 12px;
+  }
+
+  .versus--row .versus__middle {
+    width: 44px;
+    min-height: 38px;
+  }
+
+  .versus--row .versus__score {
+    font-size: 21px;
+  }
+
+  .matches-table__when {
+    display: block;
+  }
+}
+
+@media (max-width: 479px) {
+  .result-side__input {
+    width: 76px;
+  }
+}

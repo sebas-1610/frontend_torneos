@@ -5,6 +5,7 @@ import {
   ShieldUser,
   Shirt,
   Star,
+  Swords,
   Trophy,
   UserRound,
   Users,
@@ -47,7 +48,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: 'Gestión de competencias',
-    items: [{ id: 'torneos', label: 'Torneos', icon: Trophy }],
+    items: [
+      { id: 'torneos', label: 'Torneos', icon: Trophy },
+      // Como en el mockup de HU-GC-08: Partidos va en el menú, al lado de Torneos.
+      { id: 'torneos-partidos', label: 'Partidos', icon: Swords },
+    ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },
 ]

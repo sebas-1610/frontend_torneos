@@ -1,5 +1,6 @@
 import { CalendarCheck, CalendarClock, CalendarDays, Info, Tag, Users, VenusAndMars } from 'lucide-react'
 import { useCallback, type CSSProperties, type Ref } from 'react'
+import { findMatchesByTournament } from '../../api/matches'
 import { findPhasesByTournament } from '../../api/phases'
 import type { Sport } from '../../api/sports'
 import { findRegistrationsByTournament } from '../../api/tournamentTeams'
@@ -25,6 +26,7 @@ import { TournamentBadge } from '../../components/TournamentBadge'
 import { useLoadList } from '../../hooks/useLoadList'
 import { formatDateShort } from '../../utils/dates'
 import { hueFor } from '../../utils/hue'
+import { matchesShort } from '../matches/matchInfo'
 import { PhaseTrail } from '../phases/PhaseTrail'
 import { phasesShort } from '../phases/phaseInfo'
 import { kindOfSummary } from '../sports/sportKind'
@@ -48,7 +50,7 @@ interface TournamentDetailProps {
 }
 
 // Panel derecho de Torneos: el torneo elegido con sus fechas, los accesos a sus pantallas
-// (Inscripciones, Fases y grupos), sus cifras, sus fases y los equipos inscritos (HU-GC-01, 02 y 03).
+// (Inscripciones, Fases y grupos, Partidos), sus cifras, sus fases y los equipos inscritos.
 export function TournamentDetail({
   ref,
   tournament,
@@ -98,8 +100,8 @@ interface TournamentBodyProps {
   sports: Sport[]
 }
 
-// Lo que se ve del torneo elegido. Carga sus fases una vez: las usan la tarjeta "Fases y grupos" y la
-// sección "Fases".
+// Lo que se ve del torneo elegido. Carga sus fases una vez (las usan la tarjeta "Fases y grupos" y la
+// sección "Fases") y sus partidos (para la tarjeta "Partidos").
 function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   const { can } = useAccess()
   const canListPhases = can(RESOURCES.phases, 'LIST')
@@ -107,6 +109,9 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   const phasesList = useLoadList(fetchPhases, canListPhases)
   // Solo las pantallas que la sesión puede abrir.
   const screens = TOURNAMENT_SCREENS.filter((screen) => canOpenPage(screen.page, can))
+  // Para el dato de la tarjeta "Partidos".
+  const fetchMatches = useCallback(() => findMatchesByTournament(tournament.id), [tournament.id])
+  const matchesList = useLoadList(fetchMatches, canOpenPage('torneos-partidos', can))
 
   const teams = tournament.teamsCount
   const days = durationDays(tournament)
@@ -127,6 +132,14 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
             : phasesList.loadError
               ? 'No se pudieron cargar las fases'
               : phasesShort(phasesList.items),
+        }
+      case 'torneos-partidos':
+        return {
+          text: matchesList.loading
+            ? 'Cargando partidos…'
+            : matchesList.loadError
+              ? 'No se pudieron cargar los partidos'
+              : matchesShort(matchesList.items),
         }
     }
   }

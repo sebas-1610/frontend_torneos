@@ -292,6 +292,7 @@ function TournamentPhases({ tournament, tournaments, sports, onChooseTournament 
               previous={phases[selectedIndex - 1] ?? null}
               head={headFor(selected)}
               titleId="phase-panel-title"
+              canListMatches={can(RESOURCES.matches, 'LIST')}
             />
           ))}
       </div>

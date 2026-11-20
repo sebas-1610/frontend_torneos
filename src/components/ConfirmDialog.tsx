@@ -8,6 +8,7 @@ export interface ConfirmOptions {
   title: string
   message: ReactNode
   confirmLabel: string // el verbo exacto de la acción: "Quitar del rol", "Eliminar usuario"...
+  cancelLabel?: string // el botón que no hace nada; "Volver" si la acción ya se llama "Cancelar…"
   tone?: 'danger' | 'neutral' // danger: la acción borra o quita algo
   subject?: ReactNode // la tira con lo que se afecta (SubjectUser, SubjectRole...)
 }
@@ -17,7 +18,15 @@ interface ConfirmDialogProps extends ConfirmOptions {
 }
 
 // Ventana de confirmación del proyecto (reemplaza window.confirm). Se usa con useConfirm().
-export function ConfirmDialog({ title, message, confirmLabel, tone = 'danger', subject, onClose }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  title,
+  message,
+  confirmLabel,
+  cancelLabel = 'Cancelar',
+  tone = 'danger',
+  subject,
+  onClose,
+}: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const confirmedRef = useRef(false)
@@ -69,7 +78,7 @@ export function ConfirmDialog({ title, message, confirmLabel, tone = 'danger', s
 
         <div className="confirm-dialog__actions">
           <button ref={cancelRef} type="button" className="button button--outline" onClick={() => close(false)}>
-            Cancelar
+            {cancelLabel}
           </button>
           <button
             type="button"

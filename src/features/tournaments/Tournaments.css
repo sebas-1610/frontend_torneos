@@ -117,13 +117,20 @@
   box-shadow: var(--focus-ring);
 }
 
+/* En el celular las pestañas se reparten el ancho y dejan solo el texto (con tres no caben los iconos). */
 @media (max-width: 479px) {
   .page--vivid .tournament-tabs {
     width: 100%;
   }
 
   .page--vivid .tournament-tabs__tab {
-    flex: 1 0 auto;
-    padding: 0 12px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+    font-size: var(--fs-small);
+  }
+
+  .page--vivid .tournament-tabs__tab svg {
+    display: none;
   }
 }

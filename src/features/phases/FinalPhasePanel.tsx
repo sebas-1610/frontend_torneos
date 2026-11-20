@@ -1,7 +1,11 @@
 import { CircleCheck, GitMerge, Info, TriangleAlert, Users } from 'lucide-react'
-import type { CSSProperties, ReactNode } from 'react'
+import { useCallback, type CSSProperties, type ReactNode } from 'react'
+import { findMatchesByPhase } from '../../api/matches'
 import type { Phase } from '../../api/phases'
 import { DetailSection, StatTile, StatTiles } from '../../components/DetailPanel'
+import { useLoadList } from '../../hooks/useLoadList'
+import { matchWhen } from '../matches/matchInfo'
+import { MatchStatusTag, Scoreline } from '../matches/MatchVisuals'
 import { bracketsOf, feedFrom } from './phaseInfo'
 
 interface FinalPhasePanelProps {
@@ -9,14 +13,17 @@ interface FinalPhasePanelProps {
   previous: Phase | null // la fase que se juega antes, para ver si sus equipos llenan esta
   head: ReactNode // PhaseHead: nombre, tipo y acciones
   titleId: string
+  canListMatches: boolean // para llenar cada llave con su partido
 }
 
-// Una fase final (HU-GC-05): cuántos equipos y cuántas llaves tiene, y cada llave como un partido por
-// armar. Los equipos de cada llave se eligen al programar su partido.
-export function FinalPhasePanel({ phase, previous, head, titleId }: FinalPhasePanelProps) {
+// Una fase final (HU-GC-05): cuántos equipos y cuántas llaves tiene, y cada llave con su partido
+// (equipos, marcador y estado) o "Por definir" si todavía no se programa.
+export function FinalPhasePanel({ phase, previous, head, titleId, canListMatches }: FinalPhasePanelProps) {
   const teams = phase.teamsCount ?? 0
   const brackets = bracketsOf(phase)
   const feed = previous ? feedFrom(previous, phase) : null
+  const fetchMatches = useCallback(() => findMatchesByPhase(phase.id), [phase.id])
+  const { items: matches } = useLoadList(fetchMatches, canListMatches)
 
   return (
     <section className="panel phase-panel" aria-labelledby={titleId}>
@@ -36,23 +43,45 @@ export function FinalPhasePanel({ phase, previous, head, titleId }: FinalPhasePa
 
       <DetailSection title="Llaves">
         <ol className="bracket-slots" aria-label={`Llaves de ${phase.name}`}>
-          {Array.from({ length: brackets }, (_, index) => (
-            <li key={index} className="bracket-slot" style={{ '--i': index } as CSSProperties}>
-              <span className="bracket-slot__label">Llave {index + 1}</span>
-              <span className="bracket-slot__team">Por definir</span>
-              <span className="bracket-slot__versus" aria-hidden="true">
-                vs
-              </span>
-              <span className="bracket-slot__team">Por definir</span>
-            </li>
-          ))}
+          {Array.from({ length: brackets }, (_, index) => {
+            const slot = index + 1
+            const match = matches.find((item) => item.bracketPosition === slot)
+            return (
+              <li
+                key={slot}
+                className={`bracket-slot${match ? ' is-set' : ''}`}
+                style={{ '--i': index } as CSSProperties}
+              >
+                <span className="bracket-slot__label">
+                  Llave {slot}
+                  {match && <MatchStatusTag status={match.status} />}
+                </span>
+                {match ? (
+                  <>
+                    <Scoreline match={match} />
+                    <span className="bracket-slot__when">
+                      {matchWhen(match.scheduledAt).date} · {matchWhen(match.scheduledAt).time}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="bracket-slot__team">Por definir</span>
+                    <span className="bracket-slot__versus" aria-hidden="true">
+                      vs
+                    </span>
+                    <span className="bracket-slot__team">Por definir</span>
+                  </>
+                )}
+              </li>
+            )
+          })}
         </ol>
       </DetailSection>
 
       <p className="assoc__note">
         <Info size={16} aria-hidden="true" />
         Cada llave es un solo partido: quien gana pasa a la fase siguiente. Los dos equipos de cada llave se
-        eligen al programar su partido.
+        eligen al programar su partido en Partidos.
       </p>
     </section>
   )

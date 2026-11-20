@@ -299,7 +299,7 @@
 
 .bracket-slots {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 8px;
   margin: 4px 0 0;
   padding: 0;
@@ -334,97 +334,6 @@
   font-family: var(--figure);
   font-size: 12px;
   color: var(--faint);
-}
-
-/* ---------- Formulario de fase: el tipo en dos tarjetas ---------- */
-
-.type-choice {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-
-.type-choice__legend {
-  margin-bottom: 6px;
-  padding: 0;
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.type-choice__options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.type-choice__option {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  background: var(--raised);
-  border: 1px solid var(--control);
-  border-radius: 12px;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-/* La casilla de radio no se ve (la tarjeta entera es la opción), pero sigue recibiendo el foco. */
-.type-choice__option input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.type-choice__option:has(input:focus-visible) {
-  box-shadow: var(--focus-ring);
-}
-
-.type-choice__option.is-checked {
-  background: color-mix(in srgb, var(--tag) 10%, var(--raised));
-  border-color: var(--tag);
-}
-
-.type-choice__icon {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  color: var(--tag);
-  background: color-mix(in srgb, var(--tag) 14%, transparent);
-  border-radius: 9px;
-}
-
-.type-choice__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.type-choice__label {
-  font-weight: 600;
-  color: var(--text);
-}
-
-.type-choice__description {
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--muted);
-}
-
-.type-choice:disabled .type-choice__option {
-  cursor: not-allowed;
-}
-
-.type-choice:disabled .type-choice__option:not(.is-checked) {
-  opacity: 0.45;
 }
 
 /* ---------- Asignar equipos: lista con casillas ---------- */
@@ -522,11 +431,40 @@
 /* ---------- Tamaños ---------- */
 
 @media (max-width: 479px) {
-  .type-choice__options {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .group-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ---------- Llave con su partido (etapa 3) ---------- */
+
+/* Con partido, el borde deja de ser punteado: la llave ya está armada. */
+.bracket-slot.is-set {
+  gap: 6px;
+  border-style: solid;
+  border-color: var(--edge);
+}
+
+.bracket-slot__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.page--vivid .bracket-slot__label .tag {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.bracket-slot .scoreline {
+  min-width: 0;
+  font-size: var(--fs-small);
+}
+
+.bracket-slot__when {
+  font-size: 12px;
+  color: var(--faint);
 }

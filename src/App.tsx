@@ -23,6 +23,7 @@ import { PlayersPage } from './features/players/PlayersPage'
 import { TournamentsPage } from './features/tournaments/TournamentsPage'
 import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
 import { PhasesPage } from './features/phases/PhasesPage'
+import { MatchesPage } from './features/matches/MatchesPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -47,6 +48,7 @@ type PageId =
   | 'torneos'
   | 'torneos-inscripciones'
   | 'torneos-fases'
+  | 'torneos-partidos'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -75,6 +77,7 @@ const PAGES: Record<PageId, Crumb> = {
   'torneos-inscripciones': { section: 'Torneos', sectionHref: '#torneos', page: 'Inscripciones' },
   // Tampoco: igual que Inscripciones.
   'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
+  'torneos-partidos': { section: 'Gestión de competencias', page: 'Partidos' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -336,6 +339,8 @@ function App() {
         return <TournamentTeamsPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'torneos-fases':
         return <PhasesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'torneos-partidos':
+        return <MatchesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

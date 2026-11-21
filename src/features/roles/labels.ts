@@ -1,4 +1,5 @@
 import {
+  Armchair,
   Box,
   Building2,
   ChartColumn,
@@ -15,6 +16,7 @@ import {
   KeyRound,
   Link2,
   ListChecks,
+  MapPinned,
   Network,
   Percent,
   ReceiptText,
@@ -53,6 +55,7 @@ export const MODULE_LABELS: Record<ModuleType, string> = {
   ADMINISTRACION: 'Administración',
   GESTION_DEPORTIVA: 'Gestión Deportiva',
   GESTION_COMPETENCIAS: 'Gestión de Competencias',
+  GESTION_ESCENARIOS: 'Gestión de Escenarios',
   COMERCIAL: 'Comercial',
   INFRAESTRUCTURA: 'Infraestructura',
   REPORTES: 'Reportes',
@@ -87,6 +90,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['match', SoccerBallIcon],
   ['entrada', Ticket],
   ['ticket', Ticket],
+  // Los escenarios de un torneo (HU-GE-02) antes que el escenario: también empiezan por "escenario".
+  ['escenarios-torneo', MapPinned],
   ['escenario', Building2],
   ['venue', Building2],
   ['reporte', ChartColumn],
@@ -111,6 +116,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['apuestas-partido', ReceiptText],
   ['apuesta', Coins],
   ['cuota', Percent],
+  // Gestión de Escenarios (Anexo 4). Escenarios ya tiene el edificio de arriba.
+  ['localidad', Armchair],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -124,6 +131,7 @@ const RESOURCE_LABELS = new Map([
   ['metodos-pago', 'Métodos de pago'],
   ['metodos-pago-aficionado', 'Métodos de pago del aficionado'],
   ['apuestas-partido', 'Apuestas por partido'],
+  ['escenarios-torneo', 'Escenarios del torneo'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

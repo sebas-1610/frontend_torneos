@@ -24,7 +24,10 @@ import {
   Shirt,
   Sparkles,
   Star,
+  Store,
   Ticket,
+  TicketCheck,
+  Tickets,
   Trophy,
   UserCog,
   UserRound,
@@ -118,6 +121,10 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['cuota', Percent],
   // Gestión de Escenarios (Anexo 4). Escenarios ya tiene el edificio de arriba.
   ['localidad', Armchair],
+  ['venta-entradas', Store],
+  // Los del administrador antes que los del aficionado: "boletos-partido" también empieza por "boleto".
+  ['boletos-partido', Tickets],
+  ['boleto', TicketCheck],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -132,6 +139,8 @@ const RESOURCE_LABELS = new Map([
   ['metodos-pago-aficionado', 'Métodos de pago del aficionado'],
   ['apuestas-partido', 'Apuestas por partido'],
   ['escenarios-torneo', 'Escenarios del torneo'],
+  ['venta-entradas', 'Venta de entradas'],
+  ['boletos-partido', 'Boletos por partido'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

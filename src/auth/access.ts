@@ -31,6 +31,12 @@ export const RESOURCES = {
   results: 'resultados', // registrar o corregir el resultado oficial (aparte de editar partidos)
   scores: 'anotaciones',
   development: 'desarrollo-torneos', // consultar el desarrollo de un torneo (una sola petición)
+  paymentMethods: 'metodos-pago', // el catálogo de formas de pago (para registrar uno)
+  odds: 'cuotas', // fijar las cuotas de un partido y abrir o cerrar sus apuestas
+  matchBets: 'apuestas-partido', // consultar las apuestas de un partido
+  // Del rol Aficionado: cada uno ve y cambia solo lo suyo (el aficionado sale del token).
+  fanPaymentMethods: 'metodos-pago-aficionado',
+  bets: 'apuestas',
 } as const
 
 // Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.
@@ -105,13 +111,30 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'torneos-desarrollo':
       // Carga los torneos y el desarrollo del elegido: fases, tablas, llaves, partidos y anotaciones.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.development, 'VIEW')
+    case 'mis-metodos-pago':
+      // Sus métodos de pago. Registrar uno pide además el catálogo.
+      return can(RESOURCES.fanPaymentMethods, 'LIST')
+    case 'apuestas':
+      // Sus apuestas y los partidos que reciben apuestas (los dos con "listar apuestas").
+      return can(RESOURCES.bets, 'LIST')
     default:
       return true // perfil: cualquier usuario con sesión
   }
 }
 
 // En orden: el Administrador entra a Roles; el Administrador deportivo, a Deportes.
-const START_PAGES = ['roles', 'usuarios', 'permisos', 'deportes', 'equipos', 'jugadores', 'habilidades', 'torneos'] as const
+const START_PAGES = [
+  'roles',
+  'usuarios',
+  'permisos',
+  'deportes',
+  'equipos',
+  'jugadores',
+  'habilidades',
+  'torneos',
+  'apuestas', // el Aficionado
+  'mis-metodos-pago',
+] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.
 export function defaultPage(can: Can): (typeof START_PAGES)[number] | 'perfil' {

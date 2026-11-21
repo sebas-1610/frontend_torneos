@@ -28,6 +28,7 @@ import { normalize } from '../roles/labels'
 import { followedTournament } from '../tournaments/tournamentInfo'
 import { BackToTournaments, TournamentScreenFallback } from '../tournaments/TournamentScreen'
 import { TournamentTabs } from '../tournaments/TournamentTabs'
+import type { BettingAbilities } from './MatchBetting'
 import { MatchDetail, type MatchAbilities } from './MatchDetail'
 import { MatchFormDialog } from './MatchFormDialog'
 import { matchesSentence, matchPlace, matchTitle, matchWhen, STATUS_ORDER } from './matchInfo'
@@ -142,6 +143,10 @@ function TournamentMatches({
     create: can(RESOURCES.scores, 'CREATE') && canPickPlayers,
     update: can(RESOURCES.scores, 'UPDATE') && canPickPlayers,
     remove: can(RESOURCES.scores, 'DELETE'),
+  }
+  const bettingAbilities: BettingAbilities = {
+    setOdds: can(RESOURCES.odds, 'UPDATE'),
+    listBets: can(RESOURCES.matchBets, 'LIST'),
   }
 
   const fetchMatches = useCallback(() => findMatchesByTournament(tournament.id), [tournament.id])
@@ -420,6 +425,7 @@ function TournamentMatches({
           onDismissError={() => setActionError(null)}
           abilities={abilities}
           scoreAbilities={scoreAbilities}
+          bettingAbilities={bettingAbilities}
           onStart={start}
           onCancel={cancel}
           onEdit={setEditing}
@@ -430,6 +436,10 @@ function TournamentMatches({
             setResulting(match)
           }}
           onScoresChanged={reload}
+          onMatchSaved={(saved) => {
+            upsert(saved)
+            setSelectedId(saved.id)
+          }}
           onToast={showToast}
         />
       </div>

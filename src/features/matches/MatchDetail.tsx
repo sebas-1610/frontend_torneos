@@ -3,6 +3,7 @@ import type { Ref } from 'react'
 import type { Match } from '../../api/matches'
 import type { ActionError } from '../../components/ActionAlert'
 import { DetailMain, DetailPanel, DetailSide } from '../../components/DetailPanel'
+import { MatchBetting, type BettingAbilities } from './MatchBetting'
 import { MatchScores, type ScoreAbilities } from './MatchScores'
 import { Scoreboard } from './MatchVisuals'
 
@@ -24,17 +25,19 @@ interface MatchDetailProps {
   onDismissError: () => void
   abilities: MatchAbilities
   scoreAbilities: ScoreAbilities
+  bettingAbilities: BettingAbilities
   onStart: (match: Match) => void
   onCancel: (match: Match) => void
   onEdit: (match: Match) => void
   onDelete: (match: Match) => void
   onResult: (match: Match) => void
   onScoresChanged: () => void
+  onMatchSaved: (match: Match) => void // cambiaron sus cuotas
   onToast: (message: string) => void
 }
 
-// Panel derecho de Partidos: el marcador del partido elegido, lo que se puede hacer según su estado y
-// sus anotaciones (HU-GC-06 y 07).
+// Panel derecho de Partidos: el marcador del partido elegido, lo que se puede hacer según su estado,
+// sus anotaciones (HU-GC-06 y 07) y sus cuotas y apuestas (HU-GC-11).
 export function MatchDetail({
   ref,
   match,
@@ -44,12 +47,14 @@ export function MatchDetail({
   onDismissError,
   abilities,
   scoreAbilities,
+  bettingAbilities,
   onStart,
   onCancel,
   onEdit,
   onDelete,
   onResult,
   onScoresChanged,
+  onMatchSaved,
   onToast,
 }: MatchDetailProps) {
   if (!match) {
@@ -75,6 +80,14 @@ export function MatchDetail({
           match={match}
           abilities={scoreAbilities}
           onChanged={onScoresChanged}
+          onToast={onToast}
+        />
+        {/* HU-GC-11: sus cuotas y sus apuestas. La key vuelve a pedir las apuestas al cambiar de partido. */}
+        <MatchBetting
+          key={`apuestas-${match.id}`}
+          match={match}
+          abilities={bettingAbilities}
+          onSaved={onMatchSaved}
           onToast={onToast}
         />
       </DetailSide>

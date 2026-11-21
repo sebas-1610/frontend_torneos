@@ -95,3 +95,17 @@ export function deleteMatch(id: number): Promise<void> {
 export function registerResult(id: number, input: ResultInput): Promise<Match> {
   return request<Match>(`/deportiva/matches/${id}/result`, { method: 'PUT', body: JSON.stringify(input) })
 }
+
+// HU-GC-11, lo del administrador: las cuotas del partido y si recibe apuestas. En fase de grupos la
+// cuota del empate es obligatoria; en una fase final no lleva (null).
+export interface MatchBettingInput {
+  homeOdds: number
+  drawOdds: number | null
+  awayOdds: number
+  open: boolean
+}
+
+// Solo mientras está programado. Las apuestas ya hechas conservan su cuota.
+export function setMatchBetting(id: number, input: MatchBettingInput): Promise<Match> {
+  return request<Match>(`/deportiva/matches/${id}/betting`, { method: 'PUT', body: JSON.stringify(input) })
+}

@@ -1,4 +1,5 @@
 import {
+  CreditCard,
   KeyRound,
   Shield,
   ShieldCheck,
@@ -6,6 +7,7 @@ import {
   Shirt,
   Star,
   Swords,
+  Ticket,
   Trophy,
   UserRound,
   Users,
@@ -52,6 +54,14 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'torneos', label: 'Torneos', icon: Trophy },
       // Como en el mockup de HU-GC-08: Partidos va en el menú, al lado de Torneos.
       { id: 'torneos-partidos', label: 'Partidos', icon: Swords },
+    ],
+  },
+  {
+    // Lo del rol Aficionado (HU-GC-10 y 11): sus apuestas y sus métodos de pago.
+    label: 'Aficionado',
+    items: [
+      { id: 'apuestas', label: 'Apuestas', icon: Ticket },
+      { id: 'mis-metodos-pago', label: 'Mis métodos de pago', icon: CreditCard },
     ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },

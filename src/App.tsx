@@ -25,6 +25,8 @@ import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
 import { PhasesPage } from './features/phases/PhasesPage'
 import { MatchesPage } from './features/matches/MatchesPage'
 import { DevelopmentPage } from './features/development/DevelopmentPage'
+import { PaymentMethodsPage } from './features/payment-methods/PaymentMethodsPage'
+import { BetsPage } from './features/bets/BetsPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -51,6 +53,8 @@ type PageId =
   | 'torneos-fases'
   | 'torneos-partidos'
   | 'torneos-desarrollo'
+  | 'apuestas'
+  | 'mis-metodos-pago'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -81,6 +85,9 @@ const PAGES: Record<PageId, Crumb> = {
   'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
   'torneos-partidos': { section: 'Gestión de competencias', page: 'Partidos' },
   'torneos-desarrollo': { section: 'Torneos', sectionHref: '#torneos', page: 'Desarrollo del torneo' },
+  // Aficionado (Anexo 3, HU-GC-10 y 11).
+  apuestas: { section: 'Aficionado', page: 'Apuestas' },
+  'mis-metodos-pago': { section: 'Aficionado', page: 'Mis métodos de pago' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -358,6 +365,10 @@ function App() {
         )
       case 'torneos-desarrollo':
         return <DevelopmentPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'apuestas':
+        return <BetsPage />
+      case 'mis-metodos-pago':
+        return <PaymentMethodsPage />
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

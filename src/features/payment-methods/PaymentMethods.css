@@ -1,0 +1,129 @@
+/*
+ * ---------- Mis métodos de pago (HU-GC-10) ----------
+ * Una tarjeta por método, en una sola columna de 1149 (sin detalle al lado: todo se ve en la tarjeta).
+ * --kind es el color del tipo (tarjeta azul, cuenta morada, billetera verde): solo en su icono y en una
+ * luz muy tenue arriba, como la de los paneles. Lo que identifica al método va en cifras condensadas.
+ */
+
+.pay-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pay-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--kind) 10%, transparent), transparent 60%),
+    color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 30ms);
+}
+
+.pay-card.is-inactive {
+  background: color-mix(in srgb, var(--raised) 30%, var(--surface));
+}
+
+.pay-card.is-inactive .pay-card__name,
+.pay-card.is-inactive .pay-card__number {
+  color: var(--muted);
+}
+
+.pay-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pay-card__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.pay-card__kind svg {
+  flex-shrink: 0;
+  color: var(--kind);
+}
+
+.pay-card__name {
+  font-size: var(--fs-section);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.pay-card__number {
+  margin-top: 6px;
+  font-family: var(--figure);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
+
+.pay-card__detail {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.page--vivid .pay-card__foot {
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+/* Un poco de aire entre los datos y los botones, aunque la tarjeta sea la más alta de su fila. */
+.pay-card__detail + .pay-card__foot {
+  margin-top: 14px;
+}
+
+/* La pastilla roja (tarjeta vencida); las demás están en App.css y Vivid.css. */
+.pill--negative {
+  color: var(--negative);
+  background: var(--pill-negative-bg);
+  border: 1px solid color-mix(in srgb, var(--negative) 40%, transparent);
+}
+
+.pill--negative .status-dot {
+  background: var(--negative);
+}
+
+/* ---------- Formulario ---------- */
+
+/* Los tipos del catálogo (5): en dos columnas, como los demás formularios con tarjetas para elegir. */
+.pay-kinds .type-choice__option {
+  align-items: center;
+}
+
+/* Últimos 4 · mes · año (o banco · tipo · últimos 4) en una sola fila. */
+.form-dialog__row.pay-form__card-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pay-form__safe {
+  margin-top: 4px;
+}
+
+@media (max-width: 479px) {
+  .form-dialog__row.pay-form__card-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

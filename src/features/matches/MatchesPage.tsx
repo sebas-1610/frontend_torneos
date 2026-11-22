@@ -12,7 +12,7 @@ import {
 import { findPhasesByTournament } from '../../api/phases'
 import { findSports, type Sport } from '../../api/sports'
 import { findTournaments, type Tournament } from '../../api/tournaments'
-import { RESOURCES, useAccess } from '../../auth/access'
+import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
 import { SubjectVisual } from '../../components/ConfirmDialog'
 import { ListPanel, ListToolbar, ToolbarButton } from '../../components/ListView'
@@ -33,6 +33,7 @@ import { MatchDetail, type MatchAbilities } from './MatchDetail'
 import { MatchFormDialog } from './MatchFormDialog'
 import { matchesSentence, matchPlace, matchTitle, matchWhen, STATUS_ORDER } from './matchInfo'
 import type { ScoreAbilities } from './MatchScores'
+import type { TicketingAbilities } from './MatchTicketing'
 import { MatchesTable, type MatchSortKey } from './MatchesTable'
 import { ResultDialog } from './ResultDialog'
 import '../../components/ListPage.css'
@@ -148,6 +149,14 @@ function TournamentMatches({
     setOdds: can(RESOURCES.odds, 'UPDATE'),
     listBets: can(RESOURCES.matchBets, 'LIST'),
   }
+  // HU-GE-04: configurar la venta pide también verla (el formulario parte de lo vendido).
+  const ticketingAbilities: TicketingAbilities = {
+    view: can(RESOURCES.ticketing, 'VIEW'),
+    configure: can(RESOURCES.ticketing, 'VIEW') && can(RESOURCES.ticketing, 'UPDATE'),
+    listTickets: can(RESOURCES.matchTickets, 'LIST'),
+  }
+  const canPickVenue = can(RESOURCES.tournamentVenues, 'LIST')
+  const canOpenVenues = canOpenPage('escenarios', can)
 
   const fetchMatches = useCallback(() => findMatchesByTournament(tournament.id), [tournament.id])
   const { items: matches, setItems, loading, loadError, reload, retry } = useLoadList(fetchMatches)
@@ -274,7 +283,8 @@ function TournamentMatches({
     const confirmed = await confirm({
       title: `¿Cancelar ${matchTitle(match)}?`,
       message:
-        'El partido queda cancelado y sus apuestas pendientes se anulan (se devuelve lo apostado). No se puede deshacer.',
+        'El partido queda cancelado: sus apuestas pendientes se anulan (se devuelve lo apostado) y sus boletos ' +
+        'también (a cada comprador le llega un correo). No se puede deshacer.',
       confirmLabel: 'Cancelar partido',
       cancelLabel: 'Volver',
       subject: subjectOf(match),
@@ -290,7 +300,8 @@ function TournamentMatches({
     const confirmed = await confirm({
       title: `¿Eliminar ${matchTitle(match)}?`,
       message:
-        'Solo se elimina un partido programado o cancelado, sin anotaciones ni apuestas. Los equipos y la fase no cambian.',
+        'Solo se elimina un partido programado o cancelado, sin anotaciones, apuestas ni boletos. Los equipos y la ' +
+        'fase no cambian.',
       confirmLabel: 'Eliminar partido',
       subject: subjectOf(match),
     })
@@ -426,6 +437,8 @@ function TournamentMatches({
           abilities={abilities}
           scoreAbilities={scoreAbilities}
           bettingAbilities={bettingAbilities}
+          ticketingAbilities={ticketingAbilities}
+          canOpenVenues={canOpenVenues}
           onStart={start}
           onCancel={cancel}
           onEdit={setEditing}
@@ -451,6 +464,7 @@ function TournamentMatches({
           matches={matches}
           match={editing === 'new' ? null : editing}
           defaultPhaseId={phaseId}
+          canPickVenue={canPickVenue}
           onClose={() => setEditing(null)}
           onSaved={(saved, isNew) => {
             setEditing(null)

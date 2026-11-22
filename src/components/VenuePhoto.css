@@ -1,0 +1,77 @@
+/* ---------- Escenario: foto apaisada (16:10) o iniciales ---------- */
+
+.venue-photo {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 48px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 7px;
+}
+
+.venue-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Sin foto: las iniciales sobre un tono fijo por escenario (--hue), como identidad. */
+.venue-photo--empty {
+  font-family: var(--figure);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: hsl(var(--hue) 60% 86%);
+  background: linear-gradient(160deg, hsl(var(--hue) 32% 30%), hsl(var(--hue) 28% 16%));
+}
+
+:root[data-theme='light'] .venue-photo--empty {
+  color: hsl(var(--hue) 45% 26%);
+  background: linear-gradient(160deg, hsl(var(--hue) 45% 92%), hsl(var(--hue) 40% 82%));
+}
+
+.venue-photo--sm {
+  width: 38px;
+  height: 24px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.venue-photo--lg {
+  width: 96px;
+  height: 60px;
+  font-size: 22px;
+  border-radius: 10px;
+}
+
+.venue-photo--xl {
+  width: 176px;
+  height: 110px;
+  font-size: 34px;
+  border-radius: 14px;
+}
+
+/* Portada: la foto a todo el ancho del detalle, con el nombre debajo. */
+.venue-photo--cover {
+  width: 100%;
+  height: auto;
+  max-height: 180px;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+}
+
+.page--vivid .hero:has(> .venue-photo--cover) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* En el teléfono el detalle es angosto: la foto grande baja un poco. */
+@media (max-width: 479px) {
+  .venue-photo--xl {
+    width: 144px;
+    height: 90px;
+    font-size: 28px;
+  }
+}

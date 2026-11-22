@@ -22,11 +22,15 @@ import { sportsProfileApi } from './features/sports-profile/profileSource'
 import { PlayersPage } from './features/players/PlayersPage'
 import { TournamentsPage } from './features/tournaments/TournamentsPage'
 import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
+import { TournamentVenuesPage } from './features/tournaments/TournamentVenuesPage'
 import { PhasesPage } from './features/phases/PhasesPage'
 import { MatchesPage } from './features/matches/MatchesPage'
 import { DevelopmentPage } from './features/development/DevelopmentPage'
 import { PaymentMethodsPage } from './features/payment-methods/PaymentMethodsPage'
 import { BetsPage } from './features/bets/BetsPage'
+import { TicketsPage } from './features/tickets/TicketsPage'
+import { FanTeamsPage } from './features/fan-teams/FanTeamsPage'
+import { VenuesPage } from './features/venues/VenuesPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -50,10 +54,14 @@ type PageId =
   | 'perfil-deportivo'
   | 'torneos'
   | 'torneos-inscripciones'
+  | 'torneos-escenarios'
   | 'torneos-fases'
   | 'torneos-partidos'
   | 'torneos-desarrollo'
+  | 'escenarios'
   | 'apuestas'
+  | 'mis-boletos'
+  | 'mis-equipos'
   | 'mis-metodos-pago'
   | 'perfil'
 
@@ -81,12 +89,18 @@ const PAGES: Record<PageId, Crumb> = {
   torneos: { section: 'Gestión de competencias', page: 'Torneos' },
   // No está en el menú: se abre con su tarjeta en el detalle de un torneo o con las pestañas del torneo.
   'torneos-inscripciones': { section: 'Torneos', sectionHref: '#torneos', page: 'Inscripciones' },
+  // Tampoco (Anexo 4, HU-GE-02): igual que Inscripciones.
+  'torneos-escenarios': { section: 'Torneos', sectionHref: '#torneos', page: 'Escenarios del torneo' },
   // Tampoco: igual que Inscripciones.
   'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
   'torneos-partidos': { section: 'Gestión de competencias', page: 'Partidos' },
   'torneos-desarrollo': { section: 'Torneos', sectionHref: '#torneos', page: 'Desarrollo del torneo' },
-  // Aficionado (Anexo 3, HU-GC-10 y 11).
+  // Gestión de escenarios (Anexo 4): también ms_torneos_deportiva.
+  escenarios: { section: 'Gestión de escenarios', page: 'Escenarios' },
+  // Aficionado (Anexo 3, HU-GC-10 y 11; Anexo 4, HU-GE-04 y 05).
   apuestas: { section: 'Aficionado', page: 'Apuestas' },
+  'mis-boletos': { section: 'Aficionado', page: 'Boletos' },
+  'mis-equipos': { section: 'Aficionado', page: 'Equipos de interés' },
   'mis-metodos-pago': { section: 'Aficionado', page: 'Mis métodos de pago' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
@@ -99,6 +113,7 @@ const MENU_OWNER: Record<string, PageId> = {
   'habilidades-jugadores': 'habilidades',
   'perfil-deportivo': 'jugadores',
   'torneos-inscripciones': 'torneos',
+  'torneos-escenarios': 'torneos',
   'torneos-fases': 'torneos',
   'torneos-desarrollo': 'torneos',
 }
@@ -117,9 +132,10 @@ interface Route {
 }
 
 // Lee la pantalla de la URL (lo que va después del #): "#usuarios", "#roles-permisos/5" o
-// "#torneos-partidos/5/12".
+// "#torneos-partidos/5/12". Lo que va después de "?" no es parte de la ruta: lo lee la pantalla (ej:
+// ePayco devuelve "#mis-boletos?ref_payco=...").
 function routeFromHash(): Route {
-  const [page, param, extra] = window.location.hash.slice(1).split('/')
+  const [page, param, extra] = window.location.hash.slice(1).split('?')[0].split('/')
   return isPageId(page)
     ? { page, param: param || null, extra: extra || null }
     : { page: null, param: null, extra: null }
@@ -352,6 +368,8 @@ function App() {
         return <TournamentsPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'torneos-inscripciones':
         return <TournamentTeamsPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'torneos-escenarios':
+        return <TournamentVenuesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'torneos-fases':
         return <PhasesPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'torneos-partidos':
@@ -365,8 +383,15 @@ function App() {
         )
       case 'torneos-desarrollo':
         return <DevelopmentPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
+      case 'escenarios':
+        // #escenarios/4 abre la lista con ese escenario ya elegido (ej: desde el partido que se juega ahí).
+        return <VenuesPage key={route.param ?? 'inicial'} initialVenueId={idFrom(route.param)} />
       case 'apuestas':
         return <BetsPage />
+      case 'mis-boletos':
+        return <TicketsPage />
+      case 'mis-equipos':
+        return <FanTeamsPage />
       case 'mis-metodos-pago':
         return <PaymentMethodsPage />
       case 'perfil':

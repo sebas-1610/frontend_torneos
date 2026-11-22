@@ -5,6 +5,7 @@ import type { ActionError } from '../../components/ActionAlert'
 import { DetailMain, DetailPanel, DetailSide } from '../../components/DetailPanel'
 import { MatchBetting, type BettingAbilities } from './MatchBetting'
 import { MatchScores, type ScoreAbilities } from './MatchScores'
+import { MatchTicketing, type TicketingAbilities } from './MatchTicketing'
 import { Scoreboard } from './MatchVisuals'
 
 // Lo que la sesión puede hacer con los partidos; lo decide la pantalla con los permisos.
@@ -26,6 +27,8 @@ interface MatchDetailProps {
   abilities: MatchAbilities
   scoreAbilities: ScoreAbilities
   bettingAbilities: BettingAbilities
+  ticketingAbilities: TicketingAbilities
+  canOpenVenues: boolean // el escenario del partido lleva a su detalle en Escenarios
   onStart: (match: Match) => void
   onCancel: (match: Match) => void
   onEdit: (match: Match) => void
@@ -36,8 +39,9 @@ interface MatchDetailProps {
   onToast: (message: string) => void
 }
 
-// Panel derecho de Partidos: el marcador del partido elegido, lo que se puede hacer según su estado,
-// sus anotaciones (HU-GC-06 y 07) y sus cuotas y apuestas (HU-GC-11).
+// Panel derecho de Partidos: el marcador del partido elegido (con su escenario), lo que se puede hacer
+// según su estado, sus anotaciones (HU-GC-06 y 07), sus cuotas y apuestas (HU-GC-11) y su venta de
+// entradas (HU-GE-04).
 export function MatchDetail({
   ref,
   match,
@@ -48,6 +52,8 @@ export function MatchDetail({
   abilities,
   scoreAbilities,
   bettingAbilities,
+  ticketingAbilities,
+  canOpenVenues,
   onStart,
   onCancel,
   onEdit,
@@ -71,7 +77,7 @@ export function MatchDetail({
       onDismissError={onDismissError}
     >
       <DetailMain>
-        <Scoreboard match={match} />
+        <Scoreboard match={match} venueHref={canOpenVenues && match.venue ? `#escenarios/${match.venue.id}` : null} />
       </DetailMain>
       <DetailSide>
         {/* La key vuelve a pedir las anotaciones al cambiar de partido. */}
@@ -88,6 +94,14 @@ export function MatchDetail({
           match={match}
           abilities={bettingAbilities}
           onSaved={onMatchSaved}
+          onToast={onToast}
+        />
+        {/* HU-GE-04: la venta de entradas. La key la vuelve a pedir al cambiar de partido, de escenario o de
+            estado (cancelarlo anula los boletos). */}
+        <MatchTicketing
+          key={`entradas-${match.id}-${match.venue?.id ?? 0}-${match.status}`}
+          match={match}
+          abilities={ticketingAbilities}
           onToast={onToast}
         />
       </DetailSide>

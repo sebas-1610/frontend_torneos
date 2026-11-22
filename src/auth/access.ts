@@ -34,9 +34,18 @@ export const RESOURCES = {
   paymentMethods: 'metodos-pago', // el catálogo de formas de pago (para registrar uno)
   odds: 'cuotas', // fijar las cuotas de un partido y abrir o cerrar sus apuestas
   matchBets: 'apuestas-partido', // consultar las apuestas de un partido
+  // Gestión de Escenarios (Anexo 4): también ms_torneos_deportiva.
+  venues: 'escenarios',
+  localities: 'localidades',
+  tournamentVenues: 'escenarios-torneo', // asignar escenarios a un torneo y consultar los de un escenario
+  ticketing: 'venta-entradas', // la venta de entradas de un partido: precios por localidad, abrirla o cerrarla
+  matchTickets: 'boletos-partido', // consultar los boletos vendidos de un partido
+  teamFans: 'aficionados-equipo', // consultar los aficionados que siguen a un equipo
   // Del rol Aficionado: cada uno ve y cambia solo lo suyo (el aficionado sale del token).
   fanPaymentMethods: 'metodos-pago-aficionado',
   bets: 'apuestas',
+  tickets: 'boletos', // sus boletos, los partidos que venden, comprar y confirmar el pago
+  fanTeams: 'equipos-interes', // los equipos que sigue
 } as const
 
 // Rol que el backend protege (AdminGuard): no se renombra y nadie se lo quita a sí mismo.
@@ -108,15 +117,29 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'torneos-partidos':
       // Carga los torneos y los partidos del elegido. Programar y anotar piden además sus permisos.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.matches, 'LIST')
+    case 'torneos-escenarios':
+      // Carga los torneos y los escenarios asignados al elegido. Asignar pide además ver los escenarios.
+      return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.tournamentVenues, 'LIST')
     case 'torneos-desarrollo':
       // Carga los torneos y el desarrollo del elegido: fases, tablas, llaves, partidos y anotaciones.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.development, 'VIEW')
+    case 'escenarios':
+      // Carga los escenarios con sus localidades. Las localidades y los torneos de cada uno se ven con sus
+      // permisos.
+      return can(RESOURCES.venues, 'LIST')
     case 'mis-metodos-pago':
       // Sus métodos de pago. Registrar uno pide además el catálogo.
       return can(RESOURCES.fanPaymentMethods, 'LIST')
     case 'apuestas':
       // Sus apuestas y los partidos que reciben apuestas (los dos con "listar apuestas").
       return can(RESOURCES.bets, 'LIST')
+    case 'mis-boletos':
+      // Sus boletos y los partidos que venden boletos (los dos con "listar boletos"). Comprar pide además
+      // sus métodos de pago.
+      return can(RESOURCES.tickets, 'LIST')
+    case 'mis-equipos':
+      // Los equipos que sigue y los que puede seguir (los dos con "listar equipos de interés").
+      return can(RESOURCES.fanTeams, 'LIST')
     default:
       return true // perfil: cualquier usuario con sesión
   }
@@ -132,7 +155,10 @@ const START_PAGES = [
   'jugadores',
   'habilidades',
   'torneos',
+  'escenarios',
   'apuestas', // el Aficionado
+  'mis-boletos',
+  'mis-equipos',
   'mis-metodos-pago',
 ] as const
 

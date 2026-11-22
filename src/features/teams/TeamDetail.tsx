@@ -18,6 +18,7 @@ import { TeamMonogram } from '../../components/TeamMonogram'
 import { formatDateShort } from '../../utils/dates'
 import { hueFor } from '../../utils/hue'
 import { kindOfSummary } from '../sports/sportKind'
+import { TeamFans } from './TeamFans'
 import { TeamTournaments } from './TeamTournaments'
 
 interface TeamDetailProps {
@@ -34,13 +35,14 @@ interface TeamDetailProps {
   canSeeRoster: boolean // puede abrir "Plantilla"
   canSeeTournaments: boolean // puede consultar los torneos del equipo (HU-GC-02)
   canOpenTournaments: boolean // y abrir cada uno en Torneos
+  canSeeFans: boolean // puede consultar los aficionados que lo siguen (HU-GE-05)
   onEdit: (team: Team) => void
   onToggleActive: (team: Team) => void
   onDelete: (team: Team) => void
 }
 
-// Panel derecho de Equipos: el equipo elegido con sus datos, sus cifras, sus deportes (HU-GD-02 y 03) y
-// los torneos en los que está inscrito (HU-GC-02).
+// Panel derecho de Equipos: el equipo elegido con sus datos, sus cifras, sus deportes (HU-GD-02 y 03),
+// los torneos en los que está inscrito (HU-GC-02) y los aficionados que lo siguen (HU-GE-05).
 export function TeamDetail({
   ref,
   team,
@@ -55,6 +57,7 @@ export function TeamDetail({
   canSeeRoster,
   canSeeTournaments,
   canOpenTournaments,
+  canSeeFans,
   onEdit,
   onToggleActive,
   onDelete,
@@ -178,6 +181,9 @@ export function TeamDetail({
           // La key vuelve a pedir los torneos al cambiar de equipo.
           <TeamTournaments key={team.id} team={team} canOpenTournaments={canOpenTournaments} />
         )}
+
+        {/* La key vuelve a pedir los aficionados al cambiar de equipo. */}
+        {canSeeFans && <TeamFans key={`aficionados-${team.id}`} team={team} />}
       </DetailSide>
 
       <DetailActions

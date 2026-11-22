@@ -1,8 +1,9 @@
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, MapPin } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { Match, MatchStatus } from '../../api/matches'
 import type { TeamSummary } from '../../api/teams'
 import { TeamMonogram } from '../../components/TeamMonogram'
+import { venueName } from '../venues/venueInfo'
 import { MATCH_STATUSES, matchPlace, matchWhen, shownScore, winnerSide } from './matchInfo'
 import './Matches.css'
 
@@ -99,9 +100,14 @@ export function MatchVersus({ match, size = 'row' }: { match: Match; size?: 'row
   )
 }
 
+interface ScoreboardProps {
+  match: Match
+  venueHref?: string | null // el detalle del escenario en Escenarios, si la sesión puede abrirlo
+}
+
 // El marcador grande del detalle: su estado, dónde se juega en el torneo, los dos equipos frente a
-// frente y cuándo.
-export function Scoreboard({ match }: { match: Match }) {
+// frente, cuándo y en qué escenario.
+export function Scoreboard({ match, venueHref = null }: ScoreboardProps) {
   const score = shownScore(match)
   const when = matchWhen(match.scheduledAt)
   const result = match.result
@@ -130,8 +136,22 @@ export function Scoreboard({ match }: { match: Match }) {
         </p>
       )}
       <p className="scoreboard__when">
-        <CalendarDays size={14} aria-hidden="true" />
-        {when.date} · {when.time}
+        <span className="scoreboard__fact">
+          <CalendarDays size={14} aria-hidden="true" />
+          {when.date} · {when.time}
+        </span>
+        <span className="scoreboard__fact">
+          <MapPin size={14} aria-hidden="true" />
+          {match.venue === null ? (
+            'Sin escenario'
+          ) : venueHref ? (
+            <a className="scoreboard__link" href={venueHref} title={`${match.venue.address}, ${match.venue.city}`}>
+              {venueName(match.venue)}
+            </a>
+          ) : (
+            <span title={`${match.venue.address}, ${match.venue.city}`}>{venueName(match.venue)}</span>
+          )}
+        </span>
       </p>
     </div>
   )

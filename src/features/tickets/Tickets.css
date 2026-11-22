@@ -1,0 +1,362 @@
+/*
+ * ---------- Boletos (HU-GE-04, lo del aficionado) ----------
+ * Misma columna de Apuestas: los partidos con venta en tarjetas (.bet-cards de Bets.css) y, abajo, sus
+ * compras. La firma de la pantalla es la compra como una entrada: una línea punteada con dos muescas
+ * separa los datos de los códigos de los boletos. El dorado solo en datos: precios y totales.
+ */
+
+/* ---------- Partidos con venta ---------- */
+
+.sale-card__venue {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: -2px 0 0;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text);
+}
+
+.sale-card__venue svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--faint);
+}
+
+.sale-card__city {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Cada localidad: nombre, lo que queda y el precio en dorado. */
+.sale-card__localities {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sale-card__locality {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.sale-card__locality + .sale-card__locality {
+  border-top: 1px solid var(--rule);
+}
+
+.sale-card__name {
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.sale-card__left {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sale-card__price {
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+.sale-card__locality.is-soldout .sale-card__name,
+.sale-card__locality.is-soldout .sale-card__price {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+.sale-card__locality.is-soldout .sale-card__left {
+  font-weight: 600;
+  color: var(--negative);
+}
+
+.sale-card__buy {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* ---------- Ventana de compra ---------- */
+
+.buy-form__venue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.buy-form__venue svg {
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+.buy-form__locality {
+  align-items: center;
+}
+
+.buy-form__price {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+.buy-form__locality.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Cantidad: menos · número · más, del alto de los campos. */
+.stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  height: 40px;
+  overflow: hidden;
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.stepper__button {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.stepper__button:hover:not(:disabled) {
+  background: var(--active);
+}
+
+.stepper__button:disabled {
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+.stepper__button:focus-visible {
+  outline: none;
+  box-shadow: inset var(--focus-ring);
+}
+
+.stepper__value {
+  font-family: var(--figure);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+
+/* ---------- Pasarela de prueba ---------- */
+
+.page--vivid .sim-checkout {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.sim-checkout__amount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px;
+  text-align: center;
+  background: var(--ground);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+  border-radius: 12px;
+}
+
+.sim-checkout__label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sim-checkout__value {
+  font-family: var(--figure);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--gold-text);
+}
+
+.sim-checkout__choices {
+  display: grid;
+  gap: 8px;
+}
+
+/* ---------- Mis boletos: cada compra como una entrada ---------- */
+
+.stubs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stub {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--raised) 45%, var(--surface));
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  animation: row-in 0.36s var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 20) * 30ms);
+}
+
+.stub__main {
+  flex: 1;
+  padding: 14px;
+}
+
+.stub__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stub__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 12px 0 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.stub__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stub__fact svg {
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+.stub__fact strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.stub__fact .stub__total {
+  margin-left: 4px;
+  font-family: var(--figure);
+  font-size: 16px;
+  color: var(--gold-text);
+}
+
+.stub__reason {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stub__reason.is-negative {
+  color: var(--negative);
+}
+
+.stub__pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stub__hold {
+  display: inline-flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stub__hold svg {
+  flex-shrink: 0;
+  color: var(--tone-blue);
+}
+
+.page--vivid .stub__action {
+  height: 32px;
+}
+
+/* La línea punteada de una entrada, con una muesca a cada lado (del color del panel). */
+.stub__codes {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 14px;
+  border-top: 1px dashed var(--control);
+}
+
+.stub__codes::before,
+.stub__codes::after {
+  position: absolute;
+  top: -9px;
+  width: 16px;
+  height: 16px;
+  content: '';
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+}
+
+.stub__codes::before {
+  left: -9px;
+}
+
+.stub__codes::after {
+  right: -9px;
+}
+
+/* El código de cada boleto: lo que se muestra en la entrada del escenario. */
+.stub__code {
+  padding: 3px 8px;
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  background: var(--ground);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-chip);
+}
+
+/* Mientras no está pagado, el código todavía no sirve; rechazado o anulado, ya no sirve. */
+.stub--pendiente .stub__code {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.stub--rechazado .stub__code,
+.stub--anulado .stub__code {
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+@media (max-width: 479px) {
+  .stubs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,90 @@
+/* ---------- Escenarios (HU-GE-01 y 03) ---------- */
+
+/* Localidades del escenario elegido: nombre, detalle, puestos en cifra condensada y acciones. */
+.locality-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.locality-list > li + li {
+  border-top: 1px solid var(--rule);
+}
+
+.locality-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 0;
+}
+
+.locality-row__icon {
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+.locality-row__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.locality-row__name {
+  font-weight: 500;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.locality-row__detail {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Los puestos: el dato de la fila, en dorado. */
+.locality-row__seats {
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-text);
+}
+
+.locality-row.is-inactive .locality-row__name,
+.locality-row.is-inactive .locality-row__seats {
+  color: var(--faint);
+}
+
+.page--vivid .locality-row .row-actions {
+  gap: 4px;
+}
+
+.page--vivid .locality-row .act {
+  width: 28px;
+  height: 28px;
+}
+
+/* La ciudad no se parte a mitad de palabra (Vivid deja bajar de línea las ciudades de Equipos). */
+.page--vivid .icon-text.venue-city {
+  max-width: none;
+  white-space: nowrap;
+}
+
+/* La cifra de capacidad de la tabla. */
+.venue-seats {
+  font-family: var(--figure);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* En la tableta las localidades se ven en el detalle: así el nombre del escenario tiene espacio. */
+@media (max-width: 1023px) {
+  .venue-col--localities {
+    display: none;
+  }
+}

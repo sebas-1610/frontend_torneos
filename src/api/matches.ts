@@ -2,6 +2,7 @@ import { request } from './client'
 import type { PhaseSummary } from './phases'
 import type { TeamSummary } from './teams'
 import type { TournamentSummary } from './tournaments'
+import type { VenueLocation } from './venues'
 
 // Rutas de /api/deportiva/matches (HU-GC-06) y su resultado oficial (HU-GC-07).
 
@@ -33,6 +34,7 @@ export interface Match {
   scheduledAt: string // hora local "AAAA-MM-DDTHH:mm"
   round: number | null // jornada, solo en fase de grupos (opcional)
   bracketPosition: number | null // llave, solo en fase final
+  venue: VenueLocation | null // HU-GE-02: dónde se juega; null si todavía no tiene escenario
   status: MatchStatus
   result: MatchResult | null // null: sin resultado oficial
   liveScore: { home: number; away: number } // lo que suman las anotaciones
@@ -45,6 +47,9 @@ export interface MatchInput {
   scheduledAt: string
   round: number | null
   bracketPosition: number | null
+  // Uno de los escenarios del torneo, o null. PUT lo reemplaza: si no se envía, el partido queda sin
+  // escenario.
+  venueId: number | null
 }
 
 export interface ResultInput {
@@ -70,7 +75,8 @@ export function createMatch(phaseId: number, input: MatchInput): Promise<Match> 
   return request<Match>('/deportiva/matches', { method: 'POST', body: JSON.stringify({ phaseId, ...input }) })
 }
 
-// Solo mientras está programado; la fase no cambia. Con apuestas, sus equipos no cambian.
+// Solo mientras está programado; la fase no cambia. Con apuestas o boletos, sus equipos no cambian; con
+// la venta de entradas configurada, tampoco su escenario.
 export function updateMatch(id: number, input: MatchInput): Promise<Match> {
   return request<Match>(`/deportiva/matches/${id}`, { method: 'PUT', body: JSON.stringify(input) })
 }
@@ -80,12 +86,12 @@ export function startMatch(id: number): Promise<Match> {
   return request<Match>(`/deportiva/matches/${id}/start`, { method: 'PATCH' })
 }
 
-// Programado o en juego → Cancelado. Sus apuestas pendientes se anulan.
+// Programado o en juego → Cancelado. Sus apuestas pendientes y sus boletos se anulan.
 export function cancelMatch(id: number): Promise<Match> {
   return request<Match>(`/deportiva/matches/${id}/cancel`, { method: 'PATCH' })
 }
 
-// Solo programado o cancelado, sin anotaciones ni apuestas.
+// Solo programado o cancelado, sin anotaciones, apuestas ni boletos.
 export function deleteMatch(id: number): Promise<void> {
   return request<void>(`/deportiva/matches/${id}`, { method: 'DELETE' })
 }

@@ -6,10 +6,14 @@ import { createMatch, updateMatch, type Match } from '../../api/matches'
 import type { Phase } from '../../api/phases'
 import type { TeamSummary } from '../../api/teams'
 import { findRegistrationsByTournament } from '../../api/tournamentTeams'
+import { findVenuesByTournament } from '../../api/tournamentVenues'
 import type { Tournament } from '../../api/tournaments'
+import type { VenueLocation } from '../../api/venues'
 import { useLoad } from '../../hooks/useLoad'
+import { useLoadList } from '../../hooks/useLoadList'
 import { formatDateShort } from '../../utils/dates'
 import { bracketsOf } from '../phases/phaseInfo'
+import { venueName } from '../venues/venueInfo'
 import '../auth/LoginPage.css'
 import '../../components/ListPage.css'
 
@@ -19,6 +23,9 @@ interface MatchFormDialogProps {
   matches: Match[] // del torneo: las llaves ocupadas y quién ya juega en cada fase final
   match: Match | null // null: programar uno nuevo
   defaultPhaseId: number | null // la fase elegida en el filtro, para empezar con ella
+  // Si la sesión puede ver los escenarios del torneo (HU-GE-02). Sin ese permiso no se elige: el partido
+  // conserva el que tiene.
+  canPickVenue: boolean
   onClose: () => void
   onSaved: (match: Match, isNew: boolean) => void
 }
@@ -41,6 +48,7 @@ export function MatchFormDialog({
   matches,
   match,
   defaultPhaseId,
+  canPickVenue,
   onClose,
   onSaved,
 }: MatchFormDialogProps) {
@@ -55,6 +63,7 @@ export function MatchFormDialog({
   const [scheduledAt, setScheduledAt] = useState(match?.scheduledAt ?? '')
   const [round, setRound] = useState(match?.round !== null && match?.round !== undefined ? String(match.round) : '')
   const [bracket, setBracket] = useState<number | null>(match?.bracketPosition ?? null)
+  const [venueId, setVenueId] = useState<number | null>(match?.venue?.id ?? null)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -75,6 +84,16 @@ export function MatchFormDialog({
     }
   }, [phases, tournament.id])
   const options = useLoad(fetchOptions)
+  // Los escenarios del torneo: un partido solo se juega en uno de ellos (HU-GC-06, criterio 11).
+  const fetchVenues = useCallback(() => findVenuesByTournament(tournament.id), [tournament.id])
+  const venuesList = useLoadList(fetchVenues, canPickVenue)
+  const venueOptions = useMemo(() => {
+    // Los disponibles; el que ya tiene el partido siempre está, aunque ya no se pueda usar.
+    const list: VenueLocation[] = venuesList.items.map((row) => row.venue).filter((venue) => venue.available)
+    const own = match?.venue
+    if (own && !list.some((venue) => venue.id === own.id)) list.push(own)
+    return list.sort((a, b) => venueName(a).localeCompare(venueName(b), 'es'))
+  }, [venuesList.items, match])
 
   const phase = phases.find((item) => item.id === phaseId) ?? null
   const isGroupPhase = phase?.type === 'GRUPOS'
@@ -140,6 +159,7 @@ export function MatchFormDialog({
       scheduledAt,
       round: isGroupPhase && round !== '' ? roundNumber : null,
       bracketPosition: isGroupPhase ? null : bracket,
+      venueId,
     }
     try {
       onSaved(isNew ? await createMatch(phase.id, input) : await updateMatch(match.id, input), isNew)
@@ -320,6 +340,40 @@ export function MatchFormDialog({
           </p>
         )}
         {!roundValid && <p className="field-hint">La jornada debe ser un número entero entre 1 y 99.</p>}
+
+        {canPickVenue && (
+          <>
+            <label className="login__field">
+              <span>Escenario (opcional)</span>
+              <select
+                value={venueId ?? ''}
+                disabled={venuesList.loading || venuesList.loadError !== null}
+                onChange={(e) => setVenueId(e.target.value === '' ? null : Number(e.target.value))}
+              >
+                <option value="">{venuesList.loading ? 'Cargando escenarios…' : 'Sin escenario'}</option>
+                {venueOptions.map((venue) => (
+                  <option key={venue.id} value={venue.id}>
+                    {venueName(venue)} · {venue.city}
+                    {venue.available ? '' : ' (no disponible)'}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {venuesList.loadError ? (
+              <p className="login__error" role="alert">
+                No se pudieron cargar los escenarios: {venuesList.loadError}
+              </p>
+            ) : !venuesList.loading && venueOptions.length === 0 ? (
+              <p className="field-hint">
+                {tournament.name} no tiene escenarios disponibles: asígnalos en la pestaña Escenarios del torneo.
+              </p>
+            ) : (
+              <p className="form-dialog__note">
+                Solo los escenarios del torneo. Un escenario no puede tener dos partidos a la misma hora.
+              </p>
+            )}
+          </>
+        )}
 
         {error && (
           <p className="login__error" role="alert">

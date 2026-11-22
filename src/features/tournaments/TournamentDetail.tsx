@@ -5,6 +5,7 @@ import { findMatchesByTournament } from '../../api/matches'
 import { findPhasesByTournament } from '../../api/phases'
 import type { Sport } from '../../api/sports'
 import { findRegistrationsByTournament } from '../../api/tournamentTeams'
+import { findVenuesByTournament, type TournamentVenue } from '../../api/tournamentVenues'
 import type { Tournament } from '../../api/tournaments'
 import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import type { ActionError } from '../../components/ActionAlert'
@@ -28,6 +29,7 @@ import { useLoad } from '../../hooks/useLoad'
 import { useLoadList } from '../../hooks/useLoadList'
 import { formatDateShort } from '../../utils/dates'
 import { hueFor } from '../../utils/hue'
+import { plural } from '../../utils/plural'
 import { developmentShort } from '../development/developmentInfo'
 import { matchesShort } from '../matches/matchInfo'
 import { PhaseTrail } from '../phases/PhaseTrail'
@@ -104,7 +106,7 @@ interface TournamentBodyProps {
 }
 
 // Lo que se ve del torneo elegido. Carga sus fases una vez (las usan la tarjeta "Fases y grupos" y la
-// sección "Fases"), sus partidos (para la tarjeta "Partidos") y su desarrollo (para "Desarrollo").
+// sección "Fases"), sus escenarios, sus partidos y su desarrollo (para el dato de cada tarjeta).
 function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   const { can } = useAccess()
   const canListPhases = can(RESOURCES.phases, 'LIST')
@@ -112,6 +114,9 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
   const phasesList = useLoadList(fetchPhases, canListPhases)
   // Solo las pantallas que la sesión puede abrir.
   const screens = TOURNAMENT_SCREENS.filter((screen) => canOpenPage(screen.page, can))
+  // Para el dato de la tarjeta "Escenarios".
+  const fetchVenues = useCallback(() => findVenuesByTournament(tournament.id), [tournament.id])
+  const venuesList = useLoadList(fetchVenues, canOpenPage('torneos-escenarios', can))
   // Para el dato de la tarjeta "Partidos".
   const fetchMatches = useCallback(() => findMatchesByTournament(tournament.id), [tournament.id])
   const matchesList = useLoadList(fetchMatches, canOpenPage('torneos-partidos', can))
@@ -130,6 +135,14 @@ function TournamentBody({ tournament, sports }: TournamentBodyProps) {
         return {
           text: registrationShort(tournament),
           className: tournament.registrationOpen ? 'registration-state is-open' : undefined,
+        }
+      case 'torneos-escenarios':
+        return {
+          text: venuesList.loading
+            ? 'Cargando escenarios…'
+            : venuesList.loadError
+              ? 'No se pudieron cargar los escenarios'
+              : venuesShort(venuesList.items),
         }
       case 'torneos-fases':
         return {
@@ -299,4 +312,11 @@ function RegisteredTeams({ tournament }: { tournament: Tournament }) {
       )}
     </DetailSection>
   )
+}
+
+// Para la tarjeta "Escenarios": el nombre si es uno solo ("Estadio Palogrande"), si no cuántos.
+function venuesShort(assigned: TournamentVenue[]): string {
+  if (assigned.length === 0) return 'Todavía sin escenarios'
+  if (assigned.length === 1) return assigned[0].venue.name
+  return plural(assigned.length, 'escenario', 'escenarios')
 }

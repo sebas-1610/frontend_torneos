@@ -1,5 +1,7 @@
 import {
+  Building2,
   CreditCard,
+  Heart,
   KeyRound,
   Shield,
   ShieldCheck,
@@ -8,6 +10,7 @@ import {
   Star,
   Swords,
   Ticket,
+  Tickets,
   Trophy,
   UserRound,
   Users,
@@ -57,10 +60,18 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    // Lo del rol Aficionado (HU-GC-10 y 11): sus apuestas y sus métodos de pago.
+    // Anexo 4. Las localidades se gestionan dentro de cada escenario.
+    label: 'Gestión de escenarios',
+    items: [{ id: 'escenarios', label: 'Escenarios', icon: Building2 }],
+  },
+  {
+    // Lo del rol Aficionado: sus apuestas (HU-GC-11), sus boletos (HU-GE-04), los equipos que sigue
+    // (HU-GE-05) y sus métodos de pago (HU-GC-10).
     label: 'Aficionado',
     items: [
       { id: 'apuestas', label: 'Apuestas', icon: Ticket },
+      { id: 'mis-boletos', label: 'Boletos', icon: Tickets },
+      { id: 'mis-equipos', label: 'Equipos de interés', icon: Heart },
       { id: 'mis-metodos-pago', label: 'Mis métodos de pago', icon: CreditCard },
     ],
   },

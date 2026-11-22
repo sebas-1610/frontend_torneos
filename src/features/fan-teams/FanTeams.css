@@ -1,0 +1,22 @@
+/* ---------- Equipos de interés (HU-GE-05) ---------- */
+
+/* Buscador y deporte en una fila (.list-filters); en angosto, uno debajo del otro. */
+.page--vivid .fan-filters .list-search {
+  flex: 1 1 220px;
+  max-width: none;
+}
+
+.page--vivid .fan-filters select {
+  flex: 1 0 160px;
+  max-width: 220px;
+}
+
+/* Los deportes del equipo debajo de su ciudad, en una línea. */
+.page--vivid .fan-card__sports {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--faint);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

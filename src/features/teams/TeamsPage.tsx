@@ -55,6 +55,7 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
   const canAssociate = canListSports && can(RESOURCES.teamSports, 'LIST')
   const canSeeRoster = can(RESOURCES.contracts, 'LIST')
   const canSeeTournaments = can(RESOURCES.registrations, 'LIST')
+  const canSeeFans = can(RESOURCES.teamFans, 'LIST')
 
   const { items: teams, setItems: setTeams, loading, loadError, reload, retry } = useLoadList(findTeams)
   // Solo para dibujar el balón de cada deporte (un subdeporte usa el de su padre). Si falla o no hay
@@ -166,8 +167,8 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
     const confirmed = await confirm({
       title: `¿Eliminar ${team.name}?`,
       message:
-        'Se borra del sistema. Si tiene deportes asociados, historial de contratos con jugadores o ' +
-        'inscripciones en torneos no se puede eliminar: en ese caso, desactívalo.',
+        'Se borra del sistema. Si tiene deportes asociados, historial de contratos con jugadores, ' +
+        'inscripciones en torneos o aficionados que lo siguen no se puede eliminar: en ese caso, desactívalo.',
       confirmLabel: 'Eliminar equipo',
       subject: subjectOf(team),
     })
@@ -377,6 +378,7 @@ export function TeamsPage({ initialTeamId }: TeamsPageProps) {
           canSeeRoster={canSeeRoster}
           canSeeTournaments={canSeeTournaments}
           canOpenTournaments={canOpenPage('torneos', can)}
+          canSeeFans={canSeeFans}
           onEdit={setEditing}
           onToggleActive={toggleActive}
           onDelete={remove}

@@ -1,4 +1,4 @@
-import { Eye, Pencil, Trash2 } from 'lucide-react'
+import { Eye, MapPin, Pencil, Trash2 } from 'lucide-react'
 import type { Match } from '../../api/matches'
 import { RowAction, RowActions } from '../../components/ListView'
 import { SortHeader } from '../../components/SortHeader'
@@ -21,8 +21,8 @@ interface MatchesTableProps {
   onDelete?: (match: Match) => void
 }
 
-// La tabla de Partidos (HU-GC-06): cuándo, quiénes frente a frente (con su marcador si ya lo hay), en qué
-// fase y en qué estado.
+// La tabla de Partidos (HU-GC-06): cuándo, quiénes frente a frente (con su marcador si ya lo hay) y en qué
+// escenario (HU-GE-02), en qué fase y en qué estado.
 export function MatchesTable({ matches, selectedId, sort, onSort, onSelect, busyId, onEdit, onDelete }: MatchesTableProps) {
   return (
     <div className="table-scroll">
@@ -59,6 +59,13 @@ export function MatchesTable({ matches, selectedId, sort, onSort, onSelect, busy
                 </td>
                 <td className="data-table__name">
                   <MatchVersus match={match} />
+                  {match.venue && (
+                    <span className="matches-table__venue" title={`${match.venue.address}, ${match.venue.city}`}>
+                      <MapPin size={12} aria-hidden="true" />
+                      <span className="sr-only">Escenario: </span>
+                      {match.venue.name}
+                    </span>
+                  )}
                   {/* En el celular la columna Fecha se oculta: la fecha va aquí, debajo de los equipos. */}
                   <span className="matches-table__when num">
                     {when.date} · {when.time}

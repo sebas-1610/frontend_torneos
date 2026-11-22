@@ -25,6 +25,24 @@
   white-space: nowrap;
 }
 
+/* El escenario debajo de los equipos, como en una tarjeta de partido (HU-GE-02). */
+.matches-table__venue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.matches-table__venue svg {
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
 /* La fecha debajo de los equipos: solo en el celular, donde la columna Fecha se oculta. */
 .matches-table__when {
   display: none;
@@ -271,14 +289,45 @@
 
 .scoreboard__when {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px 16px;
   margin-top: 12px;
   padding-top: 10px;
   font-size: var(--fs-small);
   color: var(--muted);
   border-top: 1px solid var(--edge);
+}
+
+/* Cuándo y dónde: cada dato con su icono; en angosto, el escenario baja de línea. */
+.scoreboard__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: left;
+}
+
+.scoreboard__fact svg {
+  flex-shrink: 0;
+}
+
+.scoreboard__link {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--control);
+  text-underline-offset: 3px;
+  border-radius: 4px;
+}
+
+.scoreboard__link:hover {
+  text-decoration-color: currentColor;
+}
+
+.scoreboard__link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* ---------- Acciones del partido ---------- */
@@ -482,6 +531,214 @@
   display: block;
   font-size: 12px;
   color: var(--muted);
+}
+
+/* ---------- Venta de entradas del partido (HU-GE-04) ---------- */
+
+.ticket-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 0 10px;
+}
+
+.ticket-state__why {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Cada localidad: su nombre y su precio, y debajo lo vendido en el medidor dorado. */
+.ticket-board {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ticket-board__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-board__name {
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.ticket-board__flag {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.ticket-board__price {
+  flex-shrink: 0;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--gold-text);
+}
+
+.ticket-board__row.is-off .ticket-board__name,
+.ticket-board__row.is-off .ticket-board__price {
+  font-family: var(--font);
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.ticket-board .ticket-board__meter {
+  display: block;
+  margin: 6px 0 4px;
+}
+
+.ticket-board__detail {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ticket-board__soldout {
+  font-weight: 600;
+  color: var(--negative);
+}
+
+.ticket-sold__title {
+  margin: 16px 0 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.ticket-sold__title + .match-bets__total {
+  margin-top: 2px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* El código del boleto: lo que se muestra en la entrada del escenario. */
+.ticket-sold__code {
+  font-family: var(--figure);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ticket-sold__fan {
+  overflow-wrap: anywhere;
+}
+
+.ticket-sold__more {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+}
+
+/* Ventana "Venta de entradas": una fila por localidad con su casilla y su precio. */
+.price-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.price-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 156px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.price-row + .price-row {
+  border-top: 1px solid var(--rule);
+}
+
+.price-row__pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.price-row__pick input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--primary);
+}
+
+.price-row__pick:has(input:disabled) {
+  cursor: default;
+}
+
+.price-row__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.price-row__name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.price-row__detail {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.price-row__price {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 0 0 12px;
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 10px;
+}
+
+.price-row__price:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.price-row__price.is-wrong {
+  border-color: var(--negative);
+}
+
+.price-row__currency {
+  color: var(--faint);
+}
+
+.price-row__price input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 12px 0 6px;
+  font-family: var(--figure);
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-align: right;
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.price-row.is-off .price-row__price {
+  opacity: 0.45;
+}
+
+@media (max-width: 479px) {
+  .price-row {
+    grid-template-columns: minmax(0, 1fr) 124px;
+  }
 }
 
 /* ---------- Ventana del resultado: un tablero con un número grande por equipo ---------- */

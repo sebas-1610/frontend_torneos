@@ -1,0 +1,44 @@
+/* ---------- Aficionados del equipo (HU-GE-05), en el detalle de Equipos ---------- */
+
+.fan-list__total {
+  margin: 0 0 4px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.fan-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fan-list__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 8px 0;
+}
+
+.fan-list__row + .fan-list__row {
+  border-top: 1px solid var(--rule);
+}
+
+.fan-list__email {
+  min-width: 0;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.fan-list__since {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.fan-list__more {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+}

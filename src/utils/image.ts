@@ -1,5 +1,5 @@
-// Imágenes que se guardan junto a su dueño: la foto de un jugador, el escudo de un equipo y el logo
-// de un torneo. El navegador las reduce y las entrega como texto "data:image/...;base64,...", que es
+// Imágenes que se guardan junto a su dueño: la foto de un jugador, el escudo de un equipo, el logo
+// de un torneo y la foto de un escenario. El navegador las reduce y las entrega como texto "data:image/...;base64,...", que es
 // como las recibe y las guarda el backend (common/validation/image.ts).
 
 const MAX_LENGTH = 90_000 // el mismo límite que valida el backend
@@ -8,11 +8,14 @@ const MAX_SOURCE_BYTES = 12 * 1024 * 1024
 
 const PHOTO_SIDE = 256 // píxeles por lado: suficiente para el retrato del detalle y liviana para las listas
 const SHIELD_SIDE = 192 // el escudo más grande se ve a 72 px; 192 se ve nítido en pantallas densas
+// Foto de un escenario, apaisada (16:10): el detalle la muestra a 176 × 110 px.
+const VENUE_WIDTH = 480
+const VENUE_HEIGHT = 300
 
 // Foto de un jugador: se recorta en cuadrado y se guarda como JPG.
 // Lanza un Error con un mensaje para mostrar si el archivo no sirve.
 export async function photoFromFile(file: File): Promise<string> {
-  return drawFile(file, PHOTO_SIDE, (context, image) => {
+  return drawFile(file, PHOTO_SIDE, PHOTO_SIDE, (context, image) => {
     // El cuadrado más grande que cabe: centrado a lo ancho y, en una foto vertical, un poco hacia
     // arriba, que es donde suele estar la cara.
     const side = Math.min(image.naturalWidth, image.naturalHeight)
@@ -32,7 +35,7 @@ export async function photoFromFile(file: File): Promise<string> {
 // Se guarda como WEBP, que conserva la transparencia y pesa poco; si el navegador no sabe crear
 // WEBP (Safari), como PNG.
 export async function shieldFromFile(file: File): Promise<string> {
-  return drawFile(file, SHIELD_SIDE, (context, image) => {
+  return drawFile(file, SHIELD_SIDE, SHIELD_SIDE, (context, image) => {
     const scale = SHIELD_SIDE / Math.max(image.naturalWidth, image.naturalHeight)
     const width = image.naturalWidth * scale
     const height = image.naturalHeight * scale
@@ -45,11 +48,36 @@ export async function shieldFromFile(file: File): Promise<string> {
   })
 }
 
-// Abre el archivo, lo dibuja en un lienzo cuadrado con `draw` y devuelve la primera versión que
-// quepa en el límite (draw las entrega de la mejor a la más liviana).
+// Foto de un escenario: se recorta al formato apaisado, centrada, y se guarda como JPG.
+export async function venuePhotoFromFile(file: File): Promise<string> {
+  return drawFile(file, VENUE_WIDTH, VENUE_HEIGHT, (context, image) => {
+    // El rectángulo 16:10 más grande que cabe, centrado.
+    const scale = Math.max(VENUE_WIDTH / image.naturalWidth, VENUE_HEIGHT / image.naturalHeight)
+    const width = VENUE_WIDTH / scale
+    const height = VENUE_HEIGHT / scale
+    context.fillStyle = '#202119' // fondo de las imágenes con transparencia (el JPG no la guarda)
+    context.fillRect(0, 0, VENUE_WIDTH, VENUE_HEIGHT)
+    context.drawImage(
+      image,
+      (image.naturalWidth - width) / 2,
+      (image.naturalHeight - height) / 2,
+      width,
+      height,
+      0,
+      0,
+      VENUE_WIDTH,
+      VENUE_HEIGHT,
+    )
+    return [0.82, 0.7, 0.58, 0.46].map((quality) => context.canvas.toDataURL('image/jpeg', quality))
+  })
+}
+
+// Abre el archivo, lo dibuja en un lienzo de width × height con `draw` y devuelve la primera versión
+// que quepa en el límite (draw las entrega de la mejor a la más liviana).
 async function drawFile(
   file: File,
-  side: number,
+  width: number,
+  height: number,
   draw: (context: CanvasRenderingContext2D, image: HTMLImageElement) => string[],
 ): Promise<string> {
   if (!SOURCE_TYPES.includes(file.type)) throw new Error('Elige una imagen JPG, PNG o WEBP.')
@@ -63,8 +91,8 @@ async function drawFile(
     await image.decode()
 
     const canvas = document.createElement('canvas')
-    canvas.width = side
-    canvas.height = side
+    canvas.width = width
+    canvas.height = height
     const context = canvas.getContext('2d')
     if (!context) throw new Error('sin lienzo')
     context.imageSmoothingQuality = 'high'

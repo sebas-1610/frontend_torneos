@@ -55,8 +55,9 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Gestión de competencias',
     items: [
       { id: 'torneos', label: 'Torneos', icon: Trophy },
-      // Como en el mockup de HU-GC-08: Partidos va en el menú, al lado de Torneos.
-      { id: 'torneos-partidos', label: 'Partidos', icon: Swords },
+      // Como en el mockup de HU-GC-08: Partidos va en el menú, al lado de Torneos. Lleva a los partidos de
+      // todos los torneos; los de uno solo están en su pestaña Partidos.
+      { id: 'partidos', label: 'Partidos', icon: Swords },
     ],
   },
   {

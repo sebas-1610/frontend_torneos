@@ -35,6 +35,7 @@ import { matchesSentence, matchPlace, matchTitle, matchWhen, STATUS_ORDER } from
 import type { ScoreAbilities } from './MatchScores'
 import type { TicketingAbilities } from './MatchTicketing'
 import { MatchesTable, type MatchSortKey } from './MatchesTable'
+import { MatchStatusFilter } from './MatchStatusFilter'
 import { ResultDialog } from './ResultDialog'
 import '../../components/ListPage.css'
 import '../../components/DetailPanel.css'
@@ -371,17 +372,7 @@ function TournamentMatches({
             ))}
           </select>
         )}
-        <select
-          aria-label="Filtrar por estado"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as MatchStatus | '')}
-        >
-          <option value="">Todos los estados</option>
-          <option value="EN_JUEGO">En juego</option>
-          <option value="PROGRAMADO">Programados</option>
-          <option value="FINALIZADO">Finalizados</option>
-          <option value="CANCELADO">Cancelados</option>
-        </select>
+        <MatchStatusFilter value={status} onChange={setStatus} />
       </ListToolbar>
 
       <div className="page__grid">

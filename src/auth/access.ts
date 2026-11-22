@@ -114,6 +114,9 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'torneos-fases':
       // Carga los torneos y las fases del elegido. Los grupos y los inscritos solo se ven con sus permisos.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.phases, 'LIST')
+    case 'partidos':
+      // Los partidos de todos los torneos, solo para consultar. "Gestionar en su torneo" pide torneos-partidos.
+      return can(RESOURCES.matches, 'LIST')
     case 'torneos-partidos':
       // Carga los torneos y los partidos del elegido. Programar y anotar piden además sus permisos.
       return can(RESOURCES.tournaments, 'LIST') && can(RESOURCES.matches, 'LIST')
@@ -155,6 +158,7 @@ const START_PAGES = [
   'jugadores',
   'habilidades',
   'torneos',
+  'partidos',
   'escenarios',
   'apuestas', // el Aficionado
   'mis-boletos',

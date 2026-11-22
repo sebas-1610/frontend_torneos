@@ -1,5 +1,5 @@
 import { Ban, ClipboardCheck, Info, Pencil, Play, Trash2 } from 'lucide-react'
-import type { Ref } from 'react'
+import type { ReactNode, Ref } from 'react'
 import type { Match } from '../../api/matches'
 import type { ActionError } from '../../components/ActionAlert'
 import { DetailMain, DetailPanel, DetailSide } from '../../components/DetailPanel'
@@ -37,6 +37,7 @@ interface MatchDetailProps {
   onScoresChanged: () => void
   onMatchSaved: (match: Match) => void // cambiaron sus cuotas
   onToast: (message: string) => void
+  footer?: ReactNode // al final del panel, ej: "Gestionar en su torneo" en la lista general
 }
 
 // Panel derecho de Partidos: el marcador del partido elegido (con su escenario), lo que se puede hacer
@@ -62,6 +63,7 @@ export function MatchDetail({
   onScoresChanged,
   onMatchSaved,
   onToast,
+  footer,
 }: MatchDetailProps) {
   if (!match) {
     return <DetailPanel ref={ref} label="Detalle del partido" icon={Info} emptyMessage={emptyMessage} />
@@ -115,6 +117,7 @@ export function MatchDetail({
         onDelete={() => onDelete(match)}
         onResult={() => onResult(match)}
       />
+      {footer && <div className="detail-cols__actions">{footer}</div>}
     </DetailPanel>
   )
 }

@@ -95,7 +95,7 @@ export function OddsDialog({ match, onClose, onSaved }: OddsDialogProps) {
           </button>
         </div>
 
-        <div className={`form-dialog__row${hasDraw ? ' odds-form__row' : ''}`}>
+        <div className={`form-dialog__row odds-form__row${hasDraw ? ' odds-form__row--three' : ''}`}>
           {field(`Gana ${match.homeTeam.name}`, home, setHome, '1,85')}
           {hasDraw && field('Empate', draw, setDraw, '3,20')}
           {field(`Gana ${match.awayTeam.name}`, away, setAway, '4,50')}

@@ -64,16 +64,29 @@ function count(matches: Match[], status: MatchStatus): number {
   return matches.filter((match) => match.status === status).length
 }
 
-// "Copa Caldas tiene 6 partidos: 2 programados, 1 en juego y 3 finalizados."
-export function matchesSentence(tournamentName: string, matches: Match[]): string {
-  if (matches.length === 0) return `${tournamentName} todavía no tiene partidos.`
+// "2 programados, 1 en juego y 3 finalizados"
+function statusParts(matches: Match[]): string {
   const parts = [
     count(matches, 'EN_JUEGO') > 0 ? `${count(matches, 'EN_JUEGO')} en juego` : null,
     count(matches, 'PROGRAMADO') > 0 ? plural(count(matches, 'PROGRAMADO'), 'programado', 'programados') : null,
     count(matches, 'FINALIZADO') > 0 ? plural(count(matches, 'FINALIZADO'), 'finalizado', 'finalizados') : null,
     count(matches, 'CANCELADO') > 0 ? plural(count(matches, 'CANCELADO'), 'cancelado', 'cancelados') : null,
   ].filter((part): part is string => part !== null)
-  return `${tournamentName} tiene ${plural(matches.length, 'partido', 'partidos')}: ${joinList(parts)}.`
+  return joinList(parts)
+}
+
+// "Copa Caldas tiene 6 partidos: 2 programados, 1 en juego y 3 finalizados."
+export function matchesSentence(tournamentName: string, matches: Match[]): string {
+  if (matches.length === 0) return `${tournamentName} todavía no tiene partidos.`
+  return `${tournamentName} tiene ${plural(matches.length, 'partido', 'partidos')}: ${statusParts(matches)}.`
+}
+
+// La de la lista general: "Hay 9 partidos en 3 torneos: 1 en juego, 5 programados y 3 finalizados."
+export function allMatchesSentence(matches: Match[]): string {
+  if (matches.length === 0) return 'Todavía no hay partidos en ningún torneo.'
+  const tournaments = new Set(matches.map((match) => match.tournament.id)).size
+  const total = matches.length === 1 ? 'Hay 1 partido' : `Hay ${matches.length} partidos`
+  return `${total} en ${plural(tournaments, 'torneo', 'torneos')}: ${statusParts(matches)}.`
 }
 
 // En corto, para la tarjeta "Partidos" del detalle de un torneo: "6 partidos · 1 en juego".

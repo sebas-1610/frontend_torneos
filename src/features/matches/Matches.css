@@ -498,9 +498,39 @@
   color: var(--muted);
 }
 
-/* Las tres cuotas en una fila (grupos); con dos, las dos columnas de siempre. */
-.form-dialog__row.odds-form__row {
+/* Las tres cuotas en una fila (grupos); con dos, las dos columnas de siempre. Si el nombre de un equipo
+   ocupa dos líneas, las casillas siguen alineadas abajo y el nombre no empuja la suya. */
+.form-dialog__row.odds-form__row--three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.odds-form__row .login__field > span {
+  overflow-wrap: anywhere;
+}
+
+.odds-form__row .login__field input {
+  min-width: 0;
+  margin-top: auto;
+}
+
+/* Lista general de Partidos: al final del detalle, de qué torneo es y el botón que abre su pantalla
+   (donde se gestiona), a todo el ancho. */
+.page--vivid .detail__actions.match-open {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.match-open__tournament {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.match-open__tournament strong {
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* Una casilla con su texto y una explicación debajo ("Recibe apuestas"). */
@@ -840,7 +870,7 @@
     width: 76px;
   }
 
-  .form-dialog__row.odds-form__row {
+  .form-dialog__row.odds-form__row--three {
     grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -59,6 +59,11 @@ export interface ResultInput {
   awayPenalties: number | null
 }
 
+// Todos los partidos, de todos los torneos, por fecha (la lista general de Partidos).
+export function findMatches(): Promise<Match[]> {
+  return request<Match[]>('/deportiva/matches')
+}
+
 // Todos los partidos del torneo, por fecha.
 export function findMatchesByTournament(tournamentId: number): Promise<Match[]> {
   return request<Match[]>(`/deportiva/matches/tournaments/${tournamentId}`)

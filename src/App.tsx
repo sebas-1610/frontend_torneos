@@ -24,6 +24,7 @@ import { TournamentsPage } from './features/tournaments/TournamentsPage'
 import { TournamentTeamsPage } from './features/tournaments/TournamentTeamsPage'
 import { TournamentVenuesPage } from './features/tournaments/TournamentVenuesPage'
 import { PhasesPage } from './features/phases/PhasesPage'
+import { AllMatchesPage } from './features/matches/AllMatchesPage'
 import { MatchesPage } from './features/matches/MatchesPage'
 import { DevelopmentPage } from './features/development/DevelopmentPage'
 import { PaymentMethodsPage } from './features/payment-methods/PaymentMethodsPage'
@@ -58,6 +59,7 @@ type PageId =
   | 'torneos-fases'
   | 'torneos-partidos'
   | 'torneos-desarrollo'
+  | 'partidos'
   | 'escenarios'
   | 'apuestas'
   | 'mis-boletos'
@@ -93,8 +95,11 @@ const PAGES: Record<PageId, Crumb> = {
   'torneos-escenarios': { section: 'Torneos', sectionHref: '#torneos', page: 'Escenarios del torneo' },
   // Tampoco: igual que Inscripciones.
   'torneos-fases': { section: 'Torneos', sectionHref: '#torneos', page: 'Fases y grupos' },
-  'torneos-partidos': { section: 'Gestión de competencias', page: 'Partidos' },
+  // Tampoco: es la pestaña Partidos de un torneo (el menú lleva a la lista general, #partidos).
+  'torneos-partidos': { section: 'Torneos', sectionHref: '#torneos', page: 'Partidos del torneo' },
   'torneos-desarrollo': { section: 'Torneos', sectionHref: '#torneos', page: 'Desarrollo del torneo' },
+  // Los partidos de todos los torneos (en el menú, al lado de Torneos).
+  partidos: { section: 'Gestión de competencias', page: 'Partidos' },
   // Gestión de escenarios (Anexo 4): también ms_torneos_deportiva.
   escenarios: { section: 'Gestión de escenarios', page: 'Escenarios' },
   // Aficionado (Anexo 3, HU-GC-10 y 11; Anexo 4, HU-GE-04 y 05).
@@ -115,6 +120,7 @@ const MENU_OWNER: Record<string, PageId> = {
   'torneos-inscripciones': 'torneos',
   'torneos-escenarios': 'torneos',
   'torneos-fases': 'torneos',
+  'torneos-partidos': 'torneos',
   'torneos-desarrollo': 'torneos',
 }
 
@@ -381,6 +387,9 @@ function App() {
             initialMatchId={idFrom(route.extra)}
           />
         )
+      case 'partidos':
+        // #partidos/12 abre la lista con ese partido ya elegido (ej: al volver de su torneo).
+        return <AllMatchesPage key={route.param ?? 'inicial'} initialMatchId={idFrom(route.param)} />
       case 'torneos-desarrollo':
         return <DevelopmentPage key={route.param ?? 'inicial'} initialTournamentId={idFrom(route.param)} />
       case 'escenarios':

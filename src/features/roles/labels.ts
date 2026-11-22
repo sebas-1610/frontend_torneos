@@ -12,6 +12,7 @@ import {
   Grid2x2,
   Layers,
   Handshake,
+  Heart,
   IdCard,
   KeyRound,
   Link2,
@@ -32,6 +33,7 @@ import {
   UserCog,
   UserRound,
   UserRoundCheck,
+  UsersRound,
   Users,
   Wallet,
   type LucideIcon,
@@ -84,6 +86,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['tournament', Trophy],
   // Desarrollo de un torneo (HU-GC-08): sus fases y llaves.
   ['desarrollo-torneo', Network],
+  // Los equipos de interés del aficionado (HU-GE-05) antes que el equipo: también empiezan por "equipo".
+  ['equipos-interes', Heart],
   // Los mismos iconos del menú.
   ['equipo', Shield],
   ['team', Shield],
@@ -125,6 +129,7 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   // Los del administrador antes que los del aficionado: "boletos-partido" también empieza por "boleto".
   ['boletos-partido', Tickets],
   ['boleto', TicketCheck],
+  ['aficionados-equipo', UsersRound],
 ]
 
 // Nombres que no salen bien de solo quitar los guiones: el model se guarda sin tildes.
@@ -141,6 +146,8 @@ const RESOURCE_LABELS = new Map([
   ['escenarios-torneo', 'Escenarios del torneo'],
   ['venta-entradas', 'Venta de entradas'],
   ['boletos-partido', 'Boletos por partido'],
+  ['equipos-interes', 'Equipos de interés'],
+  ['aficionados-equipo', 'Aficionados del equipo'],
 ])
 
 // Sin tildes ni mayúsculas, para comparar textos ("Asignación" y "asignacion" son lo mismo).

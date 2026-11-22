@@ -20,6 +20,7 @@ import {
   MapPinned,
   Network,
   Percent,
+  Radar,
   ReceiptText,
   Shield,
   Shirt,
@@ -116,6 +117,8 @@ const RESOURCE_ICONS: [string, IconComponent][] = [
   ['grupo', Grid2x2],
   ['resultado', ClipboardCheck],
   ['anotacion', Goal],
+  // Seguimiento en vivo del partido (HU-GC-09): la pizarra con jugadores y pelota.
+  ['seguimiento', Radar],
   // Los del aficionado antes que el catálogo: "metodos-pago-aficionado" también empieza por "metodos-pago".
   ['metodos-pago-aficionado', Wallet],
   ['metodos-pago', CreditCard],

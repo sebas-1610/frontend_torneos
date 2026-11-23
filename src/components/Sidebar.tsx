@@ -3,6 +3,7 @@ import {
   CreditCard,
   Heart,
   KeyRound,
+  Radar,
   Shield,
   ShieldCheck,
   ShieldUser,
@@ -74,6 +75,8 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'mis-boletos', label: 'Boletos', icon: Tickets },
       { id: 'mis-equipos', label: 'Equipos de interés', icon: Heart },
       { id: 'mis-metodos-pago', label: 'Mis métodos de pago', icon: CreditCard },
+      // HU-GC-09: los partidos en juego y su pizarra. El administrador también la ve.
+      { id: 'en-vivo', label: 'En vivo', icon: Radar },
     ],
   },
   { label: 'Mi cuenta', items: [{ id: 'perfil', label: 'Mi perfil', icon: UserRound }] },

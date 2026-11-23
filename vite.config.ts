@@ -10,8 +10,12 @@ export default defineConfig({
     //   /api/deportiva/... → ms_torneos_deportiva (Gestión Deportiva, Anexo 2)
     //   /api/...           → ms_torneos_security
     // Las variables permiten apuntar a otro backend (por ejemplo, uno de pruebas) sin tocar este archivo.
+    // ws: true deja pasar también el socket de la pizarra en vivo (/api/deportiva/socket.io, HU-GC-09).
     proxy: {
-      '/api/deportiva': process.env.DEPORTIVA_PROXY_TARGET ?? 'http://localhost:8182',
+      '/api/deportiva': {
+        target: process.env.DEPORTIVA_PROXY_TARGET ?? 'http://localhost:8182',
+        ws: true,
+      },
       '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:8181',
     },
   },

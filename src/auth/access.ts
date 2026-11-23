@@ -34,6 +34,9 @@ export const RESOURCES = {
   paymentMethods: 'metodos-pago', // el catálogo de formas de pago (para registrar uno)
   odds: 'cuotas', // fijar las cuotas de un partido y abrir o cerrar sus apuestas
   matchBets: 'apuestas-partido', // consultar las apuestas de un partido
+  // Seguimiento en vivo (HU-GC-09): LIST la lista "En vivo", VIEW la pizarra y UPDATE iniciar, pausar y
+  // finalizar. El Aficionado solo tiene LIST y VIEW: mira, pero no maneja.
+  tracking: 'seguimiento',
   // Gestión de Escenarios (Anexo 4): también ms_torneos_deportiva.
   venues: 'escenarios',
   localities: 'localidades',
@@ -143,6 +146,12 @@ export function canOpenPage(page: string, can: Can): boolean {
     case 'mis-equipos':
       // Los equipos que sigue y los que puede seguir (los dos con "listar equipos de interés").
       return can(RESOURCES.fanTeams, 'LIST')
+    case 'en-vivo':
+      // Los partidos en juego y los que tuvieron seguimiento.
+      return can(RESOURCES.tracking, 'LIST')
+    case 'seguimiento':
+      // La pizarra de un partido; sus controles piden además "actualizar seguimiento".
+      return can(RESOURCES.tracking, 'VIEW')
     default:
       return true // perfil: cualquier usuario con sesión
   }
@@ -164,6 +173,7 @@ const START_PAGES = [
   'mis-boletos',
   'mis-equipos',
   'mis-metodos-pago',
+  'en-vivo',
 ] as const
 
 // Pantalla al entrar sin una en la URL: la primera que puede usar; sin permisos, su perfil.

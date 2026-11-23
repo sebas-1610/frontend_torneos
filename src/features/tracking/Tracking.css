@@ -1,0 +1,458 @@
+/* ---------- Seguimiento en vivo (HU-GC-09): la pizarra y la lista "En vivo" ---------- */
+
+/* El dorado es el local y la plata el visitante: son los datos de la pantalla. La cancha es neutra (un paso
+   de luminosidad con líneas de 1,5 px), sin verde: el color queda para los equipos. */
+
+.tracking-score {
+  margin-bottom: var(--gap);
+}
+
+.tracking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* En escritorio la cancha queda a la vista mientras se recorre el panel lateral (la plantilla de dos
+   equipos de fútbol es larga): se queda pegada debajo de la barra superior (64 px + 16). */
+@media (min-width: 1280px) {
+  .tracking-page .tracking-field {
+    position: sticky;
+    top: calc(64px + var(--gap));
+    align-self: start;
+  }
+}
+
+.tracking-field__board {
+  overflow: hidden;
+  background: var(--raised);
+  border-radius: 12px;
+}
+
+/* ---------- Cancha (Pitch.tsx) ---------- */
+
+.pitch {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pitch__ground {
+  fill: var(--raised);
+}
+
+.pitch__lines {
+  fill: none;
+  stroke: var(--control);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.pitch__lines * {
+  vector-effect: non-scaling-stroke;
+}
+
+.pitch__lines .pitch__spot {
+  fill: var(--control);
+}
+
+.pitch__lines .pitch__net {
+  stroke: var(--muted);
+  stroke-width: 3px;
+}
+
+/* Cada ficha se desliza a su nueva posición (--move: 0,9 s en vivo; en el recorrido, lo que dure el cuadro);
+   prefers-reduced-motion (index.css) la deja saltar. */
+.pitch__token,
+.pitch__ball {
+  transition: transform var(--move, 0.9s) linear;
+}
+
+.pitch__token circle {
+  stroke: var(--ground);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.pitch__token text {
+  font-family: var(--figure);
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.pitch__token--home circle {
+  fill: var(--gold);
+}
+
+.pitch__token--home text {
+  fill: var(--on-gold);
+}
+
+.pitch__token--away circle {
+  fill: var(--muted);
+}
+
+.pitch__token--away text {
+  fill: var(--ground);
+}
+
+.pitch__ball circle {
+  fill: var(--text);
+  stroke: var(--ground);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Leyenda y fichas pequeñas ---------- */
+
+.tracking-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--text);
+}
+
+.tracking-legend__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tracking-legend__role {
+  color: var(--faint);
+}
+
+.tracking-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-family: var(--figure);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.tracking-legend .tracking-chip {
+  width: 14px;
+  height: 14px;
+}
+
+.tracking-chip--home {
+  color: var(--on-gold);
+  background: var(--gold);
+}
+
+.tracking-chip--away {
+  color: var(--ground);
+  background: var(--muted);
+}
+
+.tracking-ball__mark {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: var(--text);
+  border: 2px solid var(--ground);
+  border-radius: 50%;
+  box-sizing: content-box;
+}
+
+.tracking-code {
+  padding: 1px 6px;
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  background: var(--raised);
+  border-radius: var(--radius-chip);
+}
+
+/* ---------- Estado y controles ---------- */
+
+.tracking-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.tracking-connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.tracking-connection .status-dot {
+  background: var(--faint);
+}
+
+.tracking-connection--en-vivo .status-dot {
+  background: var(--positive);
+}
+
+.tracking-connection--sin-conexion .status-dot {
+  background: var(--tone-amber);
+}
+
+.tracking-connection--rechazado {
+  color: var(--negative);
+}
+
+.tracking-connection--rechazado .status-dot {
+  background: var(--negative);
+}
+
+/* ---------- Recorrido ("Ver recorrido") ---------- */
+
+.tracking-replay,
+.tracking-replay__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tracking-replay__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.tracking-replay__time {
+  min-width: 64px;
+  font-family: var(--figure);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tracking-replay__slider {
+  flex: 1 1 180px;
+  min-width: 0;
+  accent-color: var(--muted);
+  cursor: pointer;
+}
+
+.tracking-replay__count {
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.tracking-replay__speeds {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.tracking-speed {
+  height: 30px;
+  min-width: 40px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  background: var(--raised);
+  border: 1px solid var(--control);
+  border-radius: 999px;
+}
+
+.tracking-speed:hover {
+  color: var(--text);
+}
+
+.tracking-speed.is-active {
+  color: var(--text);
+  background: var(--active);
+  border-color: var(--muted);
+}
+
+.tracking-speed:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.tracking-note {
+  margin: 12px 0 0;
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.tracking-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tracking-controls__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Pelota, jugadores y últimas actualizaciones ---------- */
+
+.tracking-coords {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tracking-ball {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.tracking-ball__name {
+  font-weight: 600;
+}
+
+.tracking-ball .tracking-coords,
+.tracking-ball .dash {
+  margin-left: auto;
+}
+
+.tracking-team + .tracking-team {
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.tracking-team__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.tracking-team__name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracking-team__count {
+  flex: none;
+  margin-left: auto;
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.tracking-players {
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+}
+
+.tracking-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.tracking-player.is-away {
+  opacity: 0.55;
+}
+
+.tracking-player__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.tracking-player__role {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.tracking-player .tracking-coords,
+.tracking-player .dash {
+  margin-left: auto;
+}
+
+.tracking-latest {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tracking-latest__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 36px;
+  font-size: var(--fs-small);
+}
+
+.tracking-latest__row + .tracking-latest__row {
+  border-top: 1px solid var(--rule);
+}
+
+.tracking-latest__who {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracking-latest__time {
+  color: var(--faint);
+}
+
+/* ---------- Cargando ---------- */
+
+.tracking-sk {
+  display: block;
+  width: 100%;
+  background: var(--raised);
+  border-radius: 10px;
+  animation: breathe 1.4s ease-in-out infinite alternate;
+}
+
+.tracking-skeleton__field {
+  aspect-ratio: 105 / 68;
+}
+
+/* ---------- Lista "En vivo" ---------- */
+
+.live-table .versus {
+  min-width: 0;
+}
+
+/* Debajo de la cancha (el panel lateral en dos columnas): los jugadores a todo el ancho, un equipo al lado
+   del otro. */
+@media (min-width: 760px) and (max-width: 1279px) {
+  .tracking-page .rail .tracking-roster {
+    grid-column: 1 / -1;
+  }
+
+  .tracking-roster__teams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap);
+  }
+
+  .tracking-roster__teams .tracking-team + .tracking-team {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: 0;
+  }
+}

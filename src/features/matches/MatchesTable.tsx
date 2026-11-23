@@ -21,6 +21,9 @@ interface MatchesTableProps {
   // apagado y su título dice por qué.
   onEdit?: (match: Match) => void
   onDelete?: (match: Match) => void
+  // HU-GC-09: si la sesión puede ver el seguimiento, el ojo abre la pizarra del partido; si no, elige el
+  // partido y muestra su detalle, como antes.
+  watchHref?: (match: Match) => string
 }
 
 // La tabla de Partidos (HU-GC-06): cuándo, quiénes frente a frente (con su marcador si ya lo hay) y en qué
@@ -35,6 +38,7 @@ export function MatchesTable({
   showTournament = false,
   onEdit,
   onDelete,
+  watchHref,
 }: MatchesTableProps) {
   return (
     <div className="table-scroll">
@@ -103,7 +107,16 @@ export function MatchesTable({
                   <MatchStatusTag status={match.status} />
                 </td>
                 <RowActions>
-                  <RowAction icon={Eye} title="Ver" label={`Ver ${title}`} onClick={() => onSelect(match.id, true)} />
+                  {watchHref ? (
+                    <RowAction
+                      icon={Eye}
+                      title="Ver seguimiento"
+                      label={`Ver el seguimiento de ${title}`}
+                      href={watchHref(match)}
+                    />
+                  ) : (
+                    <RowAction icon={Eye} title="Ver" label={`Ver ${title}`} onClick={() => onSelect(match.id, true)} />
+                  )}
                   {onEdit && (
                     <RowAction
                       icon={Pencil}

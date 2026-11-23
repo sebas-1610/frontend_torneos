@@ -32,6 +32,8 @@ import { BetsPage } from './features/bets/BetsPage'
 import { TicketsPage } from './features/tickets/TicketsPage'
 import { FanTeamsPage } from './features/fan-teams/FanTeamsPage'
 import { VenuesPage } from './features/venues/VenuesPage'
+import { LiveMatchesPage } from './features/tracking/LiveMatchesPage'
+import { TrackingPage } from './features/tracking/TrackingPage'
 import { SESSION_EXPIRED_EVENT, clearSession, getSession, watchSessionExpiry } from './auth/session'
 import { AccessContext, canOpenPage, defaultPage, makeCan } from './auth/access'
 import { logout, me, type Me, type User } from './api/auth'
@@ -65,6 +67,8 @@ type PageId =
   | 'mis-boletos'
   | 'mis-equipos'
   | 'mis-metodos-pago'
+  | 'en-vivo'
+  | 'seguimiento'
   | 'perfil'
 
 // Pantallas: el id coincide con el enlace (#usuarios, #roles...).
@@ -107,6 +111,10 @@ const PAGES: Record<PageId, Crumb> = {
   'mis-boletos': { section: 'Aficionado', page: 'Boletos' },
   'mis-equipos': { section: 'Aficionado', page: 'Equipos de interés' },
   'mis-metodos-pago': { section: 'Aficionado', page: 'Mis métodos de pago' },
+  // Seguimiento en vivo (HU-GC-09). "En vivo" está en el menú del aficionado (el administrador también la
+  // ve); la pizarra se abre desde ahí o con el ojo de la lista de partidos.
+  'en-vivo': { section: 'Aficionado', page: 'En vivo' },
+  seguimiento: { section: 'En vivo', sectionHref: '#en-vivo', page: 'Seguimiento del partido' },
   perfil: { section: 'Mi cuenta', page: 'Mi perfil' },
 }
 
@@ -122,6 +130,7 @@ const MENU_OWNER: Record<string, PageId> = {
   'torneos-fases': 'torneos',
   'torneos-partidos': 'torneos',
   'torneos-desarrollo': 'torneos',
+  seguimiento: 'en-vivo',
 }
 
 // Título de la pestaña sin sesión.
@@ -403,6 +412,19 @@ function App() {
         return <FanTeamsPage />
       case 'mis-metodos-pago':
         return <PaymentMethodsPage />
+      case 'en-vivo':
+        return <LiveMatchesPage />
+      case 'seguimiento': {
+        // #seguimiento/15: la pizarra del partido 15. La key la vuelve a montar si la URL pide otro.
+        const matchId = idFrom(route.param)
+        return matchId === null ? (
+          <p className="empty-state">
+            Elige un partido en <a href="#en-vivo">En vivo</a> para ver su seguimiento.
+          </p>
+        ) : (
+          <TrackingPage key={matchId} matchId={matchId} />
+        )
+      }
       case 'perfil':
         return <ProfilePage user={user} onPhotoChange={setPhoto} />
     }

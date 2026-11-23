@@ -407,6 +407,7 @@ function TournamentMatches({
             busyId={busyId}
             onEdit={abilities.edit ? setEditing : undefined}
             onDelete={abilities.remove ? remove : undefined}
+            watchHref={canOpenPage('seguimiento', can) ? (match) => `#seguimiento/${match.id}` : undefined}
           />
         </ListPanel>
 

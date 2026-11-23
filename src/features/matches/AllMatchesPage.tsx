@@ -160,6 +160,7 @@ export function AllMatchesPage({ initialMatchId }: AllMatchesPageProps) {
             onSelect={select}
             busyId={null}
             showTournament
+            watchHref={canOpenPage('seguimiento', can) ? (match) => `#seguimiento/${match.id}` : undefined}
           />
         </ListPanel>
 

@@ -31,6 +31,7 @@ export interface TrackedPlayer {
   position: string | null // posición de juego (portero, defensa...), si la tiene
   active: boolean
   lastPosition: LastPosition | null // null: todavía no está en la cancha
+  onCourt: boolean // está jugando: su última posición no lo sacó de la cancha (false sin posición)
 }
 
 // Un equipo con su plantilla del día del partido.
@@ -54,6 +55,7 @@ export interface PositionRecord {
   x: number
   y: number
   recordedAt: string
+  onCourt: boolean // false: con este registro el jugador salió de la cancha (al banco)
 }
 
 // El deporte del torneo; parentName sirve con los subdeportes sin cancha propia.
@@ -61,6 +63,18 @@ export interface TrackingSport {
   id: number
   name: string
   parentName: string | null
+}
+
+// Si el servidor está simulando el partido y cada cuánto mueve a los jugadores (milisegundos).
+export interface SimulationState {
+  running: boolean
+  intervalMs: number | null
+}
+
+// La foto de un jugador de la pizarra ("data:image/...").
+export interface PlayerPhoto {
+  playerId: number
+  photo: string
 }
 
 // Lo que muestra la pizarra.
@@ -74,8 +88,10 @@ export interface TrackingBoard {
   totals: {
     records: number // posiciones registradas en el partido
     playersTracked: number // jugadores con al menos una
+    onCourt: number // jugadores en la cancha ahora
   }
   latest: PositionRecord[] // las últimas, de la más nueva a la más vieja
+  simulation: SimulationState // botón "Simular partido"
 }
 
 // Un partido de la lista "En vivo".
@@ -118,4 +134,22 @@ export function pauseTracking(matchId: number): Promise<TrackingBoard> {
 // No borra nada: el partido, los jugadores, la pelota y las posiciones se conservan.
 export function finishTracking(matchId: number): Promise<TrackingBoard> {
   return request<TrackingBoard>(`/deportiva/tracking/matches/${matchId}/finish`, { method: 'PATCH' })
+}
+
+// "Simular partido": el servidor mueve a los jugadores cada intervalMs (500, 1000 o 2000). Solo con el
+// partido en juego y el seguimiento activo.
+export function startSimulation(matchId: number, intervalMs: number): Promise<TrackingBoard> {
+  return request<TrackingBoard>(`/deportiva/tracking/matches/${matchId}/simulation/start`, {
+    method: 'PATCH',
+    body: JSON.stringify({ intervalMs }),
+  })
+}
+
+export function stopSimulation(matchId: number): Promise<TrackingBoard> {
+  return request<TrackingBoard>(`/deportiva/tracking/matches/${matchId}/simulation/stop`, { method: 'PATCH' })
+}
+
+// Las fotos de los jugadores de las dos plantillas que tienen foto. Se piden una vez por pizarra.
+export function findTrackingPhotos(matchId: number): Promise<PlayerPhoto[]> {
+  return request<PlayerPhoto[]>(`/deportiva/tracking/matches/${matchId}/photos`)
 }

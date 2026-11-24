@@ -69,7 +69,7 @@
   transition: transform var(--move, 0.9s) linear;
 }
 
-.pitch__token circle {
+.pitch__disc {
   stroke: var(--ground);
   stroke-width: 1.5px;
   vector-effect: non-scaling-stroke;
@@ -82,7 +82,7 @@
   pointer-events: none;
 }
 
-.pitch__token--home circle {
+.pitch__token--home .pitch__disc {
   fill: var(--gold);
 }
 
@@ -90,20 +90,29 @@
   fill: var(--on-gold);
 }
 
-.pitch__token--away circle {
+.pitch__token--away .pitch__disc {
   fill: var(--muted);
+}
+
+/* El aro de las fichas con foto: el color del equipo alrededor de la cara. */
+.pitch__ring {
+  fill: none;
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+}
+
+.pitch__token--home .pitch__ring {
+  stroke: var(--gold);
+}
+
+.pitch__token--away .pitch__ring {
+  stroke: var(--muted);
 }
 
 .pitch__token--away text {
   fill: var(--ground);
 }
 
-.pitch__ball circle {
-  fill: var(--text);
-  stroke: var(--ground);
-  stroke-width: 2px;
-  vector-effect: non-scaling-stroke;
-}
 
 /* ---------- Leyenda y fichas pequeñas ---------- */
 
@@ -154,26 +163,27 @@
   background: var(--muted);
 }
 
-.tracking-ball__mark {
-  display: inline-block;
-  flex: none;
-  width: 12px;
-  height: 12px;
-  background: var(--text);
-  border: 2px solid var(--ground);
-  border-radius: 50%;
-  box-sizing: content-box;
+/* La ficha de la lista con la foto del jugador: el borde lleva el color del equipo. */
+.tracking-chip.has-photo {
+  overflow: hidden;
+  background: var(--raised);
 }
 
-.tracking-code {
-  padding: 1px 6px;
-  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  font-size: 12px;
-  color: var(--text);
-  overflow-wrap: anywhere;
-  background: var(--raised);
-  border-radius: var(--radius-chip);
+.tracking-chip--home.has-photo {
+  border: 2px solid var(--gold);
 }
+
+.tracking-chip--away.has-photo {
+  border: 2px solid var(--muted);
+}
+
+.tracking-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
 
 /* ---------- Estado y controles ---------- */
 
@@ -294,6 +304,32 @@
   flex-direction: column;
   gap: 12px;
   margin-top: 14px;
+}
+
+.tracking-sim-tag {
+  gap: 5px;
+}
+
+/* En el teléfono, el botón del panel de la cancha ("Ver recorrido") baja debajo del título si no cabe. */
+@media (max-width: 479px) {
+  .tracking-field .panel-head {
+    flex-wrap: wrap;
+  }
+}
+
+.tracking-simulation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: 2px;
+  border-top: 1px solid var(--rule);
+}
+
+.tracking-simulation__speeds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .tracking-controls__row {

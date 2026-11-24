@@ -1,10 +1,18 @@
-import { Flag, Pause, Play } from 'lucide-react'
+import { Bot, Flag, Pause, Play, Square } from 'lucide-react'
 import { useState } from 'react'
 import { errorMessage } from '../../api/client'
-import { finishTracking, pauseTracking, startTracking, type TrackingBoard } from '../../api/tracking'
+import {
+  finishTracking,
+  pauseTracking,
+  startSimulation,
+  startTracking,
+  stopSimulation,
+  type TrackingBoard,
+} from '../../api/tracking'
 import { ActionAlert, type ActionError } from '../../components/ActionAlert'
 import { useConfirm } from '../../hooks/useConfirm'
 import { matchTitle } from '../matches/matchInfo'
+import { SIMULATION_SPEEDS } from './trackingInfo'
 
 interface TrackingControlsProps {
   board: TrackingBoard
@@ -12,16 +20,18 @@ interface TrackingControlsProps {
 }
 
 // Lo que maneja el administrador deportivo (permiso "actualizar seguimiento"): iniciar o reanudar, pausar
-// y finalizar (HU-GC-09). Quien no tiene el permiso no ve este bloque. Las posiciones no se registran aquí:
-// llegan del script que simula el partido.
+// y finalizar (HU-GC-09), y simular el partido: con "Simular partido" el servidor envía las posiciones (o
+// llegan del script de consola). Quien no tiene el permiso no ve este bloque.
 export function TrackingControls({ board, onChanged }: TrackingControlsProps) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<ActionError | null>(null)
   const [ballName, setBallName] = useState('')
+  const [intervalMs, setIntervalMs] = useState(1000)
   const { confirm, confirmDialog } = useConfirm()
   const { status } = board.tracking
   const matchId = board.match.id
   const playing = board.match.status === 'EN_JUEGO'
+  const simulating = board.simulation.running
 
   async function run(action: () => Promise<TrackingBoard>, message: string, failure: string) {
     setBusy(true)
@@ -122,6 +132,63 @@ export function TrackingControls({ board, onChanged }: TrackingControlsProps) {
             <Flag size={16} aria-hidden="true" />
             Finalizar
           </button>
+        </div>
+      )}
+
+      {(status === 'ACTIVO' || status === 'PAUSADO') && (
+        <div className="tracking-simulation">
+          {simulating ? (
+            <>
+              <p className="tracking-note">
+                {status === 'PAUSADO'
+                  ? 'La simulación espera a que reanudes el seguimiento.'
+                  : `El servidor mueve a los jugadores cada ${((board.simulation.intervalMs ?? 1000) / 1000).toLocaleString('es-CO')} s.`}
+              </p>
+              <button
+                type="button"
+                className="button button--outline"
+                disabled={busy}
+                onClick={() =>
+                  run(() => stopSimulation(matchId), 'Simulación detenida.', 'No se pudo detener la simulación')
+                }
+              >
+                <Square size={16} aria-hidden="true" />
+                Detener simulación
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="tracking-simulation__speeds" role="group" aria-label="Velocidad de la simulación">
+                {SIMULATION_SPEEDS.map((speed) => (
+                  <button
+                    key={speed.intervalMs}
+                    type="button"
+                    className={`tracking-speed${intervalMs === speed.intervalMs ? ' is-active' : ''}`}
+                    aria-pressed={intervalMs === speed.intervalMs}
+                    onClick={() => setIntervalMs(speed.intervalMs)}
+                  >
+                    {speed.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="button button--primary"
+                disabled={busy || status !== 'ACTIVO'}
+                onClick={() =>
+                  run(
+                    () => startSimulation(matchId, intervalMs),
+                    'Simulación iniciada.',
+                    'No se pudo iniciar la simulación',
+                  )
+                }
+              >
+                <Bot size={16} aria-hidden="true" />
+                {busy ? 'Iniciando…' : 'Simular partido'}
+              </button>
+              {status === 'PAUSADO' && <p className="tracking-note">Reanuda el seguimiento para poder simular.</p>}
+            </>
+          )}
         </div>
       )}
 

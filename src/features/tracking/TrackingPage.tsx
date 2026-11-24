@@ -1,9 +1,10 @@
 import { ArrowLeft, CircleAlert, History, MapPinned, Radar, Users, Waypoints } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { findTrackingBoard, type TrackedPlayer, type TrackingBoard } from '../../api/tracking'
+import { findTrackingBoard, findTrackingPhotos, type TrackedPlayer, type TrackingBoard } from '../../api/tracking'
 import { canOpenPage, RESOURCES, useAccess } from '../../auth/access'
 import { StatTile, StatTiles } from '../../components/DetailPanel'
 import { PageHeading, PanelHead } from '../../components/PageHeading'
+import { SportIcon } from '../../components/SportIcon'
 import { useLoad } from '../../hooks/useLoad'
 import { useToast } from '../../hooks/useToast'
 import { useTrackingSocket } from '../../hooks/useTrackingSocket'
@@ -12,8 +13,17 @@ import { Pitch } from './Pitch'
 import { TrackingControls } from './TrackingControls'
 import { TrackingReplayView } from './TrackingReplayView'
 import { BallPanel, LatestPanel, RosterPanel } from './TrackingSide'
-import { ConnectionNote, TrackingStatusTag } from './TrackingVisuals'
-import { applyPositions, applyStatus, boardSentence, dateTimeOf, fieldKindOf, onField } from './trackingInfo'
+import { ConnectionNote, SimulationTag, TrackingStatusTag } from './TrackingVisuals'
+import {
+  applyPositions,
+  ballKindOf,
+  applySimulation,
+  applyStatus,
+  boardSentence,
+  dateTimeOf,
+  fieldKindOf,
+  onField,
+} from './trackingInfo'
 import '../../components/ListPage.css'
 import '../../components/DetailPanel.css'
 import '../../components/Vivid.css'
@@ -39,6 +49,10 @@ export function TrackingPage({ matchId }: TrackingPageProps) {
   const fetchBoard = useCallback(() => findTrackingBoard(matchId), [matchId])
   const { data: board, setData, loading, loadError, reload, retry } = useLoad(fetchBoard)
   const { showToast, toast } = useToast()
+  // Las fotos de los jugadores (una sola vez). Si fallan, las fichas muestran las iniciales.
+  const fetchPhotos = useCallback(() => findTrackingPhotos(matchId), [matchId])
+  const { data: photoList } = useLoad(fetchPhotos)
+  const photos = useMemo(() => new Map((photoList ?? []).map((item) => [item.playerId, item.photo])), [photoList])
 
   const { connection, rejection } = useTrackingSocket(matchId, {
     onPositions: (records) => setData((current) => current && applyPositions(current, records)),
@@ -47,6 +61,7 @@ export function TrackingPage({ matchId }: TrackingPageProps) {
       // Al finalizar por el resultado o la cancelación, el marcador o el estado del partido cambiaron.
       if (state.status === 'FINALIZADO') reload()
     },
+    onSimulation: (simulation) => setData((current) => current && applySimulation(current, simulation)),
     onResync: reload,
   })
 
@@ -101,13 +116,14 @@ export function TrackingPage({ matchId }: TrackingPageProps) {
       </section>
 
       <div className="page__grid">
-        <FieldPanel board={board} canManage={canManage} />
+        <FieldPanel board={board} canManage={canManage} photos={photos} />
 
         <aside className="rail" aria-label="Detalle del seguimiento">
           <section className="panel" aria-labelledby="tracking-status-title">
             <PanelHead icon={Radar} title="Seguimiento" titleId="tracking-status-title" />
             <div className="tracking-status">
               <TrackingStatusTag status={board.tracking.status} />
+              {board.simulation.running && <SimulationTag />}
               {board.tracking.status !== 'FINALIZADO' && <ConnectionNote connection={connection} rejection={rejection} />}
             </div>
             <dl className="facts">
@@ -141,9 +157,9 @@ export function TrackingPage({ matchId }: TrackingPageProps) {
           </section>
 
           <TrackingFigures board={board} />
-          <BallPanel ball={board.ball} />
+          <BallPanel ball={board.ball} kind={ballKindOf(board.sport)} sportId={board.sport.id} />
           <LatestUpdates board={board} />
-          <RosterPanel home={board.home} away={board.away} />
+          <RosterPanel home={board.home} away={board.away} photos={photos} />
         </aside>
       </div>
 
@@ -154,7 +170,15 @@ export function TrackingPage({ matchId }: TrackingPageProps) {
 
 // La cancha con los jugadores que ya tienen posición y la pelota (criterios 2 a 6, 9 y 10). Con "Ver
 // recorrido" la misma cancha repite todo el seguimiento guardado (criterio 13).
-function FieldPanel({ board, canManage }: { board: TrackingBoard; canManage: boolean }) {
+function FieldPanel({
+  board,
+  canManage,
+  photos,
+}: {
+  board: TrackingBoard
+  canManage: boolean
+  photos: ReadonlyMap<number, string>
+}) {
   const [replaying, setReplaying] = useState(false)
   const home = onField(board.home)
   const away = onField(board.away)
@@ -187,10 +211,24 @@ function FieldPanel({ board, canManage }: { board: TrackingBoard; canManage: boo
         }
       />
       {replaying ? (
-        <TrackingReplayView board={board} kind={kind} />
+        <TrackingReplayView board={board} kind={kind} photos={photos} />
       ) : (
         <div className="tracking-field__board">
-          <Pitch kind={kind} home={home} away={away} ball={board.ball?.lastPosition ?? null} />
+          <Pitch
+            kind={kind}
+            home={home}
+            away={away}
+            ball={board.ball?.lastPosition ?? null}
+            photos={photos}
+            ballKind={ballKindOf(board.sport)}
+            sportId={board.sport.id}
+            // Con la simulación, cada ficha tarda casi lo mismo que el intervalo: el movimiento se ve continuo.
+            moveMs={
+              board.simulation.running && board.simulation.intervalMs
+                ? Math.round(board.simulation.intervalMs * 0.9)
+                : 900
+            }
+          />
         </div>
       )}
       <p className="tracking-legend">
@@ -203,7 +241,7 @@ function FieldPanel({ board, canManage }: { board: TrackingBoard; canManage: boo
           {board.away.team.name} <span className="tracking-legend__role">visitante, a la derecha</span>
         </span>
         <span className="tracking-legend__team">
-          <span className="tracking-ball__mark" aria-hidden="true" />
+          <SportIcon kind={ballKindOf(board.sport)} id={board.sport.id} size={16} />
           Pelota
         </span>
       </p>
@@ -216,13 +254,7 @@ function FieldPanel({ board, canManage }: { board: TrackingBoard; canManage: boo
               ? 'Los jugadores aparecen en la cancha cuando el seguimiento se inicia y llega su primera posición.'
               : 'Los jugadores aparecen en la cancha cuando llega su primera posición.'}
             {canManage && board.tracking.status === 'ACTIVO' && (
-              <>
-                {' '}
-                Las posiciones las envía el simulador:{' '}
-                <code className="tracking-code">
-                  node tools/simulador-seguimiento/simular.mjs --partido={board.match.id}
-                </code>
-              </>
+              <> Pulsa «Simular partido» en el panel Seguimiento para que el servidor los mueva.</>
             )}
           </p>
         )
@@ -247,7 +279,7 @@ function TrackingFigures({ board }: { board: TrackingBoard }) {
         <StatTile
           icon={Users}
           tone="--tone-green"
-          value={board.totals.playersTracked}
+          value={board.totals.onCourt}
           label={`En cancha de ${total} ${total === 1 ? 'jugador' : 'jugadores'}`}
         />
       </StatTiles>

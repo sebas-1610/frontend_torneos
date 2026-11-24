@@ -2,18 +2,19 @@ import { CircleAlert, Pause, Play } from 'lucide-react'
 import type { TrackedPlayer, TrackingBoard } from '../../api/tracking'
 import { Pitch } from './Pitch'
 import { REPLAY_SPEEDS, frameDelay } from './replay'
-import { clockOf, formatCount, type FieldKind } from './trackingInfo'
+import { ballKindOf, clockOf, formatCount, type FieldKind } from './trackingInfo'
 import { useTrackingReplay } from './useTrackingReplay'
 
 interface TrackingReplayViewProps {
   board: TrackingBoard
   kind: FieldKind
+  photos: ReadonlyMap<number, string>
 }
 
 // "Ver recorrido" (HU-GC-09, criterio 13): repite en la cancha todo el seguimiento guardado, con
 // reproducir/pausar, una barra para ir a cualquier momento y la velocidad. Se monta al abrir el recorrido
 // (ahí descarga el historial) y se desmonta al volver al vivo.
-export function TrackingReplayView({ board, kind }: TrackingReplayViewProps) {
+export function TrackingReplayView({ board, kind, photos }: TrackingReplayViewProps) {
   const replay = useTrackingReplay(board.match.id)
   const { frames, index } = replay
   const frame = frames[index]
@@ -57,7 +58,7 @@ export function TrackingReplayView({ board, kind }: TrackingReplayViewProps) {
   return (
     <div className="tracking-replay">
       <div className="tracking-field__board">
-        <Pitch kind={kind} home={placed(board.home.players)} away={placed(board.away.players)} ball={frame.ball} moveMs={moveMs} />
+        <Pitch kind={kind} home={placed(board.home.players)} away={placed(board.away.players)} ball={frame.ball} moveMs={moveMs} photos={photos} ballKind={ballKindOf(board.sport)} sportId={board.sport.id} />
       </div>
 
       <div className="tracking-replay__bar">

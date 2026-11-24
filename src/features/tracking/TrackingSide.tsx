@@ -1,6 +1,8 @@
 import { CircleDot, History, Users } from 'lucide-react'
 import type { PositionRecord, TrackedBall, TrackedPlayer, TrackedTeam } from '../../api/tracking'
 import { PanelHead } from '../../components/PageHeading'
+import { SportIcon } from '../../components/SportIcon'
+import type { SportKind } from '../sports/sportKind'
 import { TeamMonogram } from '../../components/TeamMonogram'
 import { clockOf, formatCoord, fullName, initialsOf, onField } from './trackingInfo'
 
@@ -16,7 +18,7 @@ function Coordinates({ x, y }: { x: number; y: number }) {
 }
 
 // La pelota del partido (criterios 6 y 15): se crea al iniciar el seguimiento.
-export function BallPanel({ ball }: { ball: TrackedBall | null }) {
+export function BallPanel({ ball, kind, sportId }: { ball: TrackedBall | null; kind: SportKind; sportId: number }) {
   return (
     <section className="panel" aria-labelledby="tracking-ball-title">
       <PanelHead icon={CircleDot} title="Pelota" titleId="tracking-ball-title" />
@@ -24,7 +26,7 @@ export function BallPanel({ ball }: { ball: TrackedBall | null }) {
         <p className="empty-state">La pelota del partido se crea al iniciar el seguimiento.</p>
       ) : (
         <div className="tracking-ball">
-          <span className="tracking-ball__mark" aria-hidden="true" />
+          <SportIcon kind={kind} id={sportId} size={18} />
           <span className="tracking-ball__name">{ball.name}</span>
           {ball.lastPosition ? (
             <Coordinates x={ball.lastPosition.x} y={ball.lastPosition.y} />
@@ -39,12 +41,13 @@ export function BallPanel({ ball }: { ball: TrackedBall | null }) {
 
 type Side = 'home' | 'away'
 
-function PlayerRow({ player, side }: { player: TrackedPlayer; side: Side }) {
-  const here = player.lastPosition !== null
+function PlayerRow({ player, side, photo }: { player: TrackedPlayer; side: Side; photo: string | null }) {
+  const here = player.lastPosition !== null && player.onCourt
+  const benched = player.lastPosition !== null && !player.onCourt
   return (
     <li className={`tracking-player${here ? '' : ' is-away'}`}>
-      <span className={`tracking-chip tracking-chip--${side}`} aria-hidden="true">
-        {initialsOf(player)}
+      <span className={`tracking-chip tracking-chip--${side}${photo ? ' has-photo' : ''}`} aria-hidden="true">
+        {photo ? <img src={photo} alt="" /> : initialsOf(player)}
       </span>
       <span className="tracking-player__name">
         {fullName(player)}
@@ -53,8 +56,12 @@ function PlayerRow({ player, side }: { player: TrackedPlayer; side: Side }) {
       {here ? (
         <Coordinates x={player.lastPosition!.x} y={player.lastPosition!.y} />
       ) : (
-        <span className="dash" title="Todavía no tiene posición: no aparece en la cancha">
-          —<span className="sr-only">sin posición</span>
+        <span
+          className="dash"
+          title={benched ? 'Salió de la cancha: está en el banco' : 'Todavía no tiene posición: no aparece en la cancha'}
+        >
+          {benched ? 'Banco' : '—'}
+          {!benched && <span className="sr-only">sin posición</span>}
         </span>
       )}
     </li>
@@ -63,7 +70,15 @@ function PlayerRow({ player, side }: { player: TrackedPlayer; side: Side }) {
 
 // La plantilla del día de un equipo (criterios 3, 5 y 14): los que ya tienen posición están en la cancha;
 // los demás salen en la lista, atenuados.
-function TeamRoster({ team, side }: { team: TrackedTeam; side: Side }) {
+function TeamRoster({
+  team,
+  side,
+  photos,
+}: {
+  team: TrackedTeam
+  side: Side
+  photos: ReadonlyMap<number, string>
+}) {
   const here = onField(team).length
   return (
     <div className="tracking-team">
@@ -79,7 +94,7 @@ function TeamRoster({ team, side }: { team: TrackedTeam; side: Side }) {
       ) : (
         <ul className="tracking-players">
           {team.players.map((player) => (
-            <PlayerRow key={player.id} player={player} side={side} />
+            <PlayerRow key={player.id} player={player} side={side} photo={photos.get(player.id) ?? null} />
           ))}
         </ul>
       )}
@@ -87,13 +102,21 @@ function TeamRoster({ team, side }: { team: TrackedTeam; side: Side }) {
   )
 }
 
-export function RosterPanel({ home, away }: { home: TrackedTeam; away: TrackedTeam }) {
+export function RosterPanel({
+  home,
+  away,
+  photos,
+}: {
+  home: TrackedTeam
+  away: TrackedTeam
+  photos: ReadonlyMap<number, string>
+}) {
   return (
     <section className="panel tracking-roster" aria-labelledby="tracking-roster-title">
       <PanelHead icon={Users} title="Jugadores" titleId="tracking-roster-title" />
       <div className="tracking-roster__teams">
-        <TeamRoster team={home} side="home" />
-        <TeamRoster team={away} side="away" />
+        <TeamRoster team={home} side="home" photos={photos} />
+        <TeamRoster team={away} side="away" photos={photos} />
       </div>
     </section>
   )
@@ -115,7 +138,11 @@ export function LatestPanel({ latest, players }: { latest: PositionRecord[]; pla
                 <span className="tracking-latest__who">
                   {record.ball ? 'Pelota' : player ? fullName(player) : `Jugador ${record.playerId}`}
                 </span>
-                <Coordinates x={record.x} y={record.y} />
+                {record.onCourt ? (
+                  <Coordinates x={record.x} y={record.y} />
+                ) : (
+                  <span className="tracking-coords">Sale de la cancha</span>
+                )}
                 <time className="tracking-latest__time num" dateTime={record.recordedAt}>
                   {clockOf(record.recordedAt)}
                 </time>

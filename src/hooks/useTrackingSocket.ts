@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
-import type { PositionRecord, TrackingState } from '../api/tracking'
+import type { PositionRecord, SimulationState, TrackingState } from '../api/tracking'
 import { getSession } from '../auth/session'
 
 // El socket vive bajo /api/deportiva, así el proxy de Vite (con ws: true) lo manda a ms_torneos_deportiva.
@@ -13,6 +13,7 @@ export type LiveConnection = 'conectando' | 'en-vivo' | 'sin-conexion' | 'rechaz
 export interface TrackingSocketHandlers {
   onPositions: (records: PositionRecord[]) => void // las posiciones recién guardadas
   onStatus: (state: TrackingState) => void // el estado nuevo del seguimiento
+  onSimulation: (state: SimulationState) => void // la simulación del partido empezó o terminó
   onResync: () => void // entró (o volvió a entrar) a la sala: hay que recargar la pizarra por lo perdido
 }
 
@@ -61,6 +62,9 @@ export function useTrackingSocket(matchId: number, handlers: TrackingSocketHandl
     })
     socket.on('status', ({ matchId: from, ...state }: StatusEvent) => {
       if (from === matchId) handlersRef.current.onStatus(state)
+    })
+    socket.on('simulation', ({ matchId: from, ...state }: SimulationState & { matchId: number }) => {
+      if (from === matchId) handlersRef.current.onSimulation(state)
     })
 
     return () => {

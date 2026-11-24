@@ -5,10 +5,11 @@ import type {
   TrackedTeam,
   TrackingBoard,
   TrackingSport,
+  SimulationState,
   TrackingState,
   TrackingStatus,
 } from '../../api/tracking'
-import { sportKindOf } from '../sports/sportKind'
+import { sportKindOf, type SportKind } from '../sports/sportKind'
 
 // Lo que la pizarra calcula sin dibujar nada (HU-GC-09): la cancha del deporte, las iniciales, los textos
 // y cómo queda la pizarra cuando llega un aviso del socket.
@@ -50,6 +51,13 @@ export function fieldKindOf(sport: TrackingSport): FieldKind {
   return own !== 'generic' ? own : fieldOfName(sport.parentName)
 }
 
+// El balón del deporte del torneo (el mismo dibujo de SportIcon en Deportes); un subdeporte sin balón propio
+// usa el de su padre.
+export function ballKindOf(sport: TrackingSport): SportKind {
+  const own = sportKindOf(sport.name)
+  return own !== 'generic' || !sport.parentName ? own : sportKindOf(sport.parentName)
+}
+
 // Iniciales para el círculo del jugador (criterio 4): "Andrés Arias" → "AA".
 export function initialsOf(player: Pick<TrackedPlayer, 'firstName' | 'lastName'>): string {
   const first = player.firstName.trim().charAt(0)
@@ -82,8 +90,9 @@ export function dateTimeOf(value: string): string {
   return `${day}/${month}/${year} · ${time.slice(0, 5)}`
 }
 
+// Los que están jugando: tienen posición y la última no los sacó de la cancha (los del banco no se dibujan).
 export function onField(team: TrackedTeam): TrackedPlayer[] {
-  return team.players.filter((player) => player.lastPosition !== null)
+  return team.players.filter((player) => player.lastPosition !== null && player.onCourt)
 }
 
 // La frase del encabezado: lo que hoy importa de este seguimiento.
@@ -127,7 +136,7 @@ export function applyPositions(board: TrackingBoard, records: PositionRecord[]):
     ...team,
     players: team.players.map((player) => {
       const record = byPlayer.get(player.id)
-      return record ? { ...player, lastPosition: toLast(record) } : player
+      return record ? { ...player, lastPosition: toLast(record), onCourt: record.onCourt } : player
     }),
   })
   const home = moveTeam(board.home)
@@ -141,11 +150,23 @@ export function applyPositions(board: TrackingBoard, records: PositionRecord[]):
     latest: [...fresh].reverse().concat(board.latest).slice(0, LATEST_COUNT),
     totals: {
       records: board.totals.records + fresh.length,
-      playersTracked: onField(home).length + onField(away).length,
+      playersTracked: [...home.players, ...away.players].filter((player) => player.lastPosition !== null).length,
+      onCourt: onField(home).length + onField(away).length,
     },
   }
 }
 
 export function applyStatus(board: TrackingBoard, tracking: TrackingState): TrackingBoard {
   return { ...board, tracking }
+}
+
+// Las velocidades del botón "Simular partido": cada cuánto el servidor mueve a los jugadores.
+export const SIMULATION_SPEEDS = [
+  { intervalMs: 2000, label: 'Lenta' },
+  { intervalMs: 1000, label: 'Normal' },
+  { intervalMs: 500, label: 'Rápida' },
+] as const
+
+export function applySimulation(board: TrackingBoard, simulation: SimulationState): TrackingBoard {
+  return { ...board, simulation }
 }

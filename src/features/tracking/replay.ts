@@ -36,8 +36,11 @@ export function buildFrames(records: PositionRecord[]): ReplayFrame[] {
     }
     current = record.recordedAt
     const at: LastPosition = { x: record.x, y: record.y, recordedAt: record.recordedAt }
-    if (record.playerId !== null) players[record.playerId] = at
-    else ball = at
+    // Un jugador que sale de la cancha (onCourt: false) deja de verse desde ese cuadro.
+    if (record.playerId !== null) {
+      if (record.onCourt === false) delete players[record.playerId]
+      else players[record.playerId] = at
+    } else ball = at
   }
   if (current !== null) frames.push({ at: current, players, ball })
   return frames

@@ -1,11 +1,14 @@
-import type { CSSProperties } from 'react'
+import { useId, type CSSProperties } from 'react'
 import type { LastPosition, TrackedPlayer } from '../../api/tracking'
+import { SportIcon } from '../../components/SportIcon'
+import type { SportKind } from '../sports/sportKind'
 import { fullName, initialsOf, type FieldKind } from './trackingInfo'
 
 // La cancha de la pizarra (HU-GC-09, criterio 2) en SVG propio, sin librerías: las líneas del deporte y
 // encima los jugadores y la pelota. Todo se dibuja en metros; las posiciones llegan de 0 a 100 (porcentaje
 // del largo y del ancho) y se pasan a metros, así la misma posición sirve en cualquier cancha. x = 0 es el
-// arco del local. Cada ficha se mueve con una transición de CSS (se apaga con prefers-reduced-motion).
+// arco del local. Cada ficha se mueve con una transición de CSS (se apaga con prefers-reduced-motion). Si el
+// jugador tiene foto, va recortada en círculo con un aro del color de su equipo; si no, sus iniciales.
 
 interface FieldSize {
   length: number // metros, a lo largo (eje x)
@@ -21,6 +24,16 @@ const FIELDS: Record<FieldKind, FieldSize> = {
   generic: { length: 100, width: 64, label: 'Campo de juego' },
 }
 
+// Radio de cada ficha según la cancha (fracción del largo). Las canchas chicas tienen menos jugadores y
+// aguantan fichas más grandes.
+const TOKEN_SCALE: Record<FieldKind, number> = {
+  soccer: 0.026,
+  futsal: 0.032,
+  basketball: 0.034,
+  volleyball: 0.034,
+  generic: 0.026,
+}
+
 type Side = 'home' | 'away'
 
 interface PitchProps {
@@ -29,18 +42,25 @@ interface PitchProps {
   away: TrackedPlayer[]
   ball: LastPosition | null
   moveMs?: number // cuánto tarda cada ficha en llegar a su nueva posición (el recorrido la ajusta a su velocidad)
+  photos?: ReadonlyMap<number, string> // id del jugador → foto ("data:image/..."); sin foto, las iniciales
+  ballKind?: SportKind // el balón del deporte (el mismo dibujo de Deportes); sin él, uno genérico
+  sportId?: number // solo para el color del balón genérico
 }
 
-export function Pitch({ kind, home, away, ball, moveMs = 900 }: PitchProps) {
+export function Pitch({ kind, home, away, ball, moveMs = 900, photos, ballKind = 'generic', sportId = 0 }: PitchProps) {
   const { length, width, label } = FIELDS[kind]
-  const margin = length * 0.03 // aire alrededor para los arcos y las fichas que pisan la línea
-  const radius = length * 0.019
+  const radius = length * TOKEN_SCALE[kind]
+  const ballRadius = radius * 0.62 // el balón, un poco más chico que una ficha
+  const margin = Math.max(length * 0.03, radius * 1.3) // aire para los arcos y las fichas que pisan la línea
+  // Un id por cancha para el recorte circular de las fotos (useId trae caracteres que no sirven en url(#…)).
+  const clipId = `pitch-photo-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
   const toX = (x: number) => (x / 100) * length
   const toY = (y: number) => (y / 100) * width
 
   const token = (player: TrackedPlayer, side: Side) => {
     const at = player.lastPosition!
     const role = side === 'home' ? 'local' : 'visitante'
+    const photo = photos?.get(player.id) ?? null
     return (
       <g
         key={player.id}
@@ -48,10 +68,24 @@ export function Pitch({ kind, home, away, ball, moveMs = 900 }: PitchProps) {
         style={{ transform: `translate(${toX(at.x)}px, ${toY(at.y)}px)` }}
       >
         <title>{`${fullName(player)} (${role}${player.position ? `, ${player.position}` : ''})`}</title>
-        <circle r={radius} />
-        <text dy="0.35em" fontSize={radius * 0.95}>
-          {initialsOf(player)}
-        </text>
+        <circle className="pitch__disc" r={radius} />
+        {photo ? (
+          <image
+            href={photo}
+            x={-radius}
+            y={-radius}
+            width={radius * 2}
+            height={radius * 2}
+            preserveAspectRatio="xMidYMid slice"
+            clipPath={`url(#${clipId})`}
+          />
+        ) : (
+          <text dy="0.35em" fontSize={radius * 0.9}>
+            {initialsOf(player)}
+          </text>
+        )}
+        {/* Con foto, el aro del color del equipo sigue diciendo de qué equipo es (criterio 5). */}
+        {photo && <circle className="pitch__ring" r={radius} />}
       </g>
     )
   }
@@ -66,6 +100,11 @@ export function Pitch({ kind, home, away, ball, moveMs = 900 }: PitchProps) {
       aria-label={summary}
       style={{ '--move': `${moveMs}ms` } as CSSProperties}
     >
+      <defs>
+        <clipPath id={clipId} clipPathUnits="objectBoundingBox">
+          <circle cx="0.5" cy="0.5" r="0.5" />
+        </clipPath>
+      </defs>
       <rect className="pitch__ground" x={-margin} y={-margin} width={length + margin * 2} height={width + margin * 2} />
       <g className="pitch__lines">
         <rect x={0} y={0} width={length} height={width} />
@@ -76,7 +115,10 @@ export function Pitch({ kind, home, away, ball, moveMs = 900 }: PitchProps) {
       {ball && (
         <g className="pitch__ball" style={{ transform: `translate(${toX(ball.x)}px, ${toY(ball.y)}px)` }}>
           <title>Pelota</title>
-          <circle r={radius * 0.5} />
+          {/* El balón del deporte (SportIcon), centrado en su posición. */}
+          <g transform={`translate(${-ballRadius} ${-ballRadius})`}>
+            <SportIcon kind={ballKind} id={sportId} size={ballRadius * 2} />
+          </g>
         </g>
       )}
     </svg>

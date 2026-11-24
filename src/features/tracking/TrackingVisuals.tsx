@@ -1,3 +1,4 @@
+import { Bot } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import type { TrackingStatus } from '../../api/tracking'
 import type { LiveConnection } from '../../hooks/useTrackingSocket'
@@ -31,5 +32,15 @@ export function ConnectionNote({ connection, rejection }: { connection: LiveConn
         {connection === 'rechazado' && rejection ? `: ${rejection}` : ''}
       </span>
     </p>
+  )
+}
+
+// La simulación del servidor está moviendo a los jugadores (la ven todos, también el aficionado).
+export function SimulationTag() {
+  return (
+    <span className="tag match-tag tracking-sim-tag" style={{ '--tag': 'var(--tone-blue)' } as CSSProperties}>
+      <Bot size={12} aria-hidden="true" />
+      Simulación en curso
+    </span>
   )
 }

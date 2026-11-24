@@ -196,9 +196,12 @@ export function PlayersPage({ initialPlayerId }: PlayersPageProps) {
     const name = fullNameOf(player)
     const confirmed = await confirm({
       title: `¿Eliminar a ${name}?`,
+      // HU-GD-04 #8 y HU-GD-05 #7-8: retirarlo de un equipo no borra el contrato (queda como
+      // historial), así que cualquier contrato, aunque ya esté cerrado, impide eliminarlo.
       message:
-        'Se borra del sistema. Si tiene historial de contratos con equipos o habilidades asignadas ' +
-        'no se puede eliminar: en ese caso, desactívalo.',
+        'Se borra del sistema. Solo se puede si nunca tuvo contrato con un equipo y no tiene ' +
+        'habilidades asignadas: retirarlo de un equipo no basta, porque el contrato queda como historial.' +
+        (player.active ? ' Si no se puede, desactívalo.' : ''),
       confirmLabel: 'Eliminar jugador',
       subject: subjectOf(player),
     })

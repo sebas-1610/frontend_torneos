@@ -26,6 +26,22 @@
   border: 1px solid var(--edge);
   border-radius: 12px;
   box-shadow: var(--overlay-shadow);
+  /* Al recorrer con las flechas, el jugador marcado no queda tapado por el contador:
+     6 de relleno + 32 del contador + 4 de margen. */
+  scroll-padding-top: 42px;
+}
+
+/* Cuántos jugadores hay en la lista: queda fijo arriba mientras se baja. */
+.player-search__count {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  font-size: var(--fs-small);
+  color: var(--faint);
+  background: inherit;
+  border-bottom: 1px solid var(--rule);
 }
 
 /* En una ventana va debajo del campo, sin flotar: así la ventana no la recorta. */

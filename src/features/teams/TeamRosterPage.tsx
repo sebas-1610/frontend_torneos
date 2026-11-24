@@ -222,9 +222,13 @@ function Roster({ team, teams, players, canListPlayers, onChooseTeam, onChanged 
     const upcomingContract = contract.status === 'FUTURO'
     const confirmed = await confirm({
       title: upcomingContract ? `¿Cancelar el contrato de ${name}?` : `¿Retirar a ${name} de ${team.name}?`,
-      message: upcomingContract
-        ? 'El contrato todavía no empieza: al retirarlo queda cancelado y pasa al historial.'
-        : 'El jugador dejará de pertenecer a la plantilla actual, pero su vinculación queda registrada en el historial.',
+      // HU-GD-05 #7-8: el contrato no se borra. Por ese historial, después el jugador no se puede
+      // eliminar del sistema (HU-GD-04 #8): se avisa aquí para que no sorprenda.
+      message:
+        (upcomingContract
+          ? 'El contrato todavía no empieza: al retirarlo queda cancelado y pasa al historial.'
+          : 'El jugador dejará de pertenecer a la plantilla actual, pero su vinculación queda registrada en el historial.') +
+        ' Por ese historial, después no se podrá eliminar al jugador del sistema: solo desactivarlo.',
       confirmLabel: upcomingContract ? 'Cancelar contrato' : 'Retirar del equipo',
       subject: (
         <>

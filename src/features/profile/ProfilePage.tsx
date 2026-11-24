@@ -3,7 +3,6 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { PROVIDER_LABELS, type User } from '../../api/auth'
 import { ApiError, errorMessage } from '../../api/client'
 import { createMyProfile, findMyProfile, updateMyProfile, type Profile } from '../../api/profile'
-import { initials } from '../../utils/initials'
 import { ProfileFields } from './ProfileFields'
 import { useProfileDraft } from './useProfileDraft'
 import '../auth/LoginPage.css'
@@ -27,8 +26,6 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  // URL de la foto que no se pudo mostrar: así la vista previa vuelve a las iniciales.
-  const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -55,8 +52,6 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
   const { input } = draft
   const dirty = draft.differsFrom(saved)
   const canSubmit = draft.valid && dirty && !saving
-  const previewPhoto = input.photo && draft.photoOk && input.photo !== failedPhoto ? input.photo : null
-  const photoFailed = draft.photoOk && input.photo !== null && input.photo === failedPhoto
 
   function handleReload() {
     setLoading(true)
@@ -101,20 +96,11 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
 
       <div className="page__grid">
         <section className="panel profile-panel" aria-labelledby="profile-title" aria-busy={loading}>
-          <div className="profile-identity">
-            <span className="profile-avatar" aria-hidden="true">
-              {previewPhoto ? (
-                <img src={previewPhoto} alt="" onError={() => setFailedPhoto(previewPhoto)} />
-              ) : (
-                initials(user?.name ?? '')
-              )}
-            </span>
-            <div>
-              <h2 id="profile-title" className="profile-identity__name">
-                {user?.name ?? 'Mi perfil'}
-              </h2>
-              <p className="profile-identity__email">{user?.email ?? 'Cargando…'}</p>
-            </div>
+          <div>
+            <h2 id="profile-title" className="profile-identity__name">
+              {user?.name ?? 'Mi perfil'}
+            </h2>
+            <p className="profile-identity__email">{user?.email ?? 'Cargando…'}</p>
           </div>
 
           {loadError ? (
@@ -129,7 +115,7 @@ export function ProfilePage({ user, onPhotoChange }: ProfilePageProps) {
             <p className="empty-state">Cargando tu perfil…</p>
           ) : (
             <form className="profile-form" onSubmit={handleSubmit} noValidate>
-              <ProfileFields draft={draft} photoFailed={photoFailed} />
+              <ProfileFields draft={draft} name={user?.name ?? ''} />
 
               {error && (
                 <p className="login__error" role="alert">

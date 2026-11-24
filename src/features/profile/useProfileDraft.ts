@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
 import type { Profile, ProfileInput } from '../../api/profile'
 
-// Mismas reglas que valida el backend (BaseProfileDTO).
+// Misma regla que valida el backend (BaseProfileDTO). La foto no se revisa aquí: llega ya lista de
+// utils/image.ts, o es la que estaba guardada.
 const PHONE_PATTERN = /^\+?[0-9]{7,15}$/
-const PHOTO_PATTERN = /^https?:\/\/\S+$/
 
 // @Past del backend: la fecha de nacimiento debe ser anterior a hoy. Formato AAAA-MM-DD del <input type="date">.
 function yesterday(): string {
@@ -18,20 +18,21 @@ function yesterday(): string {
 // "Perfil" de Usuarios, así las dos validan igual.
 export function useProfileDraft() {
   const [phone, setPhone] = useState('')
-  const [photo, setPhoto] = useState('')
+  const [photo, setPhoto] = useState<string | null>(null)
   const [birthDate, setBirthDate] = useState('')
   const [maxBirthDate] = useState(yesterday)
+  const [fills, setFills] = useState(0) // cuántas veces se ha llenado con lo guardado
 
   // Llena el formulario con lo guardado, o lo vacía si el usuario no tiene perfil.
   const fill = useCallback((profile: Profile | null) => {
     setPhone(profile?.phone ?? '')
-    setPhoto(profile?.photo ?? '')
+    setPhoto(profile?.photo ?? null)
     setBirthDate(profile?.birthDate ?? '')
+    setFills((count) => count + 1)
   }, [])
 
-  const input: ProfileInput = { phone: phone.trim(), photo: photo.trim() || null, birthDate: birthDate || null }
+  const input: ProfileInput = { phone: phone.trim(), photo, birthDate: birthDate || null }
   const phoneOk = PHONE_PATTERN.test(input.phone)
-  const photoOk = input.photo === null || (input.photo.length <= 500 && PHOTO_PATTERN.test(input.photo))
   const birthDateOk = birthDate === '' || birthDate <= maxBirthDate
 
   return {
@@ -43,11 +44,11 @@ export function useProfileDraft() {
     setBirthDate,
     maxBirthDate,
     fill,
+    fills,
     input,
     phoneOk,
-    photoOk,
     birthDateOk,
-    valid: phoneOk && photoOk && birthDateOk,
+    valid: phoneOk && birthDateOk,
     // Sin perfil guardado siempre hay algo por crear.
     differsFrom: (saved: Profile | null) =>
       saved === null ||

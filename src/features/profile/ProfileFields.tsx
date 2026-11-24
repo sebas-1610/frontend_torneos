@@ -1,17 +1,57 @@
+import { useState } from 'react'
+import { ImageField } from '../../components/ImageField'
+import { photoFromFile } from '../../utils/image'
+import { initials } from '../../utils/initials'
 import type { ProfileDraft } from './useProfileDraft'
 import '../auth/LoginPage.css'
 import './ProfilePage.css'
 
 interface ProfileFieldsProps {
   draft: ProfileDraft
-  photoFailed: boolean // la URL tiene buen formato pero la imagen no cargó
-  disabled?: boolean // solo lectura (por ejemplo, sin permiso para cambiar perfiles)
+  name: string // del usuario: sin foto se ven sus iniciales
+  disabled?: boolean // mientras se guarda
+  readOnly?: boolean // sin permiso para cambiar perfiles
 }
 
-// Teléfono, fotografía y fecha de nacimiento (HU-SE-02), con los avisos de cada regla.
-export function ProfileFields({ draft, photoFailed, disabled = false }: ProfileFieldsProps) {
+// Fotografía, teléfono y fecha de nacimiento (HU-SE-02), con los avisos de cada regla.
+export function ProfileFields({ draft, name, disabled = false, readOnly = false }: ProfileFieldsProps) {
+  // Foto que no se pudo mostrar (una URL de antes, borrada o privada): se ven las iniciales.
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
+  const { photo } = draft
+  const photoFailed = photo !== null && photo === failedPhoto
+
   return (
     <>
+      {/* La key lo reinicia al guardar o descartar, para que no quede un aviso viejo. */}
+      <ImageField
+        key={draft.fills}
+        label={readOnly ? 'Foto' : 'Foto (opcional)'}
+        hint="JPG, PNG o WEBP. Se recorta en cuadrado."
+        preview={
+          <span className="profile-avatar" aria-hidden="true">
+            {photo && !photoFailed ? (
+              <img src={photo} alt="" onError={() => setFailedPhoto(photo)} />
+            ) : (
+              initials(name)
+            )}
+          </span>
+        }
+        value={photo}
+        read={photoFromFile}
+        uploadLabel="Subir foto"
+        changeLabel="Cambiar foto"
+        inputLabel="Elegir foto de perfil"
+        onChange={draft.setPhoto}
+        droppable
+        disabled={disabled}
+        readOnly={readOnly}
+      />
+      {photoFailed && (
+        <p className="profile-form__note">
+          No se pudo cargar la foto guardada.{!readOnly && ' Sube otra o quítala.'}
+        </p>
+      )}
+
       <label className="login__field">
         <span>Teléfono</span>
         <input
@@ -20,7 +60,7 @@ export function ProfileFields({ draft, photoFailed, disabled = false }: ProfileF
           autoComplete="tel"
           placeholder="+573001234567"
           value={draft.phone}
-          disabled={disabled}
+          disabled={disabled || readOnly}
           onChange={(e) => draft.setPhone(e.target.value)}
         />
       </label>
@@ -30,29 +70,13 @@ export function ProfileFields({ draft, photoFailed, disabled = false }: ProfileF
 
       <label className="login__field">
         <span>
-          Fotografía <span className="profile-form__optional">(URL, opcional)</span>
-        </span>
-        <input
-          type="url"
-          inputMode="url"
-          placeholder="https://…"
-          value={draft.photo}
-          disabled={disabled}
-          onChange={(e) => draft.setPhoto(e.target.value)}
-        />
-      </label>
-      {!draft.photoOk && <p className="login__hint">Debe ser una URL que empiece por http:// o https://.</p>}
-      {photoFailed && <p className="profile-form__note">No se pudo cargar la imagen de esa URL; revisa que sea pública.</p>}
-
-      <label className="login__field">
-        <span>
           Fecha de nacimiento <span className="profile-form__optional">(opcional)</span>
         </span>
         <input
           type="date"
           max={draft.maxBirthDate}
           value={draft.birthDate}
-          disabled={disabled}
+          disabled={disabled || readOnly}
           onChange={(e) => draft.setBirthDate(e.target.value)}
         />
       </label>

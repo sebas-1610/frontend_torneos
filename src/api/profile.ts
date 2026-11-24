@@ -6,7 +6,7 @@ import { request } from './client'
 export interface Profile {
   id: number
   phone: string
-  photo: string | null // URL de la fotografía
+  photo: string | null // imagen en texto "data:image/jpeg;base64,..." o, en perfiles de antes, una URL
   birthDate: string | null // AAAA-MM-DD
   userId: number
 }

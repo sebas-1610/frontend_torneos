@@ -803,51 +803,6 @@
   margin: -4px -6px -4px 0;
 }
 
-/* Campo de imagen (foto del jugador, escudo del equipo): vista previa y botones. */
-.page--vivid .image-field {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px;
-  background: var(--raised);
-  border: 1px dashed var(--control);
-  border-radius: 12px;
-}
-
-.page--vivid .image-field__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.page--vivid .image-field__label {
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.page--vivid .image-field__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.page--vivid .image-field__actions .button {
-  height: 32px;
-  padding: 0 12px;
-}
-
-.page--vivid .image-field__hint {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--faint);
-}
-
-.page--vivid .image-field__error {
-  margin-top: 6px;
-  font-size: var(--fs-small);
-  color: var(--negative);
-}
-
 /* El elegido en una ventana (ej: el jugador que se va a asignar), con "Cambiar" al final. */
 .page--vivid .picked {
   display: flex;

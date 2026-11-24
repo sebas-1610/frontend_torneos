@@ -6,36 +6,20 @@
   gap: 20px;
 }
 
-.profile-identity {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
-.profile-identity > div {
-  min-width: 0;
-}
-
+/* La foto, o las iniciales, dentro del campo de imagen (ImageField). */
 .profile-avatar {
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   overflow: hidden;
   font-family: var(--figure);
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 600;
   color: var(--text);
-  background: var(--raised);
+  background: var(--surface); /* el campo ya está sobre --raised */
   border-radius: 50%;
-}
-
-.profile-avatar--sm {
-  width: 48px;
-  height: 48px;
-  font-size: 19px;
 }
 
 .profile-avatar img {

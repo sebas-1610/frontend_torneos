@@ -12,7 +12,6 @@ import {
 import { RESOURCES, useAccess } from '../../auth/access'
 import { SubjectUser } from '../../components/ConfirmDialog'
 import { useConfirm } from '../../hooks/useConfirm'
-import { initials } from '../../utils/initials'
 import { ProfileFields } from '../profile/ProfileFields'
 import { useProfileDraft } from '../profile/useProfileDraft'
 import '../auth/LoginPage.css'
@@ -37,7 +36,6 @@ export function UserProfileDialog({ user, onClose, onOwnPhotoChange }: UserProfi
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [failedPhoto, setFailedPhoto] = useState<string | null>(null)
 
   const isOwn = user.id === userId
   // Crear o cambiar pide el permiso correspondiente de "perfiles"; sin él, el formulario es de solo lectura.
@@ -71,7 +69,6 @@ export function UserProfileDialog({ user, onClose, onOwnPhotoChange }: UserProfi
 
   const { input } = draft
   const canSubmit = canWrite && draft.valid && draft.differsFrom(saved) && !busy
-  const previewPhoto = input.photo && draft.photoOk && input.photo !== failedPhoto ? input.photo : null
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -120,13 +117,6 @@ export function UserProfileDialog({ user, onClose, onOwnPhotoChange }: UserProfi
       <dialog ref={dialogRef} className="form-dialog" onClose={onClose} aria-labelledby="user-profile-title">
         <form className="form-dialog__form" onSubmit={handleSubmit} noValidate>
           <div className="dialog-identity">
-            <span className="profile-avatar profile-avatar--sm" aria-hidden="true">
-              {previewPhoto ? (
-                <img src={previewPhoto} alt="" onError={() => setFailedPhoto(previewPhoto)} />
-              ) : (
-                initials(user.name)
-              )}
-            </span>
             <div className="dialog-identity__text">
               <h2 id="user-profile-title" className="panel__title">
                 Perfil de {user.name}
@@ -146,11 +136,7 @@ export function UserProfileDialog({ user, onClose, onOwnPhotoChange }: UserProfi
                     : 'Este usuario todavía no tiene perfil.'}
                 </p>
               )}
-              <ProfileFields
-                draft={draft}
-                disabled={!canWrite || busy}
-                photoFailed={draft.photoOk && input.photo !== null && input.photo === failedPhoto}
-              />
+              <ProfileFields draft={draft} name={user.name} disabled={busy} readOnly={!canWrite} />
             </>
           )}
 

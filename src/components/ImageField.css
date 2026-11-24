@@ -1,0 +1,86 @@
+/* ---------- Campo de imagen (foto del jugador, escudo del equipo, foto del perfil): vista previa y botones ---------- */
+
+.image-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--raised);
+  border: 1px dashed var(--control);
+  border-radius: 12px;
+}
+
+/* Donde también se puede soltar el archivo, el borde se nota más. */
+.image-field--droppable {
+  border-color: var(--box);
+}
+
+.image-field__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-field__label {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.image-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.image-field__actions .button {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.image-field__hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.image-field__error {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  color: var(--negative);
+}
+
+/* Mientras se arrastra un archivo por encima: el aviso tapa el campo sin cambiarle el tamaño. Deja
+   pasar el puntero para que el campo siga recibiendo el arrastre. */
+.image-field.is-dragging {
+  border-color: transparent;
+}
+
+.image-field__drop {
+  position: absolute;
+  inset: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--active);
+  border: 2px dashed var(--text);
+  border-radius: 12px;
+  pointer-events: none;
+  animation: image-drop-in 0.15s var(--ease-out);
+}
+
+@keyframes image-drop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Sin mouse (celular, tableta) no se arrastra: solo se habla del botón. */
+@media (hover: none), (max-width: 639px) {
+  .image-field__drop-hint {
+    display: none;
+  }
+}
